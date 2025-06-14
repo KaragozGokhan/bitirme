@@ -11,6 +11,8 @@ services:
       POSTGRES_PASSWORD: 12345
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
 
   redis:
     image: 'redis:latest'
