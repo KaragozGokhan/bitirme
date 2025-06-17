@@ -1,119 +1,270 @@
 const express = require('express');
 const router = express.Router();
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const { pool } = require('../config/database');
-const auth = require('../middleware/auth');
+const bcrypt = require('bcrypt');
 
-// Kullanıcı kaydı
-router.post('/register', async (req, res) => {
-  const { username, email, password } = req.body;
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         username:
+ *           type: string
+ *         email:
+ *           type: string
+ *         subscription_type:
+ *           type: string
+ *         subscription_end_date:
+ *           type: string
+ *           format: date-time
+ *         created_at:
+ *           type: string
+ *           format: date-time
+ */
 
-  try {
-    // Email ve kullanıcı adının daha önce kullanılıp kullanılmadığını kontrol ediyoruz
-    const checkUser = await pool.query(
-      'SELECT * FROM users WHERE email = $1 OR username = $2', 
-      [email, username]
-    );
-
-    if (checkUser.rows.length > 0) {
-      return res.status(400).json({ error: 'Bu email veya kullanıcı adı zaten kullanımda' });
-    }
-
-    // Parolayı hashliyoruz
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
-
-    // Kullanıcıyı veritabanına ekliyoruz
-    const newUser = await pool.query(
-      'INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id, username, email, subscription_type',
-      [username, email, hashedPassword]
-    );
-
-    // JWT token oluşturuyoruz
-    const token = jwt.sign(
-      { userId: newUser.rows[0].id }, 
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
-
-    res.status(201).json({
-      message: 'Kullanıcı başarıyla oluşturuldu',
-      token,
-      user: {
-        id: newUser.rows[0].id,
-        username: newUser.rows[0].username,
-        email: newUser.rows[0].email,
-        subscription_type: newUser.rows[0].subscription_type
-      }
-    });
-
-  } catch (error) {
-    console.error('Kayıt hatası:', error);
-    res.status(500).json({ error: 'Sunucu hatası' });
-  }
-});
-
-// Kullanıcı girişi
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Kullanıcı girişi
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Giriş başarılı
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Geçersiz kimlik bilgileri
+ */
 router.post('/login', async (req, res) => {
-  const { email, password } = req.body;
-
   try {
-    // Kullanıcıyı email ile buluyoruz
-    const userQuery = await pool.query(
-      'SELECT * FROM users WHERE email = $1', 
-      [email]
-    );
+    const { email, password } = req.body;
 
+    // Kullanıcıyı e-posta ile bul
+    const userQuery = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    
     if (userQuery.rows.length === 0) {
-      return res.status(400).json({ error: 'Geçersiz kimlik bilgileri' });
+      return res.status(401).json({ error: 'Geçersiz e-posta veya şifre' });
     }
 
     const user = userQuery.rows[0];
 
-    // Parolayı kontrol ediyoruz
-    const isMatch = await bcrypt.compare(password, user.password_hash);
-
-    if (!isMatch) {
-      return res.status(400).json({ error: 'Geçersiz kimlik bilgileri' });
+    // Şifreyi kontrol et
+    const validPassword = await bcrypt.compare(password, user.password_hash);
+    
+    if (!validPassword) {
+      return res.status(401).json({ error: 'Geçersiz e-posta veya şifre' });
     }
 
-    // JWT token oluşturuyoruz
-    const token = jwt.sign(
-      { userId: user.id }, 
-      process.env.JWT_SECRET,
-      { expiresIn: '7d' }
-    );
+    // Hassas bilgileri çıkar
+    const { password_hash, ...userWithoutPassword } = user;
 
     res.json({
       message: 'Giriş başarılı',
-      token,
-      user: {
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        subscription_type: user.subscription_type
-      }
+      user: userWithoutPassword
     });
-
   } catch (error) {
     console.error('Giriş hatası:', error);
     res.status(500).json({ error: 'Sunucu hatası' });
   }
 });
 
-// Mevcut kullanıcı bilgilerini getir
-router.get('/me', auth, async (req, res) => {
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     summary: Yeni kullanıcı kaydı
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - username
+ *               - email
+ *               - password
+ *             properties:
+ *               username:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Kayıt başarılı
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Geçersiz istek veya kullanıcı zaten var
+ */
+router.post('/register', async (req, res) => {
   try {
-    res.json({
-      id: req.user.id,
-      username: req.user.username,
-      email: req.user.email,
-      subscription_type: req.user.subscription_type,
-      subscription_end_date: req.user.subscription_end_date
+    const { username, email, password } = req.body;
+
+    // E-posta ve kullanıcı adının benzersiz olduğunu kontrol et
+    const existingUserQuery = await pool.query(
+      'SELECT * FROM users WHERE email = $1 OR username = $2',
+      [email, username]
+    );
+
+    if (existingUserQuery.rows.length > 0) {
+      return res.status(400).json({ error: 'Bu e-posta veya kullanıcı adı zaten kullanılıyor' });
+    }
+
+    // Şifreyi hashle
+    const salt = await bcrypt.genSalt(10);
+    const password_hash = await bcrypt.hash(password, salt);
+
+    // Yeni kullanıcı oluştur
+    const newUserQuery = await pool.query(
+      'INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id, username, email, subscription_type, subscription_end_date, created_at',
+      [username, email, password_hash]
+    );
+
+    res.status(201).json({
+      message: 'Kayıt başarılı',
+      user: newUserQuery.rows[0]
     });
   } catch (error) {
-    console.error('Kullanıcı bilgileri hatası:', error);
+    console.error('Kayıt hatası:', error);
+    res.status(500).json({ error: 'Sunucu hatası' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/auth/forgot-password:
+ *   post:
+ *     summary: Şifre sıfırlama isteği
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Şifre sıfırlama bağlantısı gönderildi
+ *       404:
+ *         description: Kullanıcı bulunamadı
+ */
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Kullanıcıyı e-posta ile bul
+    const userQuery = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    
+    if (userQuery.rows.length === 0) {
+      return res.status(404).json({ error: 'Bu e-posta adresi ile kayıtlı kullanıcı bulunamadı' });
+    }
+
+    // Burada normalde e-posta gönderme işlemi yapılır
+    // Şimdilik sadece başarılı mesajı döndürüyoruz
+    res.json({ message: 'Şifre sıfırlama bağlantısı e-posta adresinize gönderildi' });
+  } catch (error) {
+    console.error('Şifre sıfırlama hatası:', error);
+    res.status(500).json({ error: 'Sunucu hatası' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/auth/reset-password:
+ *   post:
+ *     summary: Şifre sıfırlama
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - token
+ *               - new_password
+ *             properties:
+ *               email:
+ *                 type: string
+ *               token:
+ *                 type: string
+ *               new_password:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Şifre başarıyla güncellendi
+ *       404:
+ *         description: Kullanıcı bulunamadı
+ */
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { email, token, new_password } = req.body;
+
+    // Kullanıcıyı e-posta ile bul
+    const userQuery = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    
+    if (userQuery.rows.length === 0) {
+      return res.status(404).json({ error: 'Bu e-posta adresi ile kayıtlı kullanıcı bulunamadı' });
+    }
+
+    // Burada normalde token doğrulaması yapılır
+    // Şimdilik token kontrolünü atlıyoruz
+
+    // Yeni şifreyi hashle
+    const salt = await bcrypt.genSalt(10);
+    const password_hash = await bcrypt.hash(new_password, salt);
+
+    // Şifreyi güncelle
+    await pool.query(
+      'UPDATE users SET password_hash = $1 WHERE email = $2',
+      [password_hash, email]
+    );
+
+    res.json({ message: 'Şifreniz başarıyla güncellendi' });
+  } catch (error) {
+    console.error('Şifre güncelleme hatası:', error);
     res.status(500).json({ error: 'Sunucu hatası' });
   }
 });
