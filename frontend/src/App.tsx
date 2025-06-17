@@ -3,13 +3,11 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import Navbar from "./components/Navbar";
-import Home from "./pages/Home";
-import Books from "./pages/Books";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ForgotPassword from "./pages/ForgotPassword";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Profile from "./pages/Profile";
 
 const theme = createTheme({
   palette: {
@@ -23,25 +21,24 @@ const theme = createTheme({
 });
 
 function App() {
+  // Kullanıcı localStorage'da var mı kontrolü
+  const user = localStorage.getItem("user");
   return (
     <AuthProvider>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         <Router>
-          <Navbar />
+          {/* Sadece giriş yapılmışsa Navbar göster */}
+          {user && <Navbar />}
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/books" element={<Books />} />
+            {/* Eğer kullanıcı yoksa ana rota login olsun */}
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            {/* Giriş yapılmamışsa ana rota login olsun */}
+            {!user ? (
+              <Route path="*" element={<Login />} />
+            ) : null}
           </Routes>
         </Router>
       </ThemeProvider>
