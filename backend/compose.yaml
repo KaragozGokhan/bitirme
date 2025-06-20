@@ -6,7 +6,7 @@ services:
     ports:
       - '5432:5432'
     environment:
-      POSTGRES_USER: bookflix
+      POSTGRES_USER: postgres
       POSTGRES_DB: Bookflix
       POSTGRES_PASSWORD: 12345
     volumes:

@@ -17,8 +17,10 @@ CREATE TABLE books (
     description TEXT,
     cover_image_url VARCHAR(255),
     pdf_url VARCHAR(255),
+    audio_url VARCHAR(255),
     price DECIMAL(10,2) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    categories INTEGER[]
 );
 
 -- Kiralama işlemleri tablosu
@@ -38,4 +40,10 @@ CREATE TABLE reading_history (
     book_id INTEGER REFERENCES books(id),
     last_page INTEGER DEFAULT 1,
     last_read TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Kategoriler tablosu
+CREATE TABLE categories (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) UNIQUE NOT NULL
 ); 

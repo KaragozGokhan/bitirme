@@ -1,0 +1,133 @@
+import axios from 'axios';
+import {
+    Book,
+    Rental,
+    RegisterRequest,
+    User,
+    ReadingHistory,
+    ForgotPasswordRequest,
+    ResetPasswordRequest,
+    UpdateSubscriptionRequest,
+    LoginResponse,
+    BackendLoginResponse
+} from '../types';
+
+const API_URL = 'http://localhost:5000/api';
+
+const api = axios.create({
+    baseURL: API_URL,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+});
+
+// Auth interceptor
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem('token');
+    if (token && config.headers) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
+// Auth services
+export const authService = {
+    login: async (email: string, password: string): Promise<User> => {
+        const response = await api.post<BackendLoginResponse>('/auth/login', { email, password });
+        
+        // Backend'den token gelmediği için manuel auth simulation
+        // GERÇEK PROJEDE BACKEND TOKEN GÖNDERMELİ!
+        const mockToken = 'mock-jwt-token-' + Date.now();
+        localStorage.setItem('token', mockToken);
+        
+        return response.data.user;
+    },
+    register: async (data: RegisterRequest): Promise<User> => {
+        const response = await api.post<BackendLoginResponse>('/auth/register', data);
+        
+        // Backend'den token gelmediği için manuel auth simulation
+        const mockToken = 'mock-jwt-token-' + Date.now();
+        localStorage.setItem('token', mockToken);
+        
+        return response.data.user;
+    },
+    forgotPassword: async (data: ForgotPasswordRequest): Promise<void> => {
+        await api.post('/auth/forgot-password', data);
+    },
+    resetPassword: async (data: ResetPasswordRequest): Promise<void> => {
+        await api.post('/auth/reset-password', data);
+    },
+    logout: () => {
+        localStorage.removeItem('token');
+    },
+};
+
+// Book services
+export const bookService = {
+    getBooks: async (): Promise<Book[]> => {
+        console.log("🔄 API İsteği: GET /books");
+        const response = await api.get<Book[]>('/books');
+        console.log("✅ API Yanıtı alındı:", response.data);
+        return response.data;
+    },
+    getBookById: async (id: number): Promise<Book> => {
+        try {
+            const response = await api.get<Book>(`/books/${id}`);
+            return response.data;
+        } catch (error) {
+            console.error(`/books/${id} endpoint mevcut değil, tüm kitaplardan aranıyor...`);
+            // Eğer /books/:id endpoint'i yoksa, tüm kitapları getir ve ID'ye göre filtrele
+            const allBooks = await bookService.getBooks();
+            const book = allBooks.find(b => b.id === id);
+            if (!book) {
+                throw new Error(`ID ${id} ile kitap bulunamadı`);
+            }
+            return book;
+        }
+    },
+    rentBook: async (bookId: number): Promise<void> => {
+        await api.post(`/books/${bookId}/rent`);
+    },
+    returnBook: async (bookId: number): Promise<void> => {
+        await api.post(`/books/${bookId}/return`);
+    },
+    getRentedBooks: async (): Promise<Book[]> => {
+        const response = await api.get<Book[]>('/books/rented');
+        return response.data;
+    },
+    getMyBooks: async (): Promise<any[]> => {
+        const response = await api.get('/users/my-books');
+        return response.data;
+    },
+    checkAudioAccess: async (bookId: number, userId: number): Promise<{has_access: boolean}> => {
+        const response = await api.get(`/books/${bookId}/audio-access?user_id=${userId}`);
+        return response.data;
+    },
+    updateReadingProgress: async (bookId: number, page: number): Promise<void> => {
+        await api.post(`/books/${bookId}/progress`, { page });
+    },
+};
+
+// User services
+export const userService = {
+    getProfile: async (): Promise<User> => {
+        const response = await api.get<User>('/users/profile');
+        return response.data;
+    },
+    updateProfile: async (data: Partial<User>): Promise<User> => {
+        const response = await api.put<User>('/users/profile', data);
+        return response.data;
+    },
+    getRentals: async (): Promise<Rental[]> => {
+        const response = await api.get<Rental[]>('/users/rentals');
+        return response.data;
+    },
+    getReadingHistory: async (): Promise<ReadingHistory[]> => {
+        const response = await api.get<ReadingHistory[]>('/users/reading-history');
+        return response.data;
+    },
+    updateSubscription: async (userId: number, data: UpdateSubscriptionRequest): Promise<User> => {
+        const response = await api.put<User>(`/users/${userId}/subscription`, data);
+        return response.data;
+    },
+}; 
