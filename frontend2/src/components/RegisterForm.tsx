@@ -14,7 +14,8 @@ import {
 
 export const RegisterForm: React.FC = () => {
   const [formData, setFormData] = useState({
-    username: '',
+    first_name: '',
+    last_name: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -44,7 +45,8 @@ export const RegisterForm: React.FC = () => {
 
     try {
       const response = await authService.register({
-        username: formData.username,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
         email: formData.email,
         password: formData.password,
       });
@@ -91,12 +93,23 @@ export const RegisterForm: React.FC = () => {
               margin="normal"
               required
               fullWidth
-              id="username"
-              label="Kullanıcı Adı"
-              name="username"
-              autoComplete="username"
+              id="first_name"
+              label="Ad"
+              name="first_name"
+              autoComplete="given-name"
               autoFocus
-              value={formData.username}
+              value={formData.first_name}
+              onChange={handleChange}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="last_name"
+              label="Soyad"
+              name="last_name"
+              autoComplete="family-name"
+              value={formData.last_name}
               onChange={handleChange}
             />
             <TextField

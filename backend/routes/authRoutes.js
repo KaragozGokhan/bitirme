@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { pool } = require('../config/database');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 /**
  * @swagger
@@ -12,9 +13,13 @@ const bcrypt = require('bcrypt');
  *       properties:
  *         id:
  *           type: integer
- *         username:
+ *         first_name:
+ *           type: string
+ *         last_name:
  *           type: string
  *         email:
+ *           type: string
+ *         role:
  *           type: string
  *         subscription_type:
  *           type: string
@@ -54,7 +59,7 @@ const bcrypt = require('bcrypt');
  *             schema:
  *               type: object
  *               properties:
- *                 message:
+ *                 token:
  *                   type: string
  *                 user:
  *                   $ref: '#/components/schemas/User'
@@ -81,11 +86,18 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Geçersiz e-posta veya şifre' });
     }
 
+    // JWT token oluştur
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      process.env.JWT_SECRET || 'your_jwt_secret',
+      { expiresIn: '24h' }
+    );
+
     // Hassas bilgileri çıkar
     const { password_hash, ...userWithoutPassword } = user;
 
     res.json({
-      message: 'Giriş başarılı',
+      token: token,
       user: userWithoutPassword
     });
   } catch (error) {
@@ -107,11 +119,14 @@ router.post('/login', async (req, res) => {
  *           schema:
  *             type: object
  *             required:
- *               - username
+ *               - first_name
+ *               - last_name
  *               - email
  *               - password
  *             properties:
- *               username:
+ *               first_name:
+ *                 type: string
+ *               last_name:
  *                 type: string
  *               email:
  *                 type: string
@@ -125,7 +140,7 @@ router.post('/login', async (req, res) => {
  *             schema:
  *               type: object
  *               properties:
- *                 message:
+ *                 token:
  *                   type: string
  *                 user:
  *                   $ref: '#/components/schemas/User'
@@ -134,16 +149,16 @@ router.post('/login', async (req, res) => {
  */
 router.post('/register', async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { first_name, last_name, email, password } = req.body;
 
-    // E-posta ve kullanıcı adının benzersiz olduğunu kontrol et
+    // E-posta adının benzersiz olduğunu kontrol et
     const existingUserQuery = await pool.query(
-      'SELECT * FROM users WHERE email = $1 OR username = $2',
-      [email, username]
+      'SELECT * FROM users WHERE email = $1',
+      [email]
     );
 
     if (existingUserQuery.rows.length > 0) {
-      return res.status(400).json({ error: 'Bu e-posta veya kullanıcı adı zaten kullanılıyor' });
+      return res.status(400).json({ error: 'Bu e-posta adresi zaten kullanılıyor' });
     }
 
     // Şifreyi hashle
@@ -152,13 +167,22 @@ router.post('/register', async (req, res) => {
 
     // Yeni kullanıcı oluştur
     const newUserQuery = await pool.query(
-      'INSERT INTO users (username, email, password_hash) VALUES ($1, $2, $3) RETURNING id, username, email, subscription_type, subscription_end_date, created_at',
-      [username, email, password_hash]
+      'INSERT INTO users (first_name, last_name, email, password_hash) VALUES ($1, $2, $3, $4) RETURNING id, first_name, last_name, email, role, subscription_type, subscription_end_date, created_at',
+      [first_name, last_name, email, password_hash]
+    );
+
+    const newUser = newUserQuery.rows[0];
+
+    // JWT token oluştur
+    const token = jwt.sign(
+      { id: newUser.id, email: newUser.email, role: newUser.role },
+      process.env.JWT_SECRET || 'your_jwt_secret',
+      { expiresIn: '24h' }
     );
 
     res.status(201).json({
-      message: 'Kayıt başarılı',
-      user: newUserQuery.rows[0]
+      token: token,
+      user: newUser
     });
   } catch (error) {
     console.error('Kayıt hatası:', error);

@@ -1,12 +1,22 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import { DashboardLayout } from '../layout/DashboardLayout';
 
 interface PrivateRouteProps {
   children: React.ReactNode;
+  requireAdmin?: boolean;
 }
 
-export const PrivateRoute: React.FC<PrivateRouteProps> = ({ children }) => {
+export const PrivateRoute: React.FC<PrivateRouteProps> = ({ children, requireAdmin = false }) => {
   const token = localStorage.getItem('token');
-  return token ? <DashboardLayout>{children}</DashboardLayout> : <Navigate to="/login" />;
+  const userRole = localStorage.getItem('userRole');
+
+  if (!token) {
+    return <Navigate to="/login" />;
+  }
+
+  if (requireAdmin && userRole !== 'admin') {
+    return <Navigate to="/" />;
+  }
+
+  return <>{children}</>;
 }; 

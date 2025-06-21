@@ -14,7 +14,10 @@ import {
   Alert,
   Card,
   CardContent,
+  Button,
 } from '@mui/material';
+import { AdminPanelSettings as AdminIcon } from '@mui/icons-material';
+import { AdminPanel } from './AdminPanel';
 
 export const ProfilePage: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -22,6 +25,7 @@ export const ProfilePage: React.FC = () => {
   const [readingHistory, setReadingHistory] = useState<ReadingHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [adminPanelOpen, setAdminPanelOpen] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -68,15 +72,39 @@ export const ProfilePage: React.FC = () => {
     );
   }
 
+  // Check if user is admin (you can modify this logic based on your user role system)
+  const isAdmin = user?.role === 'admin' || user?.email === 'admin@example.com';
+
+  if (adminPanelOpen) {
+    return (
+      <AdminPanel
+        open={adminPanelOpen}
+        onClose={() => setAdminPanelOpen(false)}
+      />
+    );
+  }
+
   return (
     <Container>
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
         {/* Kullanıcı Bilgileri */}
         <Box sx={{ width: '100%', maxWidth: 400 }}>
           <Paper sx={{ p: 3 }}>
-            <Typography variant="h5" gutterBottom>
-              Profil Bilgileri
-            </Typography>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+              <Typography variant="h5">
+                Profil Bilgileri
+              </Typography>
+              {isAdmin && (
+                <Button
+                  variant="contained"
+                  startIcon={<AdminIcon />}
+                  onClick={() => setAdminPanelOpen(true)}
+                  color="secondary"
+                >
+                  Admin Panel
+                </Button>
+              )}
+            </Box>
             <List>
               <ListItem>
                 <ListItemText
@@ -107,7 +135,7 @@ export const ProfilePage: React.FC = () => {
                   <Card key={rental.id} sx={{ mb: 2 }}>
                     <CardContent>
                       <Typography variant="h6">
-                        {rental.book.title}
+                        {rental.book?.title || 'Bilinmeyen Kitap'}
                       </Typography>
                       <Typography color="text.secondary">
                         Kiralama Tarihi: {new Date(rental.rentalDate).toLocaleDateString()}
@@ -139,7 +167,7 @@ export const ProfilePage: React.FC = () => {
                   <Card key={history.id} sx={{ mb: 2 }}>
                     <CardContent>
                       <Typography variant="h6">
-                        {history.book.title}
+                        {history.book?.title || 'Bilinmeyen Kitap'}
                       </Typography>
                       <Typography color="text.secondary">
                         Okuma Tarihi: {new Date(history.readDate).toLocaleDateString()}

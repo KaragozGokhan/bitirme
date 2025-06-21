@@ -86,9 +86,12 @@ export const BookList: React.FC = () => {
               <CardMedia
                 component="img"
                 height="200"
-                image={book.coverImage || 'https://via.placeholder.com/200x300'}
+                image={book.coverImage || 'https://via.placeholder.com/200x300/4A90E2/FFFFFF?text=Kitap'}
                 alt={book.title}
                 sx={{ objectFit: 'cover' }}
+                onError={(e) => {
+                  e.currentTarget.src = 'https://via.placeholder.com/200x300/4A90E2/FFFFFF?text=Kitap';
+                }}
               />
               <CardContent sx={{ flexGrow: 1 }}>
                 <Typography gutterBottom variant="h6" component="h2">

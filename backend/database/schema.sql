@@ -1,9 +1,12 @@
 -- Kullanıcılar tablosu
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
+    role VARCHAR(20) DEFAULT 'user',
+    is_active BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     subscription_type VARCHAR(20) DEFAULT 'free',
     subscription_end_date TIMESTAMP
@@ -18,8 +21,13 @@ CREATE TABLE books (
     cover_image_url VARCHAR(255),
     pdf_url VARCHAR(255),
     price DECIMAL(10,2) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    categories INTEGER[]
+    is_available BOOLEAN DEFAULT true,
+    category VARCHAR(100),
+    isbn VARCHAR(20),
+    publish_date DATE,
+    language VARCHAR(50) DEFAULT 'Türkçe',
+    total_pages INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Kiralama işlemleri tablosu
@@ -38,7 +46,8 @@ CREATE TABLE reading_history (
     user_id INTEGER REFERENCES users(id),
     book_id INTEGER REFERENCES books(id),
     last_page INTEGER DEFAULT 1,
-    last_read TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    last_read TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    rating INTEGER CHECK (rating >= 1 AND rating <= 5)
 );
 
 -- Kategoriler tablosu

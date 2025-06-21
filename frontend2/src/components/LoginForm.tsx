@@ -11,6 +11,9 @@ import {
   Paper,
   Alert,
 } from '@mui/material';
+import {
+  Person as PersonIcon,
+} from '@mui/icons-material';
 
 export const LoginForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -28,6 +31,7 @@ export const LoginForm: React.FC = () => {
       const response = await authService.login(email, password);
       localStorage.setItem('token', response.token);
       localStorage.setItem('userId', response.user.id.toString());
+      localStorage.setItem('userRole', response.user.role || 'user');
       navigate('/');
     } catch (err) {
       setError('Giriş yapılırken bir hata oluştu. Lütfen bilgilerinizi kontrol edin.');
@@ -56,14 +60,20 @@ export const LoginForm: React.FC = () => {
             width: '100%',
           }}
         >
+          <PersonIcon sx={{ fontSize: 40, mb: 2, color: 'primary.main' }} />
           <Typography component="h1" variant="h5">
             Giriş Yap
           </Typography>
+          <Typography variant="body2" color="textSecondary" sx={{ mb: 2 }}>
+            Kitap kiralama platformuna hoş geldiniz
+          </Typography>
+          
           {error && (
             <Alert severity="error" sx={{ mt: 2, width: '100%' }}>
               {error}
             </Alert>
           )}
+          
           <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
             <TextField
               margin="normal"
@@ -98,7 +108,8 @@ export const LoginForm: React.FC = () => {
             >
               {loading ? 'Giriş Yapılıyor...' : 'Giriş Yap'}
             </Button>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+            
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
               <Link component={RouterLink} to="/register" variant="body2">
                 Hesabınız yok mu? Kayıt olun
               </Link>

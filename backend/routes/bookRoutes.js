@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../config/database');
+const { authenticateToken } = require('../middleware/auth');
 
 /**
  * @swagger
@@ -71,7 +72,20 @@ const { pool } = require('../config/database');
  */
 router.get('/', async (req, res) => {
   try {
-    const booksQuery = await pool.query('SELECT * FROM books ORDER BY title');
+    const booksQuery = await pool.query(`
+      SELECT 
+        id,
+        title,
+        author,
+        description,
+        cover_image_url as "coverImage",
+        pdf_url as "pdfUrl",
+        price,
+        is_available as "isAvailable",
+        created_at as "created_at"
+      FROM books 
+      ORDER BY title
+    `);
     res.json(booksQuery.rows);
   } catch (error) {
     console.error('Kitapları getirme hatası:', error);
@@ -104,7 +118,20 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const bookQuery = await pool.query('SELECT * FROM books WHERE id = $1', [id]);
+    const bookQuery = await pool.query(`
+      SELECT 
+        id,
+        title,
+        author,
+        description,
+        cover_image_url as "coverImage",
+        pdf_url as "pdfUrl",
+        price,
+        is_available as "isAvailable",
+        created_at as "created_at"
+      FROM books 
+      WHERE id = $1
+    `, [id]);
     
     if (bookQuery.rows.length === 0) {
       return res.status(404).json({ error: 'Kitap bulunamadı' });
@@ -313,35 +340,40 @@ router.delete('/:id', async (req, res) => {
  *       400:
  *         description: Kitap zaten kiralanmış
  */
-router.post('/:id/rent', async (req, res) => {
+router.post('/:id/rent', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { user_id } = req.body;
-    
-    const bookQuery = await pool.query('SELECT * FROM books WHERE id = $1', [id]);
-    
+    const userId = req.user.id;
+
+    // Check if book exists and is available
+    const bookQuery = await pool.query('SELECT * FROM books WHERE id = $1 AND is_available = true', [id]);
     if (bookQuery.rows.length === 0) {
-      return res.status(404).json({ error: 'Kitap bulunamadı' });
+      return res.status(404).json({ error: 'Kitap bulunamadı veya mevcut değil' });
     }
 
-    const existingRentalQuery = await pool.query(
+    // Check if user already has this book rented
+    const existingRental = await pool.query(
       'SELECT * FROM rentals WHERE user_id = $1 AND book_id = $2 AND status = $3',
-      [user_id, id, 'active']
+      [userId, id, 'active']
     );
-
-    if (existingRentalQuery.rows.length > 0) {
-      return res.status(400).json({ error: 'Bu kitap zaten kiralanmış' });
+    if (existingRental.rows.length > 0) {
+      return res.status(400).json({ error: 'Bu kitabı zaten kiralamışsınız' });
     }
 
+    // Calculate return date (14 days from now)
+    const returnDate = new Date();
+    returnDate.setDate(returnDate.getDate() + 14);
+
+    // Create rental
     const rentalQuery = await pool.query(
-      'INSERT INTO rentals (user_id, book_id, return_date) VALUES ($1, $2, $3) RETURNING *',
-      [user_id, id, new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)]
+      'INSERT INTO rentals (user_id, book_id, return_date, status) VALUES ($1, $2, $3, $4) RETURNING *',
+      [userId, id, returnDate, 'active']
     );
 
-    res.status(201).json({
-      message: 'Kitap başarıyla kiralandı',
-      rental: rentalQuery.rows[0]
-    });
+    // Update book availability
+    await pool.query('UPDATE books SET is_available = false WHERE id = $1', [id]);
+
+    res.status(201).json(rentalQuery.rows[0]);
   } catch (error) {
     console.error('Kitap kiralama hatası:', error);
     res.status(500).json({ error: 'Sunucu hatası' });
@@ -350,9 +382,57 @@ router.post('/:id/rent', async (req, res) => {
 
 /**
  * @swagger
- * /api/books/{id}/reading-progress:
+ * /api/books/{id}/return:
  *   post:
- *     summary: Okuma kaydı oluştur veya güncelle
+ *     summary: Kitap iade et
+ *     tags: [Books]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Kitap başarıyla iade edildi
+ *       404:
+ *         description: Kitap bulunamadı
+ */
+router.post('/:id/return', authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    // Check if user has this book rented
+    const rentalQuery = await pool.query(
+      'SELECT * FROM rentals WHERE user_id = $1 AND book_id = $2 AND status = $3',
+      [userId, id, 'active']
+    );
+    if (rentalQuery.rows.length === 0) {
+      return res.status(404).json({ error: 'Bu kitabı kiralamamışsınız' });
+    }
+
+    // Update rental status
+    await pool.query(
+      'UPDATE rentals SET status = $1 WHERE user_id = $2 AND book_id = $3 AND status = $4',
+      ['returned', userId, id, 'active']
+    );
+
+    // Update book availability
+    await pool.query('UPDATE books SET is_available = true WHERE id = $1', [id]);
+
+    res.json({ message: 'Kitap başarıyla iade edildi' });
+  } catch (error) {
+    console.error('Kitap iade hatası:', error);
+    res.status(500).json({ error: 'Sunucu hatası' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/books/{id}/progress:
+ *   post:
+ *     summary: Okuma ilerlemesi güncelle
  *     tags: [Books]
  *     parameters:
  *       - in: path
@@ -367,16 +447,13 @@ router.post('/:id/rent', async (req, res) => {
  *           schema:
  *             type: object
  *             required:
- *               - user_id
  *               - page
  *             properties:
- *               user_id:
- *                 type: integer
  *               page:
  *                 type: integer
  *     responses:
  *       200:
- *         description: Okuma kaydı güncellendi
+ *         description: Okuma ilerlemesi güncellendi
  *         content:
  *           application/json:
  *             schema:
@@ -389,42 +466,25 @@ router.post('/:id/rent', async (req, res) => {
  *       404:
  *         description: Kitap bulunamadı
  */
-router.post('/:id/reading-progress', async (req, res) => {
+router.post('/:id/progress', authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
-    const { user_id, page } = req.body;
+    const { page } = req.body;
+    const userId = req.user.id;
 
-    const bookQuery = await pool.query('SELECT * FROM books WHERE id = $1', [id]);
-    
-    if (bookQuery.rows.length === 0) {
-      return res.status(404).json({ error: 'Kitap bulunamadı' });
-    }
-
-    const existingHistoryQuery = await pool.query(
-      'SELECT * FROM reading_history WHERE user_id = $1 AND book_id = $2',
-      [user_id, id]
+    // Update or create reading history
+    const historyQuery = await pool.query(
+      `INSERT INTO reading_history (user_id, book_id, last_page, last_read) 
+       VALUES ($1, $2, $3, CURRENT_TIMESTAMP) 
+       ON CONFLICT (user_id, book_id) 
+       DO UPDATE SET last_page = $3, last_read = CURRENT_TIMESTAMP 
+       RETURNING *`,
+      [userId, id, page]
     );
 
-    let historyRecord;
-
-    if (existingHistoryQuery.rows.length === 0) {
-      historyRecord = await pool.query(
-        'INSERT INTO reading_history (user_id, book_id, last_page) VALUES ($1, $2, $3) RETURNING *',
-        [user_id, id, page]
-      );
-    } else {
-      historyRecord = await pool.query(
-        'UPDATE reading_history SET last_page = $1, last_read = CURRENT_TIMESTAMP WHERE user_id = $2 AND book_id = $3 RETURNING *',
-        [page, user_id, id]
-      );
-    }
-
-    res.status(200).json({
-      message: 'Okuma kaydı güncellendi',
-      history: historyRecord.rows[0]
-    });
+    res.json(historyQuery.rows[0]);
   } catch (error) {
-    console.error('Okuma kaydı hatası:', error);
+    console.error('Okuma ilerlemesi güncelleme hatası:', error);
     res.status(500).json({ error: 'Sunucu hatası' });
   }
 });
