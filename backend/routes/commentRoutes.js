@@ -27,6 +27,7 @@ const authenticateToken = require('../middleware/auth');
  *             required:
  *               - comment
  *               - book_id
+ *               - rate
  *             properties:
  *               comment:
  *                 type: string
@@ -34,6 +35,11 @@ const authenticateToken = require('../middleware/auth');
  *               book_id:
  *                 type: integer
  *                 example: 1
+ *               rate:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 10
+ *                 example: 8
  *     responses:
  *       201:
  *         description: Yorum başarıyla eklendi
@@ -44,15 +50,18 @@ const authenticateToken = require('../middleware/auth');
  */
 // Yorum ekle (sadece giriş yapmış kullanıcı)
 router.post('/', authenticateToken, async (req, res) => {
-    const { comment, book_id } = req.body;
+    const { comment, book_id, rate } = req.body;
     const user_id = req.user.id;
-    if (!comment || !book_id) {
-        return res.status(400).json({ message: 'Yorum ve kitap ID gerekli.' });
+    if (!comment || !book_id || rate === undefined) {
+        return res.status(400).json({ message: 'Yorum, kitap ID ve rate gerekli.' });
+    }
+    if (typeof rate !== 'number' || rate < 1 || rate > 10) {
+        return res.status(400).json({ message: 'Rate 1 ile 10 arasında bir sayı olmalı.' });
     }
     try {
         const result = await pool.query(
-            'INSERT INTO comments (comment, book_id, user_id) VALUES ($1, $2, $3) RETURNING *',
-            [comment, book_id, user_id]
+            'INSERT INTO comments (comment, book_id, user_id, rate) VALUES ($1, $2, $3, $4) RETURNING *',
+            [comment, book_id, user_id, rate]
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {

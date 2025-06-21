@@ -54,5 +54,6 @@ CREATE TABLE comments (
     comment TEXT NOT NULL,
     book_id INTEGER REFERENCES books(id) ON DELETE CASCADE,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    rate INTEGER CHECK (rate >= 1 AND rate <= 10)
 ); 

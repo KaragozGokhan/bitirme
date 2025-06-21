@@ -147,8 +147,8 @@ export const commentService = {
         return response.data;
     },
     // Yorum ekle
-    addComment: async (bookId: number, comment: string): Promise<Comment> => {
-        const response = await api.post<Comment>('/comments/', { book_id: bookId, comment });
+    addComment: async (bookId: number, comment: string, rate: number): Promise<Comment> => {
+        const response = await api.post<Comment>('/comments/', { book_id: bookId, comment, rate });
         return response.data;
     },
     // Yorum sil

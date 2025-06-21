@@ -16,4 +16,7 @@ UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=ZZ5LpwO-An4' WHERE
 UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=HGYFEI6uLy0' WHERE title = 'Savaş ve Barış' AND audio_url IS NULL;
 UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=L_jWHffIx5E' WHERE title = 'Anna Karenina' AND audio_url IS NULL;
 UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=Tt7bzxurJ1I' WHERE title = 'Kara Kitap' AND audio_url IS NULL;
-UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=vTIIMJ9tUc8' WHERE title = 'Kürk Mantolu Kadın' AND audio_url IS NULL; 
+UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=vTIIMJ9tUc8' WHERE title = 'Kürk Mantolu Kadın' AND audio_url IS NULL;
+
+-- comments tablosuna rate sütunu ekle
+ALTER TABLE comments ADD COLUMN rate INTEGER CHECK (rate >= 1 AND rate <= 10); 

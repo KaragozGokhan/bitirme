@@ -131,4 +131,5 @@ export interface Comment {
     user_id: number;
     username?: string;
     created_at: string;
+    rate: number;
 } 

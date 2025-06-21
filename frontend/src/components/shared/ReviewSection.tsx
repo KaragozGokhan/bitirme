@@ -74,11 +74,11 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ bookId }) => {
       <Paper sx={{ p: 2, mb: 2 }}>
         <Stack direction="row" alignItems="center" spacing={2}>
           <Typography variant="h4" color="primary">
-            {averageRating.toFixed(1)}
+            {averageRating.toFixed(1)} / 10
           </Typography>
           <Box>
             <StarRating 
-              rating={Math.round(averageRating)} 
+              rating={averageRating}
               onRatingChange={() => {}} 
               readonly 
               size="large"
@@ -111,7 +111,7 @@ export const ReviewSection: React.FC<ReviewSectionProps> = ({ bookId }) => {
             <>
               <Box sx={{ mb: 2 }}>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Puanınız:
+                  Puanınız (1-10 arası):
                 </Typography>
                 <StarRating 
                   rating={rating} 

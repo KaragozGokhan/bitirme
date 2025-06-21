@@ -3,6 +3,7 @@ import { Box, Typography, Paper, TextField, Button, Stack, Alert, Avatar, Circul
 import { Comment } from "../../infrastructure/types";
 import { commentService } from "../../infrastructure/services/api";
 import DeleteIcon from '@mui/icons-material/Delete';
+import { StarRating } from "./StarRating";
 
 interface CommentSectionProps {
   bookId: number;
@@ -16,6 +17,7 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ bookId, currentU
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [comment, setComment] = useState("");
+  const [rate, setRate] = useState<number>(1);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -42,8 +44,9 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ bookId, currentU
     setSubmitting(true);
     setSubmitError(null);
     try {
-      await commentService.addComment(bookId, comment);
+      await commentService.addComment(bookId, comment, rate);
       setComment("");
+      setRate(1);
       fetchComments();
     } catch (err: any) {
       setSubmitError("Yorum eklenemedi.");
@@ -80,6 +83,15 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ bookId, currentU
               required
               disabled={submitting}
             />
+            <Box>
+              <Typography variant="body2" color="text.secondary">Puanınız (1-10 arası):</Typography>
+              <StarRating
+                rating={rate}
+                onRatingChange={setRate}
+                size="large"
+                readonly={submitting}
+              />
+            </Box>
             <Button type="submit" variant="contained" disabled={submitting || comment.trim().length < 2}>
               {submitting ? "Yorum Ekleniyor..." : "Yorum Ekle"}
             </Button>
@@ -109,6 +121,10 @@ export const CommentSection: React.FC<CommentSectionProps> = ({ bookId, currentU
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
                   {new Date(c.created_at).toLocaleString('tr-TR')}
+                </Typography>
+                <Typography variant="caption" color="primary" sx={{ ml: 1 }}>
+                  Puan: {(c.rate / 2).toFixed(1)}
+                  <StarRating rating={c.rate} onRatingChange={() => {}} readonly size="small" />
                 </Typography>
               </Box>
               {(currentUserId === c.user_id || isAdmin) && (

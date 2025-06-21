@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, MouseEvent } from 'react';
 import { Box, IconButton, Tooltip } from '@mui/material';
-import { Star, StarBorder } from '@mui/icons-material';
+import { Star, StarBorder, StarHalf } from '@mui/icons-material';
 
 interface StarRatingProps {
   rating: number;
@@ -29,9 +29,25 @@ export const StarRating: React.FC<StarRatingProps> = ({
     }
   };
 
-  const handleClick = (starIndex: number) => {
-    if (!readonly) {
-      onRatingChange(starIndex);
+  const handleStarHover = (e: React.MouseEvent<HTMLButtonElement>, starIndex: number) => {
+    if (readonly) return;
+    const { left, width } = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - left;
+    if (x < width / 2) {
+      setHoverRating(starIndex * 2 - 1);
+    } else {
+      setHoverRating(starIndex * 2);
+    }
+  };
+
+  const handleStarClick = (e: React.MouseEvent<HTMLButtonElement>, starIndex: number) => {
+    if (readonly) return;
+    const { left, width } = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - left;
+    if (x < width / 2) {
+      onRatingChange(starIndex * 2 - 1);
+    } else {
+      onRatingChange(starIndex * 2);
     }
   };
 
@@ -46,34 +62,35 @@ export const StarRating: React.FC<StarRatingProps> = ({
   return (
     <Box sx={{ display: 'flex', alignItems: 'center' }}>
       {[1, 2, 3, 4, 5].map((starIndex) => {
-        const isFilled = readonly 
-          ? starIndex <= rating 
-          : starIndex <= (hoverRating || rating);
-        
+        let icon;
+        const current = hoverRating || rating;
+        if (current >= starIndex * 2) {
+          icon = <Star sx={{ fontSize: getStarSize() }} />;
+        } else if (current === starIndex * 2 - 1) {
+          icon = <StarHalf sx={{ fontSize: getStarSize() }} />;
+        } else {
+          icon = <StarBorder sx={{ fontSize: getStarSize() }} />;
+        }
         return (
-          <Tooltip 
-            key={starIndex} 
+          <Tooltip
+            key={starIndex}
             title={readonly ? `${starIndex} yıldız` : `${starIndex} yıldız ver`}
           >
             <IconButton
               size="small"
-              onMouseEnter={() => handleMouseEnter(starIndex)}
+              onMouseMove={e => handleStarHover(e, starIndex)}
               onMouseLeave={handleMouseLeave}
-              onClick={() => handleClick(starIndex)}
+              onClick={e => handleStarClick(e, starIndex)}
               disabled={readonly}
-              sx={{ 
-                p: 0.5,
-                color: isFilled ? 'warning.main' : 'action.disabled',
+              sx={{
+                p: 0.25,
+                color: current >= starIndex * 2 - 1 ? 'warning.main' : 'action.disabled',
                 '&:hover': {
                   color: readonly ? 'warning.main' : 'warning.light',
-                }
+                },
               }}
             >
-              {isFilled ? (
-                <Star sx={{ fontSize: getStarSize() }} />
-              ) : (
-                <StarBorder sx={{ fontSize: getStarSize() }} />
-              )}
+              {icon}
             </IconButton>
           </Tooltip>
         );
