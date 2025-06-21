@@ -186,13 +186,21 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     <div>
       <Toolbar sx={{ px: 3, py: 2 }}>
         <Typography
-          variant="h6"
+          variant="h4"
           noWrap
           component="div"
           fontWeight={700}
           color="primary"
+          sx={{ 
+            cursor: 'pointer',
+            fontFamily: 'Graphique, sans-serif',
+            '&:hover': {
+              opacity: 0.8,
+            }
+          }}
+          onClick={() => navigate('/')}
         >
-          Kütüphane
+          BOOKFLIX
         </Typography>
       </Toolbar>
       <Divider sx={{ mx: 2 }} />
@@ -351,9 +359,22 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap component="div" fontWeight={600}>
+          <Typography 
+            variant="h5" 
+            noWrap 
+            component="div" 
+            fontWeight={600}
+            sx={{ 
+              cursor: 'pointer',
+              fontFamily: 'Graphique, sans-serif',
+              '&:hover': {
+                opacity: 0.8,
+              }
+            }}
+            onClick={() => navigate('/')}
+          >
             {menuItems.find((item) => item.path === location.pathname)?.text ||
-              "Kütüphane"}
+              "BOOKFLIX"}
           </Typography>
           <Box>
             <IconButton

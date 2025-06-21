@@ -102,7 +102,7 @@ export const LoginForm: React.FC = () => {
           align="center"
           sx={{ mb: 3 }}
         >
-          Kütüphane sistemine hoş geldiniz
+          BOOKFLIX sistemine hoş geldiniz
         </Typography>
 
         {error && (
