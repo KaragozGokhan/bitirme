@@ -15,7 +15,7 @@ export interface Book {
     description?: string;
     cover_image_url?: string;
     pdf_url?: string;
-    youtube_url?: string;
+    audio_url?: string;
     price: number;
     created_at?: string;
     categories?: Category[];

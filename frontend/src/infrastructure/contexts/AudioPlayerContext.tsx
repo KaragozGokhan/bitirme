@@ -1,5 +1,12 @@
-import React, { createContext, useContext, useState, ReactNode, useRef, useCallback } from 'react';
-import { Book } from '../types';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useRef,
+  useCallback,
+} from "react";
+import { Book } from "../types";
 
 // YouTube Player'dan alınacak tip tanımı
 // Bu, bize oynatıcı üzerinde tam kontrol sağlayacak
@@ -18,23 +25,30 @@ interface AudioPlayerContextType {
   togglePlayPause: () => void;
   changeVolume: (volume: number) => void;
   seek: (amount: number) => void; // ileri/geri sarma
+  closePlayer: () => void; // Oynatıcıyı kapat
   setProgress: (progress: number) => void;
   setDuration: (duration: number) => void;
   setIsPlaying: (playing: boolean) => void;
   setIsReady: (ready: boolean) => void;
 }
 
-const AudioPlayerContext = createContext<AudioPlayerContextType | undefined>(undefined);
+const AudioPlayerContext = createContext<AudioPlayerContextType | undefined>(
+  undefined
+);
 
 export const useAudioPlayer = () => {
   const context = useContext(AudioPlayerContext);
   if (!context) {
-    throw new Error('useAudioPlayer must be used within an AudioPlayerProvider');
+    throw new Error(
+      "useAudioPlayer must be used within an AudioPlayerProvider"
+    );
   }
   return context;
 };
 
-export const AudioPlayerProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const AudioPlayerProvider: React.FC<{ children: ReactNode }> = ({
+  children,
+}) => {
   const [currentTrack, setCurrentTrack] = useState<Book | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isReady, setIsReady] = useState(false);
@@ -52,7 +66,7 @@ export const AudioPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
 
   const togglePlayPause = useCallback(() => {
     if (!playerRef.current || !isReady) return;
-    
+
     if (isPlaying) {
       playerRef.current.pauseVideo();
     } else {
@@ -66,11 +80,22 @@ export const AudioPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
     playerRef.current.setVolume(clampedVolume);
     setVolume(clampedVolume / 100);
   }, []);
-  
+
   const seek = useCallback((amount: number) => {
     if (!playerRef.current) return;
     const currentTime = playerRef.current.getCurrentTime();
     playerRef.current.seekTo(currentTime + amount, true);
+  }, []);
+
+  const closePlayer = useCallback(() => {
+    if (playerRef.current) {
+      playerRef.current.stopVideo();
+    }
+    setCurrentTrack(null);
+    setIsPlaying(false);
+    setIsReady(false);
+    setProgress(0);
+    setDuration(0);
   }, []);
 
   const value = {
@@ -85,6 +110,7 @@ export const AudioPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
     togglePlayPause,
     changeVolume,
     seek,
+    closePlayer,
     setProgress,
     setDuration,
     setIsPlaying,
@@ -96,4 +122,4 @@ export const AudioPlayerProvider: React.FC<{ children: ReactNode }> = ({ childre
       {children}
     </AudioPlayerContext.Provider>
   );
-}; 
+};

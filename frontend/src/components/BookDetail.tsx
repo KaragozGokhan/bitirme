@@ -27,7 +27,7 @@ import { Book, User } from "../infrastructure/types";
 import { bookService, userService } from "../infrastructure/services/api";
 import { useCart } from "../infrastructure/contexts/CartContext";
 import { useMyBooks } from "../infrastructure/contexts/MyBooksContext";
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 import { useAudioPlayer } from "../infrastructure/contexts/AudioPlayerContext";
 import { ReviewSection } from "./shared/ReviewSection";
 
@@ -95,11 +95,10 @@ export const BookDetail: React.FC = () => {
           const bookData = await bookService.getBookById(parseInt(id));
           console.log("Kitap detayı yüklendi:", bookData);
 
-          // Eğer YouTube URL yoksa test URL'si ekle
-          if (!bookData.youtube_url) {
-            console.log("⚠️ Kitapta YouTube URL yok, test URL'si ekleniyor...");
-            bookData.youtube_url =
-              "https://www.youtube.com/watch?v=5Fuplg6MhPQ";
+          // Eğer audio URL yoksa test URL'si ekle
+          if (!bookData.audio_url) {
+            console.log("⚠️ Kitapta audio URL yok, test URL'si ekleniyor...");
+            bookData.audio_url = "https://www.youtube.com/watch?v=5Fuplg6MhPQ";
           }
 
           setBook(bookData);
@@ -118,7 +117,7 @@ export const BookDetail: React.FC = () => {
               "Bu kitabın gerçek detayları backend'den yüklenemedi. Test amaçlı sesli kitap özelliği ile mock data gösteriliyor. Backend bağlantısını kontrol edin.",
             cover_image_url: "https://picsum.photos/300/400?random=" + id,
             pdf_url: "",
-            youtube_url: "https://www.youtube.com/watch?v=jfKfPfyJRdk", // Lofi müzik - test video
+            audio_url: "https://www.youtube.com/watch?v=jfKfPfyJRdk", // Lofi müzik - test video
             price: 29.99,
             created_at: "2024-01-01",
             categories: [
@@ -144,7 +143,7 @@ export const BookDetail: React.FC = () => {
   const handleAddToCart = () => {
     if (!book) return;
     addToCart(book);
-    toast.success('Kitap sepete eklendi!');
+    toast.success("Kitap sepete eklendi!");
   };
 
   const handlePlayAudio = () => {
@@ -239,7 +238,7 @@ export const BookDetail: React.FC = () => {
               height="400"
               image={
                 book.cover_image_url
-                  ? book.cover_image_url.startsWith('kitaplar/')
+                  ? book.cover_image_url.startsWith("kitaplar/")
                     ? `/${book.cover_image_url}`
                     : book.cover_image_url
                   : "https://via.placeholder.com/300x400"
@@ -289,18 +288,13 @@ export const BookDetail: React.FC = () => {
 
             <Stack spacing={2}>
               {isBookInLibrary ? (
-                  <Button
-                    variant="contained"
-                    disabled
-                    size="large"
-                    fullWidth
-                  >
-                    Kütüphanenizde
-                  </Button>
+                <Button variant="contained" disabled size="large" fullWidth>
+                  Kütüphanenizde
+                </Button>
               ) : isBookInCart ? (
                 <Button
                   variant="outlined"
-                  onClick={() => navigate('/cart')}
+                  onClick={() => navigate("/cart")}
                   size="large"
                   fullWidth
                 >
@@ -321,14 +315,14 @@ export const BookDetail: React.FC = () => {
               {/* Debug bilgileri */}
               <Box sx={{ p: 2, bgcolor: "info.lighter", borderRadius: 1 }}>
                 <Typography variant="caption" display="block">
-                  🔍 Debug: Üyelik = {user?.subscription_type || "null"} |
-                  YouTube = {book.youtube_url ? "✅" : "❌"} | Premium ={" "}
+                  🔍 Debug: Üyelik = {user?.subscription_type || "null"} | Audio
+                  = {book.audio_url ? "✅" : "❌"} | Premium ={" "}
                   {hasActiveSubscription() ? "✅" : "❌"}
                 </Typography>
               </Box>
 
               {/* Audio book butonu - şimdilik her zaman göster */}
-              {book.youtube_url && (
+              {book.audio_url && (
                 <Button
                   variant="outlined"
                   startIcon={<PlayArrow />}
