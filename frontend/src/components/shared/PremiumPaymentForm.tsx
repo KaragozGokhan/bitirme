@@ -183,7 +183,7 @@ export const PremiumPaymentForm: React.FC<{ onClose: () => void }> = ({ onClose 
           avatar={<PaymentIcon color="primary" sx={{ fontSize: 36 }} />}
           title={
             <Typography variant="h5" fontWeight={700} color="primary.main">
-              Premium Üyelik Ödeme
+              Kredi/Banka Kartı Ödeme
             </Typography>
           }
           action={
@@ -404,7 +404,7 @@ export const PremiumPaymentForm: React.FC<{ onClose: () => void }> = ({ onClose 
               )}
               {success && (
                 <Typography color="success.main" fontWeight={600} sx={{ mt: 1 }}>
-                  Ödeme başarılı! Premium üyeliğiniz aktifleşiyor...
+                  Ödeme başarılı!
                 </Typography>
               )}
               <Button
@@ -424,7 +424,7 @@ export const PremiumPaymentForm: React.FC<{ onClose: () => void }> = ({ onClose 
                 }}
                 disabled={success}
               >
-                Premium Satın Al
+                Ödemeyi Yap
               </Button>
               <Button
                 onClick={onClose}

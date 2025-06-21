@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Container,
   Typography,
@@ -17,23 +17,24 @@ import { Delete } from '@mui/icons-material';
 import { useCart } from '../infrastructure/contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
 import { useMyBooks } from '../infrastructure/contexts/MyBooksContext';
+import PremiumPaymentForm from './shared/PremiumPaymentForm';
+import Modal from '@mui/material/Modal';
 
 export const CartPage: React.FC = () => {
   const { cartItems, removeFromCart, clearCart } = useCart();
   const { addBooksToLibrary } = useMyBooks();
   const navigate = useNavigate();
+  const [showPayment, setShowPayment] = useState(false);
 
   const handleRemoveFromCart = (bookId: number) => {
     removeFromCart(bookId);
   };
 
-  const handlePayment = () => {
-    // Ödeme entegrasyonu burada yapılacak (örneğin Stripe, Iyzico).
-    // Şimdilik, sepeti temizleyip bir başarı mesajı göstereceğiz.
+  const handlePaymentSuccess = () => {
     addBooksToLibrary(cartItems);
-    alert('Ödeme başarılı! Kitaplarınız kütüphanenize eklendi.');
     clearCart();
-    navigate('/my-books'); // Kullanıcıyı kitaplarım sayfasına yönlendir
+    setShowPayment(false);
+    navigate('/my-books');
   };
 
   const totalPrice = cartItems.reduce((total, item) => total + Number(item.price) * item.quantity, 0);
@@ -95,7 +96,7 @@ export const CartPage: React.FC = () => {
               variant="contained"
               color="primary"
               size="large"
-              onClick={handlePayment}
+              onClick={() => setShowPayment(true)}
               disabled={cartItems.length === 0}
             >
               Ödemeyi Tamamla
@@ -103,6 +104,11 @@ export const CartPage: React.FC = () => {
           </Box>
         </Paper>
       )}
+      <Modal open={showPayment} onClose={() => setShowPayment(false)}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+          <PremiumPaymentForm onClose={handlePaymentSuccess} />
+        </Box>
+      </Modal>
     </Container>
   );
 }; 
