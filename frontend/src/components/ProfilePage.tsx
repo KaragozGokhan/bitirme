@@ -26,6 +26,7 @@ import LightModeIcon from "@mui/icons-material/LightMode";
 import { userService } from "../infrastructure/services/api";
 import { User } from "../infrastructure/types";
 import { useTheme } from "../theme/ThemeContext";
+import PremiumPaymentForm from "./shared/PremiumPaymentForm";
 
 export const ProfilePage: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -34,6 +35,7 @@ export const ProfilePage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState<Partial<User>>({});
   const { isDarkMode, toggleTheme } = useTheme();
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
 
   // Debug log to ensure isDarkMode is used
   console.log("Current theme mode:", isDarkMode ? "dark" : "light");
@@ -344,7 +346,7 @@ export const ProfilePage: React.FC = () => {
                     <Button
                       variant="contained"
                       fullWidth
-                      onClick={handleUpgradeSubscription}
+                      onClick={() => setShowPaymentForm(true)}
                       sx={{ mt: 1 }}
                     >
                       Premium Al (₺29.99/ay)
@@ -433,6 +435,28 @@ export const ProfilePage: React.FC = () => {
           </Card>
         </Box>
       </Paper>
+
+      {/* Premium ödeme formu modalı */}
+      {showPaymentForm && (
+        <Box
+          sx={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            bgcolor: "rgba(0,0,0,0.4)",
+            zIndex: 1300,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <PremiumPaymentForm
+            onClose={() => setShowPaymentForm(false)}
+          />
+        </Box>
+      )}
     </Box>
   );
 };
