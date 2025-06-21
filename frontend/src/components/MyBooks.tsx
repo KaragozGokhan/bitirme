@@ -24,7 +24,8 @@ import { tr } from "date-fns/locale";
 import AssignmentReturnIcon from "@mui/icons-material/AssignmentReturn";
 import InfoIcon from "@mui/icons-material/Info";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
-import DeleteIcon from '@mui/icons-material/Delete';
+import PauseIcon from "@mui/icons-material/Pause";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { useNavigate } from "react-router-dom";
 import { useMyBooks } from "../infrastructure/contexts/MyBooksContext";
 import { Book } from "../infrastructure/types";
@@ -33,7 +34,8 @@ import { useAudioPlayer } from "../infrastructure/contexts/AudioPlayerContext";
 export const MyBooks: React.FC = () => {
   const navigate = useNavigate();
   const { myBooks, removeBookFromLibrary } = useMyBooks();
-  const { playTrack } = useAudioPlayer();
+  const { playTrack, currentTrack, isPlaying, togglePlayPause } =
+    useAudioPlayer();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -48,7 +50,17 @@ export const MyBooks: React.FC = () => {
   };
 
   const handlePlayAudio = (book: Book) => {
-    playTrack(book);
+    // Eğer bu kitap şu anda çalıyorsa duraklat/devam et
+    if (currentTrack?.id === book.id) {
+      togglePlayPause();
+    } else {
+      // Farklı bir kitap çalmaya başla
+      playTrack(book);
+    }
+  };
+
+  const isCurrentlyPlaying = (book: Book) => {
+    return currentTrack?.id === book.id && isPlaying;
   };
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -63,6 +75,7 @@ export const MyBooks: React.FC = () => {
   };
 
   if (myBooks.length === 0) {
+    console.log("myBooks", myBooks);
     return (
       <Box>
         <Paper
@@ -72,7 +85,7 @@ export const MyBooks: React.FC = () => {
             mb: 3,
             borderRadius: 2,
             bgcolor: "background.paper",
-            textAlign: "center"
+            textAlign: "center",
           }}
         >
           <Typography variant="h5" component="h1" fontWeight={700} gutterBottom>
@@ -83,7 +96,7 @@ export const MyBooks: React.FC = () => {
           </Typography>
         </Paper>
       </Box>
-    )
+    );
   }
 
   return (
@@ -131,27 +144,39 @@ export const MyBooks: React.FC = () => {
             </TableHead>
             <TableBody>
               {(rowsPerPage > 0
-                ? myBooks.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                ? myBooks.slice(
+                    page * rowsPerPage,
+                    page * rowsPerPage + rowsPerPage
+                  )
                 : myBooks
               ).map((book) => (
                 <TableRow key={book.id}>
-                  <TableCell 
-                    component="th" 
-                    scope="row" 
+                  <TableCell
+                    component="th"
+                    scope="row"
                     onClick={() => handleViewBook(book.id)}
-                    sx={{ cursor: 'pointer', '&:hover': { backgroundColor: 'action.hover' } }}
+                    sx={{
+                      cursor: "pointer",
+                      "&:hover": { backgroundColor: "action.hover" },
+                    }}
                   >
-                     <Stack direction="row" alignItems="center" spacing={2}>
-                        <Avatar
-                          src={book.cover_image_url && book.cover_image_url.startsWith('kitaplar/') ? `/${book.cover_image_url}` : book.cover_image_url || 'https://via.placeholder.com/40x60'}
-                          alt={book.title}
-                          variant="rounded"
-                          sx={{ width: 40, height: 60 }}
-                        />
-                        <Typography variant="body2" fontWeight="600">
-                           {book.title}
-                        </Typography>
-                      </Stack>
+                    <Stack direction="row" alignItems="center" spacing={2}>
+                      <Avatar
+                        src={
+                          book.cover_image_url &&
+                          book.cover_image_url.startsWith("kitaplar/")
+                            ? `/${book.cover_image_url}`
+                            : book.cover_image_url ||
+                              "https://via.placeholder.com/40x60"
+                        }
+                        alt={book.title}
+                        variant="rounded"
+                        sx={{ width: 40, height: 60 }}
+                      />
+                      <Typography variant="body2" fontWeight="600">
+                        {book.title}
+                      </Typography>
+                    </Stack>
                   </TableCell>
                   <TableCell>{book.author}</TableCell>
                   <TableCell>
@@ -163,13 +188,21 @@ export const MyBooks: React.FC = () => {
                         <InfoIcon />
                       </IconButton>
                     </Tooltip>
-                    {book.youtube_url && (
-                       <Tooltip title="Kitabı Dinle">
+                    {book.audio_url && (
+                      <Tooltip
+                        title={
+                          isCurrentlyPlaying(book) ? "Duraklat" : "Kitabı Dinle"
+                        }
+                      >
                         <IconButton
                           color="secondary"
                           onClick={() => handlePlayAudio(book)}
                         >
-                          <PlayArrowIcon />
+                          {isCurrentlyPlaying(book) ? (
+                            <PauseIcon />
+                          ) : (
+                            <PlayArrowIcon />
+                          )}
                         </IconButton>
                       </Tooltip>
                     )}
