@@ -83,6 +83,104 @@ router.get('/', async (req, res) => {
 
 /**
  * @swagger
+ * /api/books/categories/{categoryId}:
+ *   get:
+ *     summary: Belirli bir kategorideki kitapları listele
+ *     tags: [Books]
+ *     parameters:
+ *       - in: path
+ *         name: categoryId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Kategori ID'si
+ *     responses:
+ *       200:
+ *         description: Kategoriye ait kitap listesi
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 category:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     name:
+ *                       type: string
+ *                 books:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Book'
+ *       404:
+ *         description: Kategori bulunamadı
+ *       500:
+ *         description: Sunucu hatası
+ */
+/**
+ * @swagger
+ * /api/books/categories:
+ *   get:
+ *     summary: Tüm kategorileri listele
+ *     tags: [Books]
+ *     responses:
+ *       200:
+ *         description: Kategori listesi
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   name:
+ *                     type: string
+ */
+router.get('/categories', async (req, res) => {
+  try {
+    const categoriesQuery = await pool.query('SELECT id, name FROM categories ORDER BY name');
+    res.json(categoriesQuery.rows);
+  } catch (error) {
+    console.error('Kategorileri getirme hatası:', error);
+    res.status(500).json({ error: 'Sunucu hatası' });
+  }
+});
+
+router.get('/categories/:categoryId', async (req, res) => {
+  try {
+    const categoryId = parseInt(req.params.categoryId);
+    
+    // Kategori bilgisini getir
+    const categoryQuery = await pool.query(
+      'SELECT id, name FROM categories WHERE id = $1',
+      [categoryId]
+    );
+    
+    if (categoryQuery.rows.length === 0) {
+      return res.status(404).json({ error: 'Kategori bulunamadı' });
+    }
+    
+    // Bu kategorideki kitapları getir
+    const booksQuery = await pool.query(
+      'SELECT * FROM books WHERE $1 = ANY(categories) ORDER BY title',
+      [categoryId]
+    );
+    
+    res.json({
+      category: categoryQuery.rows[0],
+      books: booksQuery.rows
+    });
+  } catch (error) {
+    console.error('Kategori kitaplarını getirme hatası:', error);
+    res.status(500).json({ error: 'Sunucu hatası' });
+  }
+});
+
+/**
+ * @swagger
  * /api/books/rented:
  *   get:
  *     summary: Kiralanan tüm kitapları getir

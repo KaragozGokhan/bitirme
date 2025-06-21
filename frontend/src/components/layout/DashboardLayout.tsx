@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import {
   AppBar,
   Box,
@@ -20,6 +20,11 @@ import {
   Slider,
   Stack,
   Avatar,
+  Chip,
+  useMediaQuery,
+  Button,
+  Menu,
+  MenuItem,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -38,11 +43,15 @@ import {
   FastForward,
   FastRewind,
   Close,
+  AccountCircle,
+  Settings as SettingsIcon,
+  ExitToApp,
 } from "@mui/icons-material";
 import { authService } from "../../infrastructure/services/api";
 import { useCart } from "../../infrastructure/contexts/CartContext";
 import { useAudioPlayer } from "../../infrastructure/contexts/AudioPlayerContext";
 import YouTube from "react-youtube";
+import { categories } from "../../infrastructure/constants/categories";
 
 const drawerWidth = 280;
 
@@ -207,9 +216,14 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
+  const params = useParams();
   const { cartItems } = useCart();
   const { currentTrack, playerRef, setIsPlaying, setIsReady, playTrack } =
     useAudioPlayer();
+
+  const currentCategoryId = params.categoryId
+    ? parseInt(params.categoryId)
+    : null;
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -224,24 +238,6 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const handleCategoriesClick = () => {
     setCategoriesOpen(!categoriesOpen);
   };
-
-  const categories = [
-    { id: 1, name: "Roman" },
-    { id: 2, name: "Bilim Kurgu" },
-    { id: 3, name: "Klasik" },
-    { id: 4, name: "Çocuk" },
-    { id: 5, name: "Felsefe" },
-    { id: 6, name: "Tarih" },
-    { id: 7, name: "Biyografi" },
-    { id: 8, name: "Kişisel Gelişim" },
-    { id: 9, name: "Polisiye" },
-    { id: 10, name: "Fantastik" },
-    { id: 11, name: "Psikoloji" },
-    { id: 12, name: "Edebiyat" },
-    { id: 13, name: "Macera" },
-    { id: 14, name: "Dram" },
-    { id: 15, name: "Şiir" },
-  ];
 
   const menuItems = [
     { text: "Profil", icon: <PersonIcon />, path: "/profile" },
@@ -258,14 +254,14 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           component="div"
           fontWeight={700}
           color="primary"
-          sx={{ 
-            cursor: 'pointer',
-            fontFamily: 'Graphique, sans-serif',
-            '&:hover': {
+          sx={{
+            cursor: "pointer",
+            fontFamily: "Graphique, sans-serif",
+            "&:hover": {
               opacity: 0.8,
-            }
+            },
           }}
-          onClick={() => navigate('/')}
+          onClick={() => navigate("/")}
         >
           BOOKFLIX
         </Typography>
@@ -334,12 +330,20 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             {categories.map((category) => (
               <ListItemButton
                 key={category.id}
+                selected={currentCategoryId === category.id}
                 sx={{
                   borderRadius: 2,
                   mb: 0.5,
                   pl: 4,
                   "&:hover": {
                     backgroundColor: "action.hover",
+                  },
+                  "&.Mui-selected": {
+                    backgroundColor: "primary.main",
+                    color: "primary.contrastText",
+                    "&:hover": {
+                      backgroundColor: "primary.dark",
+                    },
                   },
                 }}
                 onClick={() => {
@@ -350,7 +354,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
                   primary={category.name}
                   primaryTypographyProps={{
                     fontSize: "0.875rem",
-                    fontWeight: 500,
+                    fontWeight: currentCategoryId === category.id ? 600 : 500,
                   }}
                 />
               </ListItemButton>
@@ -428,19 +432,19 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           >
             <MenuIcon />
           </IconButton>
-          <Typography 
-            variant="h5" 
-            noWrap 
-            component="div" 
+          <Typography
+            variant="h5"
+            noWrap
+            component="div"
             fontWeight={600}
-            sx={{ 
-              cursor: 'pointer',
-              fontFamily: 'Graphique, sans-serif',
-              '&:hover': {
+            sx={{
+              cursor: "pointer",
+              fontFamily: "Graphique, sans-serif",
+              "&:hover": {
                 opacity: 0.8,
-              }
+              },
             }}
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
           >
             {menuItems.find((item) => item.path === location.pathname)?.text ||
               "BOOKFLIX"}

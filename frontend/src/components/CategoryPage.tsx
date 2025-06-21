@@ -24,6 +24,10 @@ import HomeIcon from "@mui/icons-material/Home";
 import { BookCard } from "./BookCard";
 import { Book } from "../infrastructure/types";
 import { bookService } from "../infrastructure/services/api";
+import {
+  categories,
+  getCategoryById,
+} from "../infrastructure/constants/categories";
 
 export const CategoryPage: React.FC = () => {
   const { categoryId } = useParams<{ categoryId: string }>();
@@ -34,58 +38,45 @@ export const CategoryPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [rentedBooks, setRentedBooks] = useState<number[]>([]);
+  const [categoryInfo, setCategoryInfo] = useState<{
+    id: number;
+    name: string;
+  } | null>(null);
 
-  const categories = [
-    { id: 1, name: "Roman" },
-    { id: 2, name: "Bilim Kurgu" },
-    { id: 3, name: "Klasik" },
-    { id: 4, name: "Çocuk" },
-    { id: 5, name: "Felsefe" },
-    { id: 6, name: "Tarih" },
-    { id: 7, name: "Biyografi" },
-    { id: 8, name: "Kişisel Gelişim" },
-    { id: 9, name: "Polisiye" },
-    { id: 10, name: "Fantastik" },
-    { id: 11, name: "Psikoloji" },
-    { id: 12, name: "Edebiyat" },
-    { id: 13, name: "Macera" },
-    { id: 14, name: "Dram" },
-    { id: 15, name: "Şiir" },
-  ];
-
-  const currentCategory = categories.find(
-    (cat) => cat.id === parseInt(categoryId || "0")
-  );
+  const currentCategory = getCategoryById(parseInt(categoryId || "0"));
 
   const fetchBooks = async () => {
     try {
+      if (!categoryId) {
+        setError("Kategori ID'si bulunamadı.");
+        return;
+      }
+
       console.log(
         `📚 ${currentCategory?.name} kategorisindeki kitaplar yükleniyor...`
       );
       setLoading(true);
       setError(null);
-      const response = await bookService.getBooks();
-      console.log("📚 API'den gelen kitap verisi:", response);
 
-      if (response) {
-        // Kategori ID'sine göre filtreleme yapacağız
-        // Şu an için tüm kitapları gösteriyoruz çünkü backend'de kategori filtresi yok
-        const filteredBooks = response.filter((book: Book) => {
-          const matchesCategory = categoryId
-            ? book.categories?.some((cat) => cat.id === parseInt(categoryId))
-            : true;
+      const data = await bookService.getBooksByCategory(parseInt(categoryId));
+      console.log("📚 API'den gelen kitap verisi:", data);
+
+      if (data && data.category && data.books) {
+        setCategoryInfo(data.category);
+
+        // Arama terimi varsa filtreleme yap
+        const filteredBooks = data.books.filter((book: Book) => {
           const matchesSearch = searchTerm
             ? book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
               book.author.toLowerCase().includes(searchTerm.toLowerCase())
             : true;
-          return matchesCategory && matchesSearch;
+          return matchesSearch;
         });
 
         setBooks(filteredBooks);
         setTotalPages(Math.ceil(filteredBooks.length / 12));
         console.log(
-          `📚 ${currentCategory?.name} kategorisinde ${filteredBooks.length} kitap bulundu`
+          `📚 ${data.category.name} kategorisinde ${filteredBooks.length} kitap bulundu`
         );
       } else {
         setBooks([]);
@@ -102,27 +93,9 @@ export const CategoryPage: React.FC = () => {
     }
   };
 
-  const fetchRentedBooks = async () => {
-    try {
-      const response = await bookService.getRentedBooks();
-      if (response && response.length > 0) {
-        setRentedBooks(response.map((book: Book) => book.id));
-      } else {
-        setRentedBooks([]);
-      }
-    } catch (error) {
-      console.error("Kiralanan kitaplar yüklenirken hata:", error);
-      setRentedBooks([]);
-    }
-  };
-
   useEffect(() => {
     fetchBooks();
   }, [categoryId, page, searchTerm]);
-
-  useEffect(() => {
-    fetchRentedBooks();
-  }, []);
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
@@ -136,18 +109,10 @@ export const CategoryPage: React.FC = () => {
     setPage(value);
   };
 
-  const handleRent = async (bookId: number) => {
-    try {
-      await bookService.rentBook(bookId);
-      setRentedBooks([...rentedBooks, bookId]);
-      await fetchBooks();
-    } catch (error) {
-      setError("Kitap kiralama işlemi başarısız oldu.");
-      console.error("Kitap kiralama hatası:", error);
-    }
-  };
-
   const booksToShow = books.slice((page - 1) * 12, page * 12);
+
+  const displayCategoryName =
+    categoryInfo?.name || currentCategory?.name || "Bilinmeyen Kategori";
 
   return (
     <Box>
@@ -185,9 +150,7 @@ export const CategoryPage: React.FC = () => {
               <HomeIcon sx={{ mr: 0.5 }} fontSize="inherit" />
               Ana Sayfa
             </Link>
-            <Typography color="text.primary">
-              {currentCategory?.name}
-            </Typography>
+            <Typography color="text.primary">{displayCategoryName}</Typography>
           </Breadcrumbs>
         </Stack>
       </Paper>
@@ -210,7 +173,7 @@ export const CategoryPage: React.FC = () => {
           sx={{ mb: 2 }}
         >
           <Typography variant="h4" component="h1" fontWeight={700}>
-            {currentCategory?.name}
+            {displayCategoryName}
             <Chip
               label={`${books.length} Kitap`}
               size="small"
@@ -223,7 +186,7 @@ export const CategoryPage: React.FC = () => {
           >
             <TextField
               size="small"
-              placeholder={`${currentCategory?.name} kategorisinde ara...`}
+              placeholder={`${displayCategoryName} kategorisinde ara...`}
               value={searchTerm}
               onChange={handleSearch}
               sx={{ minWidth: 300 }}
@@ -275,12 +238,7 @@ export const CategoryPage: React.FC = () => {
               }}
             >
               {booksToShow.map((book) => (
-                <BookCard
-                  key={book.id}
-                  book={book}
-                  onRent={handleRent}
-                  isRented={rentedBooks.includes(book.id)}
-                />
+                <BookCard key={book.id} book={book} />
               ))}
             </Box>
           ) : (
@@ -296,7 +254,7 @@ export const CategoryPage: React.FC = () => {
               <Typography variant="body2" color="text.secondary">
                 {searchTerm
                   ? `"${searchTerm}" aramanıza uygun kitap bulunamadı.`
-                  : `${currentCategory?.name} kategorisinde henüz kitap bulunmuyor.`}
+                  : `${displayCategoryName} kategorisinde henüz kitap bulunmuyor.`}
               </Typography>
             </Box>
           )}

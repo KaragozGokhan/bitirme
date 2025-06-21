@@ -96,15 +96,21 @@ export const bookService = {
         return response.data;
     },
     getMyBooks: async (): Promise<any[]> => {
-        const response = await api.get('/users/my-books');
+        const response = await api.get<any[]>('/users/my-books');
         return response.data;
     },
     checkAudioAccess: async (bookId: number, userId: number): Promise<{has_access: boolean}> => {
-        const response = await api.get(`/books/${bookId}/audio-access?user_id=${userId}`);
+        const response = await api.get<{has_access: boolean}>(`/books/${bookId}/audio-access?user_id=${userId}`);
         return response.data;
     },
     updateReadingProgress: async (bookId: number, page: number): Promise<void> => {
         await api.post(`/books/${bookId}/progress`, { page });
+    },
+    getBooksByCategory: async (categoryId: number): Promise<{category: {id: number, name: string}, books: Book[]}> => {
+        console.log(`🔄 API İsteği: GET /books/categories/${categoryId}`);
+        const response = await api.get<{category: {id: number, name: string}, books: Book[]}>(`/books/categories/${categoryId}`);
+        console.log("✅ Kategoriye göre kitaplar alındı:", response.data);
+        return response.data;
     },
 };
 
