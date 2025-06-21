@@ -18,6 +18,7 @@ import {
 import CreditCardIcon from "@mui/icons-material/CreditCard";
 import CloseIcon from "@mui/icons-material/Close";
 import PaymentIcon from "@mui/icons-material/Payment";
+import { userService } from "../../infrastructure/services/api";
 
 // Banka ve kart tiplerini tespit et
 const bankData: { [key: string]: { name: string; logo: string } } = {
@@ -57,7 +58,13 @@ const cardTypePatterns: {
       <img
         src="/bank-logos/visa.png"
         alt="Visa"
-        style={{ height: 28, marginRight: 6, borderRadius: 3, background: "#fff", padding: 2 }}
+        style={{
+          height: 28,
+          marginRight: 6,
+          borderRadius: 3,
+          background: "#fff",
+          padding: 2,
+        }}
         loading="lazy"
       />
     ),
@@ -69,7 +76,13 @@ const cardTypePatterns: {
       <img
         src="/bank-logos/mastercard.png"
         alt="MasterCard"
-        style={{ height: 28, marginRight: 6, borderRadius: 3, background: "#fff", padding: 2 }}
+        style={{
+          height: 28,
+          marginRight: 6,
+          borderRadius: 3,
+          background: "#fff",
+          padding: 2,
+        }}
         loading="lazy"
       />
     ),
@@ -81,7 +94,13 @@ const cardTypePatterns: {
       <img
         src="/bank-logos/troy.png"
         alt="Troy"
-        style={{ height: 28, marginRight: 6, borderRadius: 3, background: "#fff", padding: 2 }}
+        style={{
+          height: 28,
+          marginRight: 6,
+          borderRadius: 3,
+          background: "#fff",
+          padding: 2,
+        }}
         loading="lazy"
       />
     ),
@@ -114,13 +133,30 @@ const getBankInfo = (number: string) => {
   return bankData[second4];
 };
 
-export const PremiumPaymentForm: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+interface PremiumPaymentFormProps {
+  onClose: () => void;
+  userId?: number;
+  onSuccess?: () => void;
+  type?: "premium" | "purchase";
+  cartItems?: any[];
+  onPurchaseSuccess?: (items: any[]) => void;
+}
+
+export const PremiumPaymentForm: React.FC<PremiumPaymentFormProps> = ({
+  onClose,
+  userId,
+  onSuccess,
+  type = "premium",
+  cartItems = [],
+  onPurchaseSuccess,
+}) => {
   const [cardNumber, setCardNumber] = useState("");
   const [expiry, setExpiry] = useState("");
   const [cvc, setCvc] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const cardType = getCardType(cardNumber);
   const bankInfo = getBankInfo(cardNumber);
@@ -133,7 +169,7 @@ export const PremiumPaymentForm: React.FC<{ onClose: () => void }> = ({ onClose 
       .trim();
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanedCardNumber = cardNumber.replace(/\s/g, "");
     if (!/^\d{16}$/.test(cleanedCardNumber)) {
@@ -141,7 +177,10 @@ export const PremiumPaymentForm: React.FC<{ onClose: () => void }> = ({ onClose 
       return;
     }
     // Kart tipi ve banka kontrolü
-    if (getCardType(cleanedCardNumber) === "Bilinmiyor" || !getBankInfo(cleanedCardNumber)) {
+    if (
+      getCardType(cleanedCardNumber) === "Bilinmiyor" ||
+      !getBankInfo(cleanedCardNumber)
+    ) {
       setError("Geçerli bir kart girin");
       return;
     }
@@ -157,12 +196,46 @@ export const PremiumPaymentForm: React.FC<{ onClose: () => void }> = ({ onClose 
       setError("Kart üzerindeki isim gerekli");
       return;
     }
-    setError("");
-    setSuccess(true);
-    setTimeout(() => {
-      setSuccess(false);
-      onClose();
-    }, 1800);
+
+    try {
+      setLoading(true);
+      setError("");
+
+      // Ödeme işlemi simülasyonu
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      if (type === "premium") {
+        // Premium üyelik için subscription güncelle
+        if (userId) {
+          await userService.upgradeSubscription(userId);
+        }
+        setSuccess(true);
+
+        // Başarı callback'ini çağır
+        if (onSuccess) {
+          onSuccess();
+        }
+      } else if (type === "purchase") {
+        // Satın alma için kitapları işle
+        setSuccess(true);
+
+        if (onPurchaseSuccess && cartItems.length > 0) {
+          onPurchaseSuccess(cartItems);
+        }
+      }
+
+      setTimeout(() => {
+        setSuccess(false);
+        onClose();
+      }, 1800);
+    } catch (error) {
+      setError(
+        "Ödeme işlemi sırasında bir hata oluştu. Lütfen tekrar deneyin."
+      );
+      console.error("Ödeme hatası:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -183,7 +256,9 @@ export const PremiumPaymentForm: React.FC<{ onClose: () => void }> = ({ onClose 
           avatar={<PaymentIcon color="primary" sx={{ fontSize: 36 }} />}
           title={
             <Typography variant="h5" fontWeight={700} color="primary.main">
-              Kredi/Banka Kartı Ödeme
+              {type === "premium"
+                ? "Premium Üyelik Ödemesi"
+                : "Kitap Satın Alma"}
             </Typography>
           }
           action={
@@ -209,7 +284,8 @@ export const PremiumPaymentForm: React.FC<{ onClose: () => void }> = ({ onClose 
                 width: 340,
                 height: 200,
                 borderRadius: 5,
-                background: "linear-gradient(120deg, #6366f1 60%, #818cf8 100%)",
+                background:
+                  "linear-gradient(120deg, #6366f1 60%, #818cf8 100%)",
                 boxShadow: 6,
                 color: "#fff",
                 p: 3,
@@ -261,7 +337,13 @@ export const PremiumPaymentForm: React.FC<{ onClose: () => void }> = ({ onClose 
                   ? formatCardNumber(cardNumber).padEnd(19, "•")
                   : "•••• •••• •••• ••••"}
               </Typography>
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
+              >
                 <Box>
                   <Typography
                     variant="caption"
@@ -310,7 +392,11 @@ export const PremiumPaymentForm: React.FC<{ onClose: () => void }> = ({ onClose 
               <TextField
                 label="Kart Numarası"
                 value={formatCardNumber(cardNumber)}
-                onChange={e => setCardNumber(e.target.value.replace(/[^\d]/g, "").slice(0, 16))}
+                onChange={(e) =>
+                  setCardNumber(
+                    e.target.value.replace(/[^\d]/g, "").slice(0, 16)
+                  )
+                }
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
@@ -356,9 +442,10 @@ export const PremiumPaymentForm: React.FC<{ onClose: () => void }> = ({ onClose 
                 <TextField
                   label="SKT (MM/YY)"
                   value={expiry}
-                  onChange={e => {
+                  onChange={(e) => {
                     let val = e.target.value.replace(/[^\d]/g, "");
-                    if (val.length > 2) val = val.slice(0, 2) + "/" + val.slice(2, 4);
+                    if (val.length > 2)
+                      val = val.slice(0, 2) + "/" + val.slice(2, 4);
                     setExpiry(val.slice(0, 5));
                   }}
                   placeholder="12/25"
@@ -373,7 +460,9 @@ export const PremiumPaymentForm: React.FC<{ onClose: () => void }> = ({ onClose 
                 <TextField
                   label="CVC"
                   value={cvc}
-                  onChange={e => setCvc(e.target.value.replace(/[^\d]/g, "").slice(0, 4))}
+                  onChange={(e) =>
+                    setCvc(e.target.value.replace(/[^\d]/g, "").slice(0, 4))
+                  }
                   placeholder="123"
                   fullWidth
                   required
@@ -387,7 +476,7 @@ export const PremiumPaymentForm: React.FC<{ onClose: () => void }> = ({ onClose 
               <TextField
                 label="Kart Üzerindeki İsim"
                 value={name}
-                onChange={e => setName(e.target.value)}
+                onChange={(e) => setName(e.target.value)}
                 placeholder="Ad Soyad"
                 fullWidth
                 required
@@ -403,8 +492,14 @@ export const PremiumPaymentForm: React.FC<{ onClose: () => void }> = ({ onClose 
                 </Typography>
               )}
               {success && (
-                <Typography color="success.main" fontWeight={600} sx={{ mt: 1 }}>
-                  Ödeme başarılı!
+                <Typography
+                  color="success.main"
+                  fontWeight={600}
+                  sx={{ mt: 1 }}
+                >
+                  {type === "premium"
+                    ? "Premium üyelik aktif edildi!"
+                    : "Satın alma başarılı!"}
                 </Typography>
               )}
               <Button
@@ -420,11 +515,12 @@ export const PremiumPaymentForm: React.FC<{ onClose: () => void }> = ({ onClose 
                   boxShadow: 3,
                   py: 1.2,
                   mt: 1,
-                  background: "linear-gradient(90deg, #6366f1 60%, #818cf8 100%)",
+                  background:
+                    "linear-gradient(90deg, #6366f1 60%, #818cf8 100%)",
                 }}
-                disabled={success}
+                disabled={success || loading}
               >
-                Ödemeyi Yap
+                {loading ? "İşleniyor..." : "Ödemeyi Yap"}
               </Button>
               <Button
                 onClick={onClose}
@@ -436,7 +532,7 @@ export const PremiumPaymentForm: React.FC<{ onClose: () => void }> = ({ onClose 
                   fontWeight: 600,
                   mt: 0.5,
                 }}
-                disabled={success}
+                disabled={success || loading}
               >
                 Vazgeç
               </Button>

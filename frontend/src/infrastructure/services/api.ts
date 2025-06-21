@@ -114,6 +114,7 @@ export const bookService = {
         console.log("✅ Kategoriye göre kitaplar alındı:", response.data);
         return response.data;
     },
+
 };
 
 // User services
@@ -136,6 +137,13 @@ export const userService = {
     },
     updateSubscription: async (userId: number, data: UpdateSubscriptionRequest): Promise<User> => {
         const response = await api.put<User>(`/users/${userId}/subscription`, data);
+        return response.data;
+    },
+    upgradeSubscription: async (userId: number): Promise<User> => {
+        const response = await api.put<User>(`/users/${userId}/subscription`, {
+            subscription_type: "premium",
+            months: 1,
+        });
         return response.data;
     },
 };

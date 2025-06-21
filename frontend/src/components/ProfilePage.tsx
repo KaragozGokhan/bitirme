@@ -86,19 +86,6 @@ export const ProfilePage: React.FC = () => {
     setError(null);
   };
 
-  const handleUpgradeSubscription = async () => {
-    try {
-      await userService.updateSubscription(user!.id, {
-        subscription_type: "premium",
-        months: 1,
-      });
-      await fetchUserProfile(); // Profili yenile
-    } catch (error) {
-      setError("Üyelik güncellenirken bir hata oluştu.");
-      console.error("Üyelik güncelleme hatası:", error);
-    }
-  };
-
   const getSubscriptionStatus = () => {
     if (user?.subscription_type === "premium") {
       if (user.subscription_end_date) {
@@ -453,7 +440,9 @@ export const ProfilePage: React.FC = () => {
           }}
         >
           <PremiumPaymentForm
+            userId={user!.id}
             onClose={() => setShowPaymentForm(false)}
+            onSuccess={fetchUserProfile}
           />
         </Box>
       )}

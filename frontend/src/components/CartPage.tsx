@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Container,
   Typography,
@@ -12,13 +12,13 @@ import {
   Divider,
   Paper,
   IconButton,
-} from '@mui/material';
-import { Delete } from '@mui/icons-material';
-import { useCart } from '../infrastructure/contexts/CartContext';
-import { useNavigate } from 'react-router-dom';
-import { useMyBooks } from '../infrastructure/contexts/MyBooksContext';
-import PremiumPaymentForm from './shared/PremiumPaymentForm';
-import Modal from '@mui/material/Modal';
+  Modal,
+} from "@mui/material";
+import { Delete, CreditCard } from "@mui/icons-material";
+import { useCart } from "../infrastructure/contexts/CartContext";
+import { useNavigate } from "react-router-dom";
+import { useMyBooks } from "../infrastructure/contexts/MyBooksContext";
+import PremiumPaymentForm from "./shared/PremiumPaymentForm";
 
 export const CartPage: React.FC = () => {
   const { cartItems, removeFromCart, clearCart } = useCart();
@@ -30,14 +30,21 @@ export const CartPage: React.FC = () => {
     removeFromCart(bookId);
   };
 
-  const handlePaymentSuccess = () => {
-    addBooksToLibrary(cartItems);
+  const handlePurchaseSuccess = (items: any[]) => {
+    // Kitapları kütüphaneye ekle
+    addBooksToLibrary(items);
+
+    // Sepeti temizle
     clearCart();
-    setShowPayment(false);
-    navigate('/my-books');
+
+    // Kitaplarım sayfasına yönlendir
+    navigate("/my-books");
   };
 
-  const totalPrice = cartItems.reduce((total, item) => total + Number(item.price) * item.quantity, 0);
+  const totalPrice = cartItems.reduce(
+    (total, item) => total + Number(item.price) * item.quantity,
+    0
+  );
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
@@ -45,9 +52,13 @@ export const CartPage: React.FC = () => {
         Sepetim
       </Typography>
       {cartItems.length === 0 ? (
-        <Paper sx={{ p: 4, textAlign: 'center' }}>
+        <Paper sx={{ p: 4, textAlign: "center" }}>
           <Typography variant="h6">Sepetinizde ürün bulunmuyor.</Typography>
-          <Button variant="contained" sx={{ mt: 2 }} onClick={() => navigate('/')}>
+          <Button
+            variant="contained"
+            sx={{ mt: 2 }}
+            onClick={() => navigate("/")}
+          >
             Alışverişe Başla
           </Button>
         </Paper>
@@ -58,15 +69,25 @@ export const CartPage: React.FC = () => {
               <React.Fragment key={item.id}>
                 <ListItem
                   secondaryAction={
-                    <IconButton edge="end" aria-label="delete" onClick={() => handleRemoveFromCart(item.id)}>
+                    <IconButton
+                      edge="end"
+                      aria-label="delete"
+                      onClick={() => handleRemoveFromCart(item.id)}
+                    >
                       <Delete />
                     </IconButton>
                   }
                 >
                   <ListItemAvatar>
-                    <Avatar 
-                      src={item.cover_image_url && item.cover_image_url.startsWith('kitaplar/') ? `/${item.cover_image_url}` : item.cover_image_url || 'https://via.placeholder.com/60x90'} 
-                      alt={item.title} 
+                    <Avatar
+                      src={
+                        item.cover_image_url &&
+                        item.cover_image_url.startsWith("kitaplar/")
+                          ? `/${item.cover_image_url}`
+                          : item.cover_image_url ||
+                            "https://via.placeholder.com/60x90"
+                      }
+                      alt={item.title}
                       variant="square"
                       sx={{ width: 60, height: 90, mr: 2 }}
                     />
@@ -75,7 +96,11 @@ export const CartPage: React.FC = () => {
                     primary={item.title}
                     secondary={
                       <>
-                        <Typography component="span" variant="body2" color="text.primary">
+                        <Typography
+                          component="span"
+                          variant="body2"
+                          color="text.primary"
+                        >
                           {item.author}
                         </Typography>
                         <br />
@@ -88,7 +113,15 @@ export const CartPage: React.FC = () => {
               </React.Fragment>
             ))}
           </List>
-          <Box sx={{ mt: 3, p: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Box
+            sx={{
+              mt: 3,
+              p: 2,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
             <Typography variant="h5" fontWeight="bold">
               Toplam Tutar: ₺{totalPrice.toFixed(2)}
             </Typography>
@@ -96,19 +129,38 @@ export const CartPage: React.FC = () => {
               variant="contained"
               color="primary"
               size="large"
+              startIcon={<CreditCard />}
               onClick={() => setShowPayment(true)}
               disabled={cartItems.length === 0}
             >
-              Ödemeyi Tamamla
+              Satın Al
             </Button>
           </Box>
         </Paper>
       )}
-      <Modal open={showPayment} onClose={() => setShowPayment(false)}>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-          <PremiumPaymentForm onClose={handlePaymentSuccess} />
-        </Box>
-      </Modal>
+
+      {/* Premium ödeme formu modalı */}
+      {showPayment && (
+        <Modal
+          open={showPayment}
+          onClose={() => setShowPayment(false)}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+          }}
+        >
+          <Box>
+            <PremiumPaymentForm
+              type="purchase"
+              cartItems={cartItems}
+              onClose={() => setShowPayment(false)}
+              onPurchaseSuccess={handlePurchaseSuccess}
+            />
+          </Box>
+        </Modal>
+      )}
     </Container>
   );
-}; 
+};
