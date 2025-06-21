@@ -107,7 +107,7 @@ export const RegisterForm: React.FC = () => {
         </Box>
 
         <Typography component="h1" variant="h5" fontWeight={700} gutterBottom>
-          Hesap Oluştur
+          BOOKFLIX sistemine kayıt ol
         </Typography>
 
         <Typography

@@ -14,13 +14,18 @@ import {
   Card,
   CardContent,
   Chip,
+  Switch,
+  FormControlLabel,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
 import StarIcon from "@mui/icons-material/Star";
+import DarkModeIcon from "@mui/icons-material/DarkMode";
+import LightModeIcon from "@mui/icons-material/LightMode";
 import { userService } from "../infrastructure/services/api";
 import { User } from "../infrastructure/types";
+import { useTheme } from "../theme/ThemeContext";
 
 export const ProfilePage: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -28,6 +33,10 @@ export const ProfilePage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState<Partial<User>>({});
+  const { isDarkMode, toggleTheme } = useTheme();
+
+  // Debug log to ensure isDarkMode is used
+  console.log('Current theme mode:', isDarkMode ? 'dark' : 'light');
 
   const fetchUserProfile = async () => {
     try {
@@ -364,6 +373,63 @@ export const ProfilePage: React.FC = () => {
               )}
             </Box>
           </Box>
+        </Box>
+      </Paper>
+
+      {/* Tema Ayarları */}
+      <Paper
+        elevation={0}
+        sx={{
+          mt: 3,
+          borderRadius: 2,
+          bgcolor: "background.paper",
+          overflow: "hidden",
+        }}
+      >
+        <Box sx={{ p: 3 }}>
+          <Typography variant="h5" fontWeight={700} gutterBottom>
+            Tema Ayarları
+          </Typography>
+
+          <Card
+            sx={{
+              p: 2,
+              bgcolor: "background.paper",
+              border: 1,
+              borderColor: "divider",
+            }}
+          >
+            <CardContent sx={{ p: 0 }}>
+              <Stack direction="row" alignItems="center" spacing={2}>
+                {isDarkMode ? (
+                  <DarkModeIcon sx={{ fontSize: 32, color: "primary.main" }} />
+                ) : (
+                  <LightModeIcon sx={{ fontSize: 32, color: "warning.main" }} />
+                )}
+                <Box sx={{ flex: 1 }}>
+                  <Typography variant="h6" fontWeight={600}>
+                    Karanlık Mod
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {isDarkMode 
+                      ? "Karanlık tema aktif. Gözlerinizi yormayan koyu renkli arayüz."
+                      : "Aydınlık tema aktif. Geleneksel açık renkli arayüz."
+                    }
+                  </Typography>
+                </Box>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={isDarkMode}
+                      onChange={toggleTheme}
+                      color="primary"
+                    />
+                  }
+                  label=""
+                />
+              </Stack>
+            </CardContent>
+          </Card>
         </Box>
       </Paper>
     </Box>
