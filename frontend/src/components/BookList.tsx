@@ -32,7 +32,6 @@ export const BookList: React.FC<BookListProps> = ({ selectedCategory }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [rentedBooks, setRentedBooks] = useState<number[]>([]);
   const booksPerPage = 20;
 
   const filterAndPaginateBooks = (
@@ -97,20 +96,6 @@ export const BookList: React.FC<BookListProps> = ({ selectedCategory }) => {
     }
   };
 
-  const fetchRentedBooks = async () => {
-    try {
-      const response = await bookService.getRentedBooks();
-      if (response && response.length > 0) {
-        setRentedBooks(response.map((book: Book) => book.id));
-      } else {
-        setRentedBooks([]);
-      }
-    } catch (error) {
-      console.error("Kiralanan kitaplar yüklenirken hata:", error);
-      setRentedBooks([]);
-    }
-  };
-
   useEffect(() => {
     fetchBooks();
   }, []);
@@ -120,10 +105,6 @@ export const BookList: React.FC<BookListProps> = ({ selectedCategory }) => {
       filterAndPaginateBooks(allBooks, searchTerm, page);
     }
   }, [page, searchTerm, selectedCategory, allBooks]);
-
-  useEffect(() => {
-    fetchRentedBooks();
-  }, []);
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
@@ -135,18 +116,6 @@ export const BookList: React.FC<BookListProps> = ({ selectedCategory }) => {
     value: number
   ) => {
     setPage(value);
-  };
-
-  const handleRent = async (bookId: number) => {
-    try {
-      await bookService.rentBook(bookId);
-      setRentedBooks([...rentedBooks, bookId]);
-      // Kitap listesini yeniden yüklemek yerine sadece kiralanan kitapları güncelle
-      await fetchRentedBooks();
-    } catch (error) {
-      setError("Kitap kiralama işlemi başarısız oldu.");
-      console.error("Kitap kiralama hatası:", error);
-    }
   };
 
   return (
@@ -227,12 +196,7 @@ export const BookList: React.FC<BookListProps> = ({ selectedCategory }) => {
               }}
             >
               {books.map((book) => (
-                <BookCard
-                  key={book.id}
-                  book={book}
-                  onRent={handleRent}
-                  isRented={rentedBooks.includes(book.id)}
-                />
+                <BookCard key={book.id} book={book} />
               ))}
             </Box>
           ) : (

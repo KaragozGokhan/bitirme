@@ -36,7 +36,7 @@ export const ProfilePage: React.FC = () => {
   const { isDarkMode, toggleTheme } = useTheme();
 
   // Debug log to ensure isDarkMode is used
-  console.log('Current theme mode:', isDarkMode ? 'dark' : 'light');
+  console.log("Current theme mode:", isDarkMode ? "dark" : "light");
 
   const fetchUserProfile = async () => {
     try {
@@ -234,8 +234,8 @@ export const ProfilePage: React.FC = () => {
         <Divider />
 
         <Box sx={{ p: 3 }}>
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-            <Box sx={{ flex: '1 1 300px', minWidth: 0 }}>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+            <Box sx={{ flex: "1 1 300px", minWidth: 0 }}>
               <TextField
                 fullWidth
                 label="Kullanıcı Adı"
@@ -246,7 +246,7 @@ export const ProfilePage: React.FC = () => {
                 variant="outlined"
               />
             </Box>
-            <Box sx={{ flex: '1 1 300px', minWidth: 0 }}>
+            <Box sx={{ flex: "1 1 300px", minWidth: 0 }}>
               <TextField
                 fullWidth
                 label="E-posta"
@@ -276,8 +276,8 @@ export const ProfilePage: React.FC = () => {
             Üyelik Bilgileri
           </Typography>
 
-          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-            <Box sx={{ flex: '2 1 400px', minWidth: 0 }}>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
+            <Box sx={{ flex: "2 1 400px", minWidth: 0 }}>
               <Card
                 sx={{
                   p: 2,
@@ -318,7 +318,7 @@ export const ProfilePage: React.FC = () => {
               </Card>
             </Box>
 
-            <Box sx={{ flex: '1 1 300px', minWidth: 0 }}>
+            <Box sx={{ flex: "1 1 300px", minWidth: 0 }}>
               {!isSubscriptionActive() && (
                 <Card
                   sx={{
@@ -411,10 +411,9 @@ export const ProfilePage: React.FC = () => {
                     Karanlık Mod
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {isDarkMode 
+                    {isDarkMode
                       ? "Karanlık tema aktif. Gözlerinizi yormayan koyu renkli arayüz."
-                      : "Aydınlık tema aktif. Geleneksel açık renkli arayüz."
-                    }
+                      : "Aydınlık tema aktif. Geleneksel açık renkli arayüz."}
                   </Typography>
                 </Box>
                 <FormControlLabel
