@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   AppBar,
@@ -16,6 +16,10 @@ import {
   Typography,
   useTheme,
   Collapse,
+  Badge,
+  Slider,
+  Stack,
+  Avatar,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -26,13 +30,107 @@ import {
   ExpandLess,
   ExpandMore,
   LocalLibrary as MyBooksIcon,
+  ShoppingCart as ShoppingCartIcon,
+  PlayArrow,
+  Pause,
+  VolumeDown,
+  VolumeUp,
+  FastForward,
+  FastRewind,
 } from "@mui/icons-material";
 import { authService } from "../../infrastructure/services/api";
+import { useCart } from "../../infrastructure/contexts/CartContext";
+import { useAudioPlayer } from "../../infrastructure/contexts/AudioPlayerContext";
+import YouTube from 'react-youtube';
 
 const drawerWidth = 280;
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
+}
+
+const MiniPlayer = () => {
+  const {
+    currentTrack, isPlaying, volume, playerRef, togglePlayPause, changeVolume, seek,
+    progress, duration, setProgress, setDuration, isReady
+  } = useAudioPlayer();
+
+  const handleVolumeChange = (event: Event, newValue: number | number[]) => {
+    changeVolume(newValue as number);
+  };
+  
+  const formatTime = (time: number) => {
+    if (isNaN(time) || time < 0) {
+      return '0:00';
+    }
+
+    const hours = Math.floor(time / 3600);
+    const minutes = Math.floor((time % 3600) / 60);
+    const seconds = Math.floor(time % 60).toString().padStart(2, '0');
+    
+    if (hours > 0) {
+      const paddedMinutes = minutes.toString().padStart(2, '0');
+      return `${hours}:${paddedMinutes}:${seconds}`;
+    }
+    
+    return `${minutes}:${seconds}`;
+  }
+
+  useEffect(() => {
+    if (!isReady) return;
+    const interval = setInterval(() => {
+      if (playerRef.current && isPlaying) {
+        const currentTime = playerRef.current.getCurrentTime();
+        const videoDuration = playerRef.current.getDuration();
+        setProgress(currentTime);
+        if (duration !== videoDuration) {
+          setDuration(videoDuration);
+        }
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isPlaying, isReady, playerRef, setProgress, setDuration, duration]);
+
+  if (!currentTrack) return null;
+
+  return (
+    <Box sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+       <Stack direction="column" spacing={1} alignItems="center" sx={{ mb: 2 }}>
+          <Avatar 
+            src={currentTrack.cover_image_url && currentTrack.cover_image_url.startsWith('kitaplar/') ? `/${currentTrack.cover_image_url}` : currentTrack.cover_image_url || 'https://via.placeholder.com/120x120'}
+            variant="rounded" sx={{ width: 120, height: 120, mb: 1 }} />
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography variant="subtitle2" noWrap sx={{fontWeight: 'bold'}}>{currentTrack.title}</Typography>
+            <Typography variant="caption" color="text.secondary">{currentTrack.author}</Typography>
+          </Box>
+       </Stack>
+      <Box sx={{ width: '100%', mt: 1 }}>
+        <Slider
+            size="small"
+            value={progress}
+            max={duration}
+            onChange={(e, val) => playerRef.current?.seekTo(val as number, true)}
+            sx={{ p: 0 }}
+          />
+        <Stack direction="row" justifyContent="space-between" sx={{ mt: -1 }}>
+          <Typography variant="caption">{formatTime(progress)}</Typography>
+          <Typography variant="caption">-{formatTime(duration - progress)}</Typography>
+        </Stack>
+      </Box>
+       <Stack direction="row" spacing={1} alignItems="center" justifyContent="center" sx={{ mt: 1 }}>
+         <IconButton size="small" onClick={() => seek(-15)}><FastRewind /></IconButton>
+         <IconButton onClick={togglePlayPause}>
+           {isPlaying ? <Pause /> : <PlayArrow />}
+         </IconButton>
+         <IconButton size="small" onClick={() => seek(15)}><FastForward /></IconButton>
+       </Stack>
+       <Stack direction="row" spacing={2} alignItems="center" sx={{mt: 1}}>
+        <VolumeDown />
+        <Slider aria-label="Volume" value={volume * 100} onChange={handleVolumeChange} />
+        <VolumeUp />
+      </Stack>
+    </Box>
+  )
 }
 
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
@@ -43,6 +141,8 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
+  const { cartItems } = useCart();
+  const { currentTrack, playerRef, setIsPlaying, setIsReady, playTrack } = useAudioPlayer();
 
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen);
@@ -209,8 +309,20 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           </ListItemButton>
         </ListItem>
       </List>
+      <Box sx={{ flexGrow: 1 }} />
+      <MiniPlayer />
     </div>
   );
+
+  const getYouTubeVideoId = (url: string) => {
+    try {
+      return new URL(url).searchParams.get('v');
+    } catch (e) {
+      // Handle cases where the URL is not standard, e.g., youtu.be links
+      const match = url.match(/(?:youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#&?]*).*/);
+      return (match && match[1].length === 11) ? match[1] : null;
+    }
+  };
 
   return (
     <Box
@@ -243,11 +355,22 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
             {menuItems.find((item) => item.path === location.pathname)?.text ||
               "Kütüphane"}
           </Typography>
+          <Box>
+            <IconButton
+              color="inherit"
+              onClick={() => navigate('/cart')}
+            >
+              <Badge badgeContent={cartItems.length} color="secondary">
+                <ShoppingCartIcon />
+              </Badge>
+            </IconButton>
+          </Box>
         </Toolbar>
       </AppBar>
       <Box
         component="nav"
         sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+        aria-label="mailbox folders"
       >
         <Drawer
           variant="temporary"
@@ -296,6 +419,27 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         <Toolbar />
         {children}
       </Box>
+      {currentTrack && currentTrack.youtube_url && (
+        <YouTube
+            videoId={getYouTubeVideoId(currentTrack.youtube_url)}
+            opts={{ height: '0', width: '0', playerVars: { autoplay: 1 } }}
+            onReady={(event: any) => { 
+              playerRef.current = event.target; 
+              setIsReady(true);
+            }}
+            onPlay={() => setIsPlaying(true)}
+            onPause={() => setIsPlaying(false)}
+            onEnd={() => {
+              setIsPlaying(false);
+              setIsReady(false);
+            }}
+            onError={() => {
+              setIsPlaying(false);
+              setIsReady(false);
+            }}
+            style={{ display: 'none' }}
+        />
+      )}
     </Box>
   );
 };

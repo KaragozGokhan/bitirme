@@ -4,7 +4,6 @@ import {
   Paper,
   Typography,
   Avatar,
-  Grid,
   TextField,
   Button,
   Stack,
@@ -226,8 +225,8 @@ export const ProfilePage: React.FC = () => {
         <Divider />
 
         <Box sx={{ p: 3 }}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+            <Box sx={{ flex: '1 1 300px', minWidth: 0 }}>
               <TextField
                 fullWidth
                 label="Kullanıcı Adı"
@@ -237,8 +236,8 @@ export const ProfilePage: React.FC = () => {
                 disabled={!isEditing}
                 variant="outlined"
               />
-            </Grid>
-            <Grid item xs={12} md={6}>
+            </Box>
+            <Box sx={{ flex: '1 1 300px', minWidth: 0 }}>
               <TextField
                 fullWidth
                 label="E-posta"
@@ -248,8 +247,8 @@ export const ProfilePage: React.FC = () => {
                 disabled={!isEditing}
                 variant="outlined"
               />
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </Box>
       </Paper>
 
@@ -268,8 +267,8 @@ export const ProfilePage: React.FC = () => {
             Üyelik Bilgileri
           </Typography>
 
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={8}>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+            <Box sx={{ flex: '2 1 400px', minWidth: 0 }}>
               <Card
                 sx={{
                   p: 2,
@@ -308,9 +307,9 @@ export const ProfilePage: React.FC = () => {
                   </Stack>
                 </CardContent>
               </Card>
-            </Grid>
+            </Box>
 
-            <Grid item xs={12} md={4}>
+            <Box sx={{ flex: '1 1 300px', minWidth: 0 }}>
               {!isSubscriptionActive() && (
                 <Card
                   sx={{
@@ -363,8 +362,8 @@ export const ProfilePage: React.FC = () => {
                   </CardContent>
                 </Card>
               )}
-            </Grid>
-          </Grid>
+            </Box>
+          </Box>
         </Box>
       </Paper>
     </Box>

@@ -6,13 +6,25 @@ import { ToastContainer } from 'react-toastify';
 import { theme } from './theme/theme';
 import { AppRoutes } from './routes/routes';
 import 'react-toastify/dist/ReactToastify.css';
+import { CartProvider } from './infrastructure/contexts/CartContext';
+import { MyBooksProvider } from './infrastructure/contexts/MyBooksContext';
+import { AudioPlayerProvider } from './infrastructure/contexts/AudioPlayerContext';
+import { ReviewProvider } from './infrastructure/contexts/ReviewContext';
 
 const App: React.FC = () => {
 	return (
 		<ThemeProvider theme={theme}>
 			<CssBaseline />
 			<Router>
-				<AppRoutes />
+				<CartProvider>
+					<MyBooksProvider>
+						<AudioPlayerProvider>
+							<ReviewProvider>
+								<AppRoutes />
+							</ReviewProvider>
+						</AudioPlayerProvider>
+					</MyBooksProvider>
+				</CartProvider>
 				<ToastContainer />
 			</Router>
 		</ThemeProvider>

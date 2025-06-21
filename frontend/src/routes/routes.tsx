@@ -10,6 +10,7 @@ import { CategoryPage } from "../components/CategoryPage";
 import { ProfilePage } from "../components/ProfilePage";
 import { MyBooks } from "../components/MyBooks";
 import { PrivateRoute } from "../components/auth/PrivateRoute";
+import { CartPage } from "../components/CartPage";
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -60,6 +61,15 @@ export const AppRoutes: React.FC = () => {
         element={
           <PrivateRoute>
             <MyBooks />
+          </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/cart"
+        element={
+          <PrivateRoute>
+            <CartPage />
           </PrivateRoute>
         }
       />

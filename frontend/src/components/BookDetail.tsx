@@ -15,17 +15,21 @@ import {
   Paper,
   Alert,
   CircularProgress,
-  Modal,
 } from "@mui/material";
 import {
   ArrowBack,
   PlayArrow,
-  Pause,
   VolumeUp,
   LibraryBooks,
+  AddShoppingCart,
 } from "@mui/icons-material";
 import { Book, User } from "../infrastructure/types";
 import { bookService, userService } from "../infrastructure/services/api";
+import { useCart } from "../infrastructure/contexts/CartContext";
+import { useMyBooks } from "../infrastructure/contexts/MyBooksContext";
+import { toast } from 'react-toastify';
+import { useAudioPlayer } from "../infrastructure/contexts/AudioPlayerContext";
+import { ReviewSection } from "./shared/ReviewSection";
 
 export const BookDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -34,8 +38,12 @@ export const BookDetail: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [showYouTubeModal, setShowYouTubeModal] = useState(false);
+  const { addToCart, cartItems } = useCart();
+  const { myBooks } = useMyBooks();
+  const { playTrack } = useAudioPlayer();
+
+  const isBookInLibrary = book && myBooks.some((b) => b.id === book.id);
+  const isBookInCart = book && cartItems.some((item) => item.id === book.id);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -133,22 +141,15 @@ export const BookDetail: React.FC = () => {
     fetchData();
   }, [id]);
 
-  const handleRentBook = async () => {
+  const handleAddToCart = () => {
     if (!book) return;
-
-    try {
-      await bookService.rentBook(book.id);
-      // Kitap kiralandı, kullanıcı bilgilerini güncelle
-      setUser((prev) => (prev ? { ...prev } : null));
-    } catch (err) {
-      setError("Kitap kiralanırken hata oluştu");
-      console.error(err);
-    }
+    addToCart(book);
+    toast.success('Kitap sepete eklendi!');
   };
 
   const handlePlayAudio = () => {
-    if (book?.youtube_url) {
-      setShowYouTubeModal(true);
+    if (book) {
+      playTrack(book);
     }
   };
 
@@ -181,16 +182,6 @@ export const BookDetail: React.FC = () => {
 
     console.log("❌ Üyelik tipi premium değil:", user.subscription_type);
     return false;
-  };
-
-  const handleCloseModal = () => {
-    setShowYouTubeModal(false);
-    setIsPlaying(false);
-  };
-
-  const getYouTubeEmbedUrl = (url: string) => {
-    const videoId = url.split("v=")[1]?.split("&")[0] || url.split("/").pop();
-    return `https://www.youtube.com/embed/${videoId}?autoplay=1`;
   };
 
   if (loading) {
@@ -247,7 +238,11 @@ export const BookDetail: React.FC = () => {
               component="img"
               height="400"
               image={
-                book.cover_image_url || "https://via.placeholder.com/300x400"
+                book.cover_image_url
+                  ? book.cover_image_url.startsWith('kitaplar/')
+                    ? `/${book.cover_image_url}`
+                    : book.cover_image_url
+                  : "https://via.placeholder.com/300x400"
               }
               alt={book.title}
               sx={{ objectFit: "cover" }}
@@ -293,15 +288,35 @@ export const BookDetail: React.FC = () => {
             </Box>
 
             <Stack spacing={2}>
-              <Button
-                variant="contained"
-                startIcon={<LibraryBooks />}
-                onClick={handleRentBook}
-                size="large"
-                fullWidth
-              >
-                Kitabı Kirala
-              </Button>
+              {isBookInLibrary ? (
+                  <Button
+                    variant="contained"
+                    disabled
+                    size="large"
+                    fullWidth
+                  >
+                    Kütüphanenizde
+                  </Button>
+              ) : isBookInCart ? (
+                <Button
+                  variant="outlined"
+                  onClick={() => navigate('/cart')}
+                  size="large"
+                  fullWidth
+                >
+                  Sepete Git
+                </Button>
+              ) : (
+                <Button
+                  variant="contained"
+                  startIcon={<AddShoppingCart />}
+                  onClick={handleAddToCart}
+                  size="large"
+                  fullWidth
+                >
+                  Sepete Ekle
+                </Button>
+              )}
 
               {/* Debug bilgileri */}
               <Box sx={{ p: 2, bgcolor: "info.lighter", borderRadius: 1 }}>
@@ -360,64 +375,8 @@ export const BookDetail: React.FC = () => {
         </Box>
       </Box>
 
-      {/* YouTube Modal */}
-      <Modal
-        open={showYouTubeModal}
-        onClose={handleCloseModal}
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <Box
-          sx={{
-            width: "90%",
-            maxWidth: 800,
-            height: "70%",
-            maxHeight: 500,
-            bgcolor: "background.paper",
-            borderRadius: 2,
-            boxShadow: 24,
-            p: 2,
-            position: "relative",
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              mb: 2,
-            }}
-          >
-            <Typography variant="h6">{book.title} - Sesli Kitap</Typography>
-            <IconButton onClick={handleCloseModal}>
-              <Pause />
-            </IconButton>
-          </Box>
-
-          {book.youtube_url && (
-            <Box
-              sx={{
-                width: "100%",
-                height: "calc(100% - 60px)",
-              }}
-            >
-              <iframe
-                width="100%"
-                height="100%"
-                src={getYouTubeEmbedUrl(book.youtube_url)}
-                title={`${book.title} - Sesli Kitap`}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                style={{ borderRadius: 8 }}
-              />
-            </Box>
-          )}
-        </Box>
-      </Modal>
+      {/* Yorum Bölümü */}
+      <ReviewSection bookId={book.id} />
     </Container>
   );
 };
