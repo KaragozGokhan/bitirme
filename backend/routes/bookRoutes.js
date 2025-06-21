@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../config/database');
+const auth = require('../middleware/auth');
 
 /**
  * @swagger
@@ -216,71 +217,7 @@ router.get('/categories/:categoryId', async (req, res) => {
  *                   status:
  *                     type: string
  */
-router.get('/rented', async (req, res) => {
-  try {
-    const rentedBooksQuery = await pool.query(
-      `SELECT 
-        r.id as rental_id,
-        b.id as book_id,
-        b.title,
-        b.author,
-        u.id as user_id,
-        u.username,
-        r.rental_date,
-        r.return_date,
-        r.status
-      FROM rentals r
-      JOIN books b ON r.book_id = b.id
-      JOIN users u ON r.user_id = u.id
-      WHERE r.status = 'active'
-      ORDER BY r.rental_date DESC`
-    );
-
-    res.json(rentedBooksQuery.rows);
-  } catch (error) {
-    console.error('Kiralanan kitapları getirme hatası:', error);
-    res.status(500).json({ error: 'Sunucu hatası' });
-  }
-});
-
-/**
- * @swagger
- * /api/books/rented:
- *   get:
- *     summary: Kiralanan tüm kitapları getir
- *     tags: [Books]
- *     responses:
- *       200:
- *         description: Kiralanan kitapların listesi
- *         content:
- *           application/json:
- *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   rental_id:
- *                     type: integer
- *                   book_id:
- *                     type: integer
- *                   title:
- *                     type: string
- *                   author:
- *                     type: string
- *                   user_id:
- *                     type: integer
- *                   username:
- *                     type: string
- *                   rental_date:
- *                     type: string
- *                     format: date-time
- *                   return_date:
- *                     type: string
- *                     format: date-time
- *                   status:
- *                     type: string
- */
-router.get('/rented', async (req, res) => {
+router.get('/rented', auth, async (req, res) => {
   try {
     const rentedBooksQuery = await pool.query(
       `SELECT 
@@ -329,7 +266,7 @@ router.get('/rented', async (req, res) => {
  *       404:
  *         description: Kitap bulunamadı
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
   try {
     const { id } = req.params;
     const bookQuery = await pool.query('SELECT * FROM books WHERE id = $1', [id]);
@@ -385,7 +322,7 @@ router.get('/:id', async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/Book'
  */
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
   try {
     const { title, author, description, cover_image_url, pdf_url, audio_url, price } = req.body;
     
@@ -449,7 +386,7 @@ router.post('/', async (req, res) => {
  *       404:
  *         description: Kitap bulunamadı
  */
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
   try {
     const { id } = req.params;
     const { title, author, description, cover_image_url, pdf_url, audio_url, price } = req.body;
@@ -488,7 +425,7 @@ router.put('/:id', async (req, res) => {
  *       404:
  *         description: Kitap bulunamadı
  */
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -545,7 +482,7 @@ router.delete('/:id', async (req, res) => {
  *       400:
  *         description: Kitap zaten kiralanmış
  */
-router.post('/:id/rent', async (req, res) => {
+router.post('/:id/rent', auth, async (req, res) => {
   try {
     const { id } = req.params;
     const { user_id } = req.body;
@@ -621,7 +558,7 @@ router.post('/:id/rent', async (req, res) => {
  *       404:
  *         description: Kitap bulunamadı
  */
-router.post('/:id/reading-progress', async (req, res) => {
+router.post('/:id/reading-progress', auth, async (req, res) => {
   try {
     const { id } = req.params;
     const { user_id, page } = req.body;
@@ -724,7 +661,7 @@ router.get('/categories', async (req, res) => {
  *       400:
  *         description: Bu kategori zaten mevcut
  */
-router.post('/categories', async (req, res) => {
+router.post('/categories', auth, async (req, res) => {
   try {
     const { name } = req.body;
     
@@ -785,7 +722,7 @@ router.post('/categories', async (req, res) => {
  *       404:
  *         description: Kategori bulunamadı
  */
-router.put('/categories/:id', async (req, res) => {
+router.put('/categories/:id', auth, async (req, res) => {
   try {
     const { id } = req.params;
     const { name } = req.body;
@@ -824,7 +761,7 @@ router.put('/categories/:id', async (req, res) => {
  *       404:
  *         description: Kategori bulunamadı
  */
-router.delete('/categories/:id', async (req, res) => {
+router.delete('/categories/:id', auth, async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -873,7 +810,7 @@ router.delete('/categories/:id', async (req, res) => {
  *                 audio_url:
  *                   type: string
  */
-router.get('/:id/audio-access', async (req, res) => {
+router.get('/:id/audio-access', auth, async (req, res) => {
   try {
     const { id } = req.params;
     const { user_id } = req.query;

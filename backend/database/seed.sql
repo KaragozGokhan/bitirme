@@ -295,4 +295,46 @@ UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=ZZ5LpwO-An4' WHERE
 UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=HGYFEI6uLy0' WHERE title = 'Savaş ve Barış';
 UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=L_jWHffIx5E' WHERE title = 'Anna Karenina';
 UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=Tt7bzxurJ1I' WHERE title = 'Kara Kitap';
-UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=vTIIMJ9tUc8' WHERE title = 'Kürk Mantolu Kadın'; 
+UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=vTIIMJ9tUc8' WHERE title = 'Kürk Mantolu Kadın';
+
+INSERT INTO comments (comment, book_id, user_id, created_at) VALUES
+('Harika bir kitap, herkese tavsiye ederim!', 1, 2, '2024-06-01 10:00:00'),
+('Çok sürükleyiciydi, bir günde bitirdim.', 2, 1, '2024-06-02 12:30:00'),
+('Beklediğimden daha iyiydi.', 3, 3, '2024-06-03 15:45:00'),
+('Karakterler çok iyi işlenmişti.', 4, 4, '2024-06-04 09:20:00'),
+('Bazı bölümler sıkıcıydı ama genel olarak güzeldi.', 5, 5, '2024-06-05 14:10:00'),
+('Yazarın dili çok akıcı.', 6, 6, '2024-06-06 11:05:00'),
+('Felsefi yönü çok güçlüydü.', 7, 7, '2024-06-07 16:30:00'),
+('Kapağı çok beğendim.', 8, 8, '2024-06-08 13:15:00'),
+('Sonu şaşırtıcıydı.', 9, 9, '2024-06-09 17:40:00'),
+('Kütüphanemde mutlaka olacak bir kitap.', 10, 10, '2024-06-10 18:25:00'),
+('Çocuklar için harika bir eser.', 4, 11, '2024-06-11 08:50:00'),
+('Duygusal olarak çok etkilendim.', 12, 12, '2024-06-12 19:00:00'),
+('Kurgusu çok başarılı.', 13, 13, '2024-06-13 20:10:00'),
+('Biraz daha kısa olabilirdi.', 14, 14, '2024-06-14 21:20:00'),
+('Her sayfası ayrı bir keyifti.', 15, 15, '2024-06-15 22:30:00'),
+('Arkadaşlarıma da önerdim.', 16, 16, '2024-06-16 23:40:00'),
+('Beklentimi tam olarak karşıladı.', 17, 17, '2024-06-17 12:00:00'),
+('Çok düşündürücü bir kitap.', 18, 18, '2024-06-18 13:10:00'),
+('Bir solukta okudum.', 19, 19, '2024-06-19 14:20:00'),
+('Yazarın diğer kitaplarını da okuyacağım.', 20, 20, '2024-06-20 15:30:00'),
+('Beklediğim kadar iyi değildi.', 21, 5, '2024-06-21 10:10:00'),
+('Çok klasik bir hikaye, yine de güzeldi.', 22, 6, '2024-06-22 11:15:00'),
+('Bazı yerlerde kopukluk vardı.', 23, 7, '2024-06-23 12:20:00'),
+('Çocuklarım çok sevdi.', 24, 8, '2024-06-24 13:25:00'),
+('Biraz ağır ilerliyor.', 25, 9, '2024-06-25 14:30:00'),
+('Çok fazla betimleme vardı.', 26, 10, '2024-06-26 15:35:00'),
+('Sonu beklediğim gibi bitmedi.', 27, 11, '2024-06-27 16:40:00'),
+('Dili sade ve anlaşılır.', 28, 12, '2024-06-28 17:45:00'),
+('Kapağı yanıltıcıydı.', 29, 13, '2024-06-29 18:50:00'),
+('Çok etkilendim, tekrar okuyacağım.', 30, 14, '2024-06-30 19:55:00'),
+('Fiyatına göre güzel bir kitap.', 31, 15, '2024-07-01 20:00:00'),
+('Bazı karakterler yüzeysel kalmış.', 32, 16, '2024-07-02 21:05:00'),
+('Kısa ama öz bir hikaye.', 33, 17, '2024-07-03 22:10:00'),
+('Çok fazla detay vardı, biraz sıkıldım.', 34, 18, '2024-07-04 23:15:00'),
+('Çocuklar için eğitici.', 35, 19, '2024-07-05 08:20:00'),
+('Duygusal olarak yıpratıcıydı.', 36, 20, '2024-07-06 09:25:00'),
+('Kurgusu zayıftı.', 37, 1, '2024-07-07 10:30:00'),
+('Çok beğenmedim, beklentim yüksekti.', 38, 2, '2024-07-08 11:35:00'),
+('Yazarın anlatımı çok güçlü.', 39, 3, '2024-07-09 12:40:00'),
+('Biraz daha uzun olabilirdi.', 40, 4, '2024-07-10 13:45:00'); 

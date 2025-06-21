@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { pool } = require('../config/database');
+const auth = require('../middleware/auth');
 
 /**
  * @swagger
@@ -80,7 +81,7 @@ const { pool } = require('../config/database');
  *               items:
  *                 $ref: '#/components/schemas/User'
  */
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
     const usersQuery = await pool.query('SELECT id, username, email, subscription_type, subscription_end_date, created_at FROM users');
     res.json(usersQuery.rows);
@@ -106,21 +107,14 @@ router.get('/', async (req, res) => {
  *       401:
  *         description: Yetkilendirme hatası
  */
-router.get('/profile', async (req, res) => {
-  // Şimdilik test için basit response
+router.get('/profile', auth, async (req, res) => {
   try {
-    // Burada authentication token'dan user ID alınabilir
-    const sampleUserId = 1; // Test için
-    const userQuery = await pool.query(
-      'SELECT id, username, email, subscription_type, subscription_end_date, created_at FROM users WHERE id = $1',
-      [sampleUserId]
-    );
-    
-    if (userQuery.rows.length === 0) {
+    if (!req.user) {
       return res.status(404).json({ error: 'Kullanıcı bulunamadı' });
     }
-    
-    res.json(userQuery.rows[0]);
+    // req.user zaten auth middleware'inde veritabanından çekilmiş kullanıcıyı içeriyor
+    const { id, username, email, subscription_type, subscription_end_date, created_at } = req.user;
+    res.json({ id, username, email, subscription_type, subscription_end_date, created_at });
   } catch (error) {
     console.error('Profil getirme hatası:', error);
     res.status(500).json({ error: 'Sunucu hatası' });
@@ -143,7 +137,7 @@ router.get('/profile', async (req, res) => {
  *               items:
  *                 $ref: '#/components/schemas/UserRental'
  */
-router.get('/my-books', async (req, res) => {
+router.get('/my-books', auth, async (req, res) => {
   try {
     // Şimdilik test için user ID = 1 kullanıyoruz
     // Gerçek uygulamada authentication token'dan alınacak
@@ -189,7 +183,7 @@ router.get('/my-books', async (req, res) => {
  *       404:
  *         description: Kullanıcı bulunamadı
  */
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
   try {
     const { id } = req.params;
     const userQuery = await pool.query(
@@ -239,7 +233,7 @@ router.get('/:id', async (req, res) => {
  *             schema:
  *               $ref: '#/components/schemas/User'
  */
-router.post('/', async (req, res) => {
+router.post('/', auth, async (req, res) => {
   try {
     const { username, email, password_hash } = req.body;
     
@@ -295,7 +289,7 @@ router.post('/', async (req, res) => {
  *       404:
  *         description: Kullanıcı bulunamadı
  */
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
   try {
     const { id } = req.params;
     const { username, email, password_hash, subscription_type, subscription_end_date } = req.body;
@@ -334,7 +328,7 @@ router.put('/:id', async (req, res) => {
  *       404:
  *         description: Kullanıcı bulunamadı
  */
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -373,7 +367,7 @@ router.delete('/:id', async (req, res) => {
  *               items:
  *                 $ref: '#/components/schemas/UserRental'
  */
-router.get('/:id/rentals', async (req, res) => {
+router.get('/:id/rentals', auth, async (req, res) => {
   try {
     const { id } = req.params;
     const rentalsQuery = await pool.query(
@@ -414,7 +408,7 @@ router.get('/:id/rentals', async (req, res) => {
  *               items:
  *                 $ref: '#/components/schemas/UserReadingHistory'
  */
-router.get('/:id/reading-history', async (req, res) => {
+router.get('/:id/reading-history', auth, async (req, res) => {
   try {
     const { id } = req.params;
     const historyQuery = await pool.query(
@@ -469,7 +463,7 @@ router.get('/:id/reading-history', async (req, res) => {
  *       404:
  *         description: Kullanıcı bulunamadı
  */
-router.put('/:id/subscription', async (req, res) => {
+router.put('/:id/subscription', auth, async (req, res) => {
   try {
     const { id } = req.params;
     const { subscription_type, months } = req.body;

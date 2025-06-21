@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { pool } = require('../config/database');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 /**
  * @swagger
@@ -58,6 +59,8 @@ const bcrypt = require('bcrypt');
  *                   type: string
  *                 user:
  *                   $ref: '#/components/schemas/User'
+ *                 token:
+ *                   type: string
  *       401:
  *         description: Geçersiz kimlik bilgileri
  */
@@ -84,9 +87,17 @@ router.post('/login', async (req, res) => {
     // Hassas bilgileri çıkar
     const { password_hash, ...userWithoutPassword } = user;
 
+    // JWT token oluştur
+    const token = jwt.sign(
+      { id: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' }
+    );
+
     res.json({
       message: 'Giriş başarılı',
-      user: userWithoutPassword
+      user: userWithoutPassword,
+      token
     });
   } catch (error) {
     console.error('Giriş hatası:', error);

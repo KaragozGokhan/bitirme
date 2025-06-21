@@ -12,8 +12,8 @@ const auth = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
     const userQuery = await pool.query(
-      'SELECT * FROM users WHERE id = $1',
-      [decoded.userId]
+      'SELECT * FROM users WHERE email = $1',
+      [decoded.email]
     );
 
     if (userQuery.rows.length === 0) {

@@ -108,6 +108,7 @@ export interface LoginResponse {
 export interface BackendLoginResponse {
     message: string;
     user: User;
+    token: string;
 }
 
 export interface ApiError {
@@ -121,4 +122,13 @@ export interface PaginatedResponse<T> {
     per_page: number;
     current_page: number;
     last_page: number;
+}
+
+export interface Comment {
+    id: number;
+    comment: string;
+    book_id: number;
+    user_id: number;
+    username?: string;
+    created_at: string;
 } 

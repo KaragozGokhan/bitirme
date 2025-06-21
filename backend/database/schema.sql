@@ -46,4 +46,13 @@ CREATE TABLE reading_history (
 CREATE TABLE categories (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) UNIQUE NOT NULL
+);
+
+-- Yorumlar tablosu
+CREATE TABLE comments (
+    id SERIAL PRIMARY KEY,
+    comment TEXT NOT NULL,
+    book_id INTEGER REFERENCES books(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ); 

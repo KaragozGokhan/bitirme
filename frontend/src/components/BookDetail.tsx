@@ -30,6 +30,7 @@ import { useMyBooks } from "../infrastructure/contexts/MyBooksContext";
 import { toast } from "react-toastify";
 import { useAudioPlayer } from "../infrastructure/contexts/AudioPlayerContext";
 import { ReviewSection } from "./shared/ReviewSection";
+import { CommentSection } from "./shared/CommentSection";
 
 export const BookDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -370,7 +371,12 @@ export const BookDetail: React.FC = () => {
       </Box>
 
       {/* Yorum Bölümü */}
-      <ReviewSection bookId={book.id} />
+      <CommentSection 
+        bookId={book.id} 
+        currentUserId={user?.id} 
+        currentUsername={user?.username} 
+        isAdmin={user?.subscription_type === 'admin'} 
+      />
     </Container>
   );
 };

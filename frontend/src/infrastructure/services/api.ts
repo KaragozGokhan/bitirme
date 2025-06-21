@@ -9,7 +9,8 @@ import {
     ResetPasswordRequest,
     UpdateSubscriptionRequest,
     LoginResponse,
-    BackendLoginResponse
+    BackendLoginResponse,
+    Comment
 } from '../types';
 
 const API_URL = 'http://localhost:5000/api';
@@ -35,19 +36,20 @@ export const authService = {
     login: async (email: string, password: string): Promise<User> => {
         const response = await api.post<BackendLoginResponse>('/auth/login', { email, password });
         
-        // Backend'den token gelmediği için manuel auth simulation
-        // GERÇEK PROJEDE BACKEND TOKEN GÖNDERMELİ!
-        const mockToken = 'mock-jwt-token-' + Date.now();
-        localStorage.setItem('token', mockToken);
+        // Artık backend'den gelen gerçek token kaydedilecek
+        if (response.data.token) {
+            localStorage.setItem('token', response.data.token);
+        }
         
         return response.data.user;
     },
     register: async (data: RegisterRequest): Promise<User> => {
         const response = await api.post<BackendLoginResponse>('/auth/register', data);
         
-        // Backend'den token gelmediği için manuel auth simulation
-        const mockToken = 'mock-jwt-token-' + Date.now();
-        localStorage.setItem('token', mockToken);
+        // Artık backend'den gelen gerçek token kaydedilecek
+        if (response.data.token) {
+            localStorage.setItem('token', response.data.token);
+        }
         
         return response.data.user;
     },
@@ -135,5 +137,22 @@ export const userService = {
     updateSubscription: async (userId: number, data: UpdateSubscriptionRequest): Promise<User> => {
         const response = await api.put<User>(`/users/${userId}/subscription`, data);
         return response.data;
+    },
+};
+
+export const commentService = {
+    // Belirli bir kitabın yorumlarını getir
+    getCommentsByBook: async (bookId: number): Promise<Comment[]> => {
+        const response = await api.get<Comment[]>(`/comments/book/${bookId}`);
+        return response.data;
+    },
+    // Yorum ekle
+    addComment: async (bookId: number, comment: string): Promise<Comment> => {
+        const response = await api.post<Comment>('/comments/', { book_id: bookId, comment });
+        return response.data;
+    },
+    // Yorum sil
+    deleteComment: async (commentId: number): Promise<void> => {
+        await api.delete(`/comments/${commentId}`);
     },
 }; 
