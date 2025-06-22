@@ -16,6 +16,42 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 5000;
 
+// Database migration kontrolü
+async function checkAndCreateTables() {
+  try {
+    // user_books tablosunun var olup olmadığını kontrol et
+    const tableCheck = await pool.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'user_books'
+      );
+    `);
+
+    if (!tableCheck.rows[0].exists) {
+      console.log('user_books tablosu bulunamadı, oluşturuluyor...');
+      
+      // user_books tablosunu oluştur
+      await pool.query(`
+        CREATE TABLE user_books (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+          book_id INTEGER REFERENCES books(id) ON DELETE CASCADE,
+          acquisition_method VARCHAR(20) NOT NULL DEFAULT 'purchase',
+          acquired_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(user_id, book_id)
+        );
+      `);
+      
+      console.log('✅ user_books tablosu başarıyla oluşturuldu!');
+    } else {
+      console.log('✅ user_books tablosu zaten mevcut');
+    }
+  } catch (error) {
+    console.error('❌ Database migration hatası:', error);
+  }
+}
+
 // Swagger konfigürasyonu
 const swaggerOptions = {
   definition: {
@@ -73,7 +109,10 @@ app.get('/', (req, res) => {
 });
 
 // Sunucuyu başlat
-app.listen(port, () => {
+app.listen(port, async () => {
   console.log(`Sunucu ${port} portunda çalışıyor`);
   console.log(`Swagger dokümantasyonu: http://localhost:${port}/api-docs`);
+  
+  // Database migration'ını çalıştır
+  await checkAndCreateTables();
 }); 

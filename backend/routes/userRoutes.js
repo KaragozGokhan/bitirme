@@ -487,4 +487,227 @@ router.put('/:id/subscription', auth, async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/users/{id}/subscription/cancel:
+ *   delete:
+ *     summary: Premium üyeliği iptal et
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Premium üyelik başarıyla iptal edildi
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *       404:
+ *         description: Kullanıcı bulunamadı
+ */
+router.delete('/:id/subscription/cancel', auth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Premium aboneliği iptal et
+    const updateQuery = await pool.query(
+      'UPDATE users SET subscription_type = $1, subscription_end_date = NULL WHERE id = $2 RETURNING id, username, email, subscription_type, subscription_end_date, created_at',
+      ['free', id]
+    );
+    
+    if (updateQuery.rows.length === 0) {
+      return res.status(404).json({ error: 'Kullanıcı bulunamadı' });
+    }
+
+    // Premium ile eklenen kitapları kullanıcının kütüphanesinden kaldır
+    const deletePremiumBooksQuery = await pool.query(
+      'DELETE FROM user_books WHERE user_id = $1 AND acquisition_method = $2',
+      [id, 'premium']
+    );
+
+    console.log(`Premium iptal edildi. Kullanıcı ${id} için ${deletePremiumBooksQuery.rowCount} premium kitap kaldırıldı.`);
+    
+    res.json({
+      ...updateQuery.rows[0],
+      removed_premium_books_count: deletePremiumBooksQuery.rowCount
+    });
+  } catch (error) {
+    console.error('Premium iptal hatası:', error);
+    res.status(500).json({ error: 'Sunucu hatası' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/users/{id}/books:
+ *   get:
+ *     summary: Kullanıcının sahip olduğu kitapları getir
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Kullanıcının kitapları
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ */
+router.get('/:id/books', auth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const booksQuery = await pool.query(
+      `SELECT b.*, ub.acquisition_method, ub.acquired_at,
+        ARRAY_AGG(
+          CASE WHEN c.id IS NOT NULL 
+          THEN json_build_object('id', c.id, 'name', c.name)
+          ELSE NULL END
+        ) FILTER (WHERE c.id IS NOT NULL) as categories
+        FROM user_books ub
+        JOIN books b ON ub.book_id = b.id
+        LEFT JOIN LATERAL unnest(b.categories) AS category_id ON true
+        LEFT JOIN categories c ON c.id = category_id
+        WHERE ub.user_id = $1 
+        GROUP BY b.id, ub.acquisition_method, ub.acquired_at
+        ORDER BY ub.acquired_at DESC`,
+      [id]
+    );
+
+    res.json(booksQuery.rows);
+  } catch (error) {
+    console.error('Kullanıcı kitapları getirme hatası:', error);
+    res.status(500).json({ error: 'Sunucu hatası' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/users/{id}/books:
+ *   post:
+ *     summary: Kullanıcının kütüphanesine kitap ekle
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - book_ids
+ *             properties:
+ *               book_ids:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *               acquisition_method:
+ *                 type: string
+ *                 default: purchase
+ *     responses:
+ *       200:
+ *         description: Kitaplar başarıyla eklendi
+ */
+router.post('/:id/books', auth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { book_ids, acquisition_method = 'purchase' } = req.body;
+
+    if (!Array.isArray(book_ids) || book_ids.length === 0) {
+      return res.status(400).json({ error: 'Geçerli kitap ID\'leri gerekli' });
+    }
+
+    // Kitapları kullanıcının kütüphanesine ekle
+    const insertPromises = book_ids.map(book_id => 
+      pool.query(
+        'INSERT INTO user_books (user_id, book_id, acquisition_method) VALUES ($1, $2, $3) ON CONFLICT (user_id, book_id) DO NOTHING',
+        [id, book_id, acquisition_method]
+      )
+    );
+
+    await Promise.all(insertPromises);
+
+    // Eklenen kitapları geri döndür
+    const addedBooksQuery = await pool.query(
+      `SELECT b.*, ub.acquisition_method, ub.acquired_at,
+        ARRAY_AGG(
+          CASE WHEN c.id IS NOT NULL 
+          THEN json_build_object('id', c.id, 'name', c.name)
+          ELSE NULL END
+        ) FILTER (WHERE c.id IS NOT NULL) as categories
+        FROM user_books ub
+        JOIN books b ON ub.book_id = b.id
+        LEFT JOIN LATERAL unnest(b.categories) AS category_id ON true
+        LEFT JOIN categories c ON c.id = category_id
+        WHERE ub.user_id = $1 AND ub.book_id = ANY($2)
+        GROUP BY b.id, ub.acquisition_method, ub.acquired_at`,
+      [id, book_ids]
+    );
+
+    res.json({ 
+      message: 'Kitaplar başarıyla eklendi',
+      books: addedBooksQuery.rows 
+    });
+  } catch (error) {
+    console.error('Kitap ekleme hatası:', error);
+    res.status(500).json({ error: 'Sunucu hatası' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/users/{id}/books/{bookId}:
+ *   delete:
+ *     summary: Kullanıcının kütüphanesinden kitap sil
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: path
+ *         name: bookId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Kitap başarıyla silindi
+ */
+router.delete('/:id/books/:bookId', auth, async (req, res) => {
+  try {
+    const { id, bookId } = req.params;
+    
+    const deleteQuery = await pool.query(
+      'DELETE FROM user_books WHERE user_id = $1 AND book_id = $2 RETURNING *',
+      [id, bookId]
+    );
+    
+    if (deleteQuery.rows.length === 0) {
+      return res.status(404).json({ error: 'Kitap bulunamadı' });
+    }
+    
+    res.json({ message: 'Kitap başarıyla kaldırıldı' });
+  } catch (error) {
+    console.error('Kitap silme hatası:', error);
+    res.status(500).json({ error: 'Sunucu hatası' });
+  }
+});
+
 module.exports = router; 

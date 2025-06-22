@@ -40,11 +40,22 @@ export const BookDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { addToCart, cartItems } = useCart();
-  const { myBooks } = useMyBooks();
+  const {
+    myBooks,
+    isPremiumUser,
+    addBooksToLibrary,
+    user: booksUser,
+    loading: booksLoading,
+  } = useMyBooks();
   const { playTrack } = useAudioPlayer();
 
   const isBookInLibrary = book && myBooks.some((b) => b.id === book.id);
   const isBookInCart = book && cartItems.some((item) => item.id === book.id);
+
+  // Premium durumu değiştiğinde component'ı yeniden render et
+  useEffect(() => {
+    // Bu effect, isPremiumUser değiştiğinde çalışacak
+  }, [isPremiumUser, user?.subscription_type]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -143,8 +154,35 @@ export const BookDetail: React.FC = () => {
 
   const handleAddToCart = () => {
     if (!book) return;
+
+    // Premium kullanıcılar sepet kullanamaz
+    if (isPremiumUser) {
+      toast.info(
+        "Premium üyeler tüm kitaplara ücretsiz erişime sahiptir. Direkt kütüphaneye ekleme özelliğini kullanın!"
+      );
+      return;
+    }
+
     addToCart(book);
     toast.success("Kitap sepete eklendi!");
+  };
+
+  const handleAddToLibrary = async () => {
+    if (!book) return;
+
+    try {
+      const bookWithAcquisition = {
+        ...book,
+        acquisition_method: "premium" as const,
+      };
+      await addBooksToLibrary([bookWithAcquisition]);
+      toast.success(
+        `"${book.title}" kitabı kütüphanenize eklendi! (Premium Üyelik)`
+      );
+    } catch (error) {
+      console.error("Kitap ekleme hatası:", error);
+      toast.error("Kitap eklenirken bir hata oluştu.");
+    }
   };
 
   const handlePlayAudio = () => {
@@ -275,22 +313,41 @@ export const BookDetail: React.FC = () => {
 
             {book.description && (
               <Paper elevation={1} sx={{ p: 3, mb: 3 }}>
+                <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
+                  Kitap Bilgisi:
+                </Typography>
                 <Typography variant="body1" paragraph>
                   {book.description}
                 </Typography>
               </Paper>
             )}
 
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="h6" gutterBottom>
-                Fiyat: ₺{book.price}
-              </Typography>
-            </Box>
+            {!isPremiumUser && (
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="h6" gutterBottom>
+                  Fiyat: ₺{book.price}
+                </Typography>
+              </Box>
+            )}
 
             <Stack spacing={2}>
-              {isBookInLibrary ? (
+              {booksLoading || !user ? (
+                <Button variant="outlined" disabled size="large" fullWidth>
+                  Yükleniyor...
+                </Button>
+              ) : isBookInLibrary ? (
                 <Button variant="contained" disabled size="large" fullWidth>
                   Kütüphanenizde
+                </Button>
+              ) : isPremiumUser ? (
+                <Button
+                  variant="contained"
+                  startIcon={<LibraryBooks />}
+                  onClick={handleAddToLibrary}
+                  size="large"
+                  fullWidth
+                >
+                  Kitaplığına Ekle
                 </Button>
               ) : isBookInCart ? (
                 <Button
@@ -371,11 +428,11 @@ export const BookDetail: React.FC = () => {
       </Box>
 
       {/* Yorum Bölümü */}
-      <CommentSection 
-        bookId={book.id} 
-        currentUserId={user?.id} 
-        currentUsername={user?.username} 
-        isAdmin={user?.subscription_type === 'admin'} 
+      <CommentSection
+        bookId={book.id}
+        currentUserId={user?.id}
+        currentUsername={user?.username}
+        isAdmin={user?.subscription_type === "admin"}
       />
     </Container>
   );

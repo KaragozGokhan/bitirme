@@ -26,6 +26,7 @@ import LightModeIcon from "@mui/icons-material/LightMode";
 import { userService } from "../infrastructure/services/api";
 import { User } from "../infrastructure/types";
 import { useTheme } from "../theme/ThemeContext";
+import { useMyBooks } from "../infrastructure/contexts/MyBooksContext";
 import PremiumPaymentForm from "./shared/PremiumPaymentForm";
 
 export const ProfilePage: React.FC = () => {
@@ -35,7 +36,10 @@ export const ProfilePage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState<Partial<User>>({});
   const { isDarkMode, toggleTheme } = useTheme();
+  const { updateUser, refreshUserData, cancelPremiumSubscription } =
+    useMyBooks();
   const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [isCancellingPremium, setIsCancellingPremium] = useState(false);
 
   // Debug log to ensure isDarkMode is used
   console.log("Current theme mode:", isDarkMode ? "dark" : "light");
@@ -106,6 +110,51 @@ export const ProfilePage: React.FC = () => {
       return true;
     }
     return false;
+  };
+
+  const handleCancelPremium = async () => {
+    if (
+      !user ||
+      !window.confirm(
+        "Premium üyeliğinizi iptal etmek istediğinizden emin misiniz? Premium ile kütüphaneye eklenen kitaplar otomatik olarak kaldırılacaktır."
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setIsCancellingPremium(true);
+      setError(null);
+
+      // MyBooksContext'teki cancelPremiumSubscription fonksiyonunu kullan
+      // Bu fonksiyon hem kullanıcı bilgilerini güncelleyecek hem de premium kitapları kaldıracak
+      await cancelPremiumSubscription();
+
+      // ProfilePage'in kendi state'ini de güncelle
+      await fetchUserProfile();
+
+      alert(
+        "Premium üyeliğiniz başarıyla iptal edildi ve premium kitaplar kütüphanenizden kaldırıldı."
+      );
+    } catch (error) {
+      setError("Premium üyelik iptal edilirken bir hata oluştu.");
+      console.error("Premium iptal hatası:", error);
+    } finally {
+      setIsCancellingPremium(false);
+    }
+  };
+
+  const handlePremiumUpgradeSuccess = async () => {
+    // ProfilePage'in kendi state'ini güncelle
+    await fetchUserProfile();
+
+    // MyBooksContext'i de güncelle
+    await refreshUserData();
+
+    // Sayfayı yenile ki tüm bileşenler güncellensin
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
   };
 
   if (!user) {
@@ -273,12 +322,15 @@ export const ProfilePage: React.FC = () => {
                 sx={{
                   p: 2,
                   bgcolor: isSubscriptionActive()
-                    ? "primary.lighter"
-                    : "grey.50",
+                    ? "primary.main"
+                    : "background.default",
                   border: 1,
                   borderColor: isSubscriptionActive()
                     ? "primary.main"
-                    : "grey.300",
+                    : "divider",
+                  color: isSubscriptionActive()
+                    ? "primary.contrastText"
+                    : "text.primary",
                 }}
               >
                 <CardContent sx={{ p: 0 }}>
@@ -286,17 +338,33 @@ export const ProfilePage: React.FC = () => {
                     <StarIcon
                       sx={{
                         color: isSubscriptionActive()
-                          ? "primary.main"
-                          : "grey.500",
+                          ? "primary.contrastText"
+                          : "text.secondary",
                         fontSize: 32,
                       }}
                     />
                     <Box>
-                      <Typography variant="h6" fontWeight={600}>
+                      <Typography
+                        variant="h6"
+                        fontWeight={600}
+                        color={
+                          isSubscriptionActive()
+                            ? "primary.contrastText"
+                            : "text.primary"
+                        }
+                      >
                         Mevcut Plan: {getSubscriptionStatus()}
                       </Typography>
                       {user.subscription_end_date && (
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography
+                          variant="body2"
+                          color={
+                            isSubscriptionActive()
+                              ? "primary.contrastText"
+                              : "text.secondary"
+                          }
+                          sx={{ opacity: 0.8 }}
+                        >
                           Bitiş Tarihi:{" "}
                           {new Date(
                             user.subscription_end_date
@@ -314,19 +382,25 @@ export const ProfilePage: React.FC = () => {
                 <Card
                   sx={{
                     p: 2,
-                    bgcolor: "warning.lighter",
+                    bgcolor: "warning.main",
                     border: 1,
                     borderColor: "warning.main",
+                    color: "warning.contrastText",
                   }}
                 >
                   <CardContent sx={{ p: 0 }}>
-                    <Typography variant="h6" color="warning.dark" gutterBottom>
+                    <Typography
+                      variant="h6"
+                      color="warning.contrastText"
+                      gutterBottom
+                    >
                       Premium'a Geç
                     </Typography>
                     <Typography
                       variant="body2"
-                      color="text.secondary"
+                      color="warning.contrastText"
                       gutterBottom
+                      sx={{ opacity: 0.8 }}
                     >
                       Kitap dinleme özelliği için Premium üyelik gerekli
                     </Typography>
@@ -334,7 +408,14 @@ export const ProfilePage: React.FC = () => {
                       variant="contained"
                       fullWidth
                       onClick={() => setShowPaymentForm(true)}
-                      sx={{ mt: 1 }}
+                      sx={{
+                        mt: 1,
+                        bgcolor: "background.paper",
+                        color: "text.primary",
+                        "&:hover": {
+                          bgcolor: "action.hover",
+                        },
+                      }}
                     >
                       Premium Al (₺29.99/ay)
                     </Button>
@@ -346,19 +427,49 @@ export const ProfilePage: React.FC = () => {
                 <Card
                   sx={{
                     p: 2,
-                    bgcolor: "success.lighter",
+                    bgcolor: "success.main",
                     border: 1,
                     borderColor: "success.main",
+                    color: "success.contrastText",
                   }}
                 >
                   <CardContent sx={{ p: 0 }}>
-                    <Typography variant="h6" color="success.dark" gutterBottom>
+                    <Typography
+                      variant="h6"
+                      color="success.contrastText"
+                      gutterBottom
+                    >
                       Premium Aktif
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography
+                      variant="body2"
+                      color="success.contrastText"
+                      sx={{ mb: 2, opacity: 0.9 }}
+                    >
                       ✓ Kitap dinleme özelliği <br />
                       ✓ Sınırsız kitap kiralama <br />✓ Özel içerikler
                     </Typography>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      size="small"
+                      fullWidth
+                      onClick={handleCancelPremium}
+                      disabled={isCancellingPremium}
+                      sx={{
+                        borderColor: "error.main",
+                        color: "error.main",
+                        bgcolor: "background.paper",
+                        "&:hover": {
+                          bgcolor: "error.main",
+                          color: "error.contrastText",
+                        },
+                      }}
+                    >
+                      {isCancellingPremium
+                        ? "İptal Ediliyor..."
+                        : "Premium'ı İptal Et"}
+                    </Button>
                   </CardContent>
                 </Card>
               )}
@@ -442,7 +553,7 @@ export const ProfilePage: React.FC = () => {
           <PremiumPaymentForm
             userId={user!.id}
             onClose={() => setShowPaymentForm(false)}
-            onSuccess={fetchUserProfile}
+            onSuccess={handlePremiumUpgradeSuccess}
           />
         </Box>
       )}

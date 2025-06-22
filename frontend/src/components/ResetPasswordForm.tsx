@@ -1,6 +1,10 @@
-import React, { useState } from 'react';
-import { useNavigate, useSearchParams, Link as RouterLink } from 'react-router-dom';
-import { authService } from '../infrastructure/services/api';
+import React, { useState } from "react";
+import {
+  useNavigate,
+  useSearchParams,
+  Link as RouterLink,
+} from "react-router-dom";
+import { authService } from "../infrastructure/services/api";
 import {
   Container,
   Box,
@@ -10,30 +14,30 @@ import {
   Link,
   Paper,
   Alert,
-} from '@mui/material';
+} from "@mui/material";
 
 export const ResetPasswordForm: React.FC = () => {
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const token = searchParams.get('token');
+  const token = searchParams.get("token");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setSuccess(false);
 
     if (password !== confirmPassword) {
-      setError('Şifreler eşleşmiyor');
+      setError("Şifreler eşleşmiyor");
       return;
     }
 
     if (!token) {
-      setError('Geçersiz veya eksik token');
+      setError("Geçersiz veya eksik token");
       return;
     }
 
@@ -43,10 +47,10 @@ export const ResetPasswordForm: React.FC = () => {
       await authService.resetPassword({ token, new_password: password });
       setSuccess(true);
       setTimeout(() => {
-        navigate('/login');
+        navigate("/login");
       }, 2000);
     } catch (err) {
-      setError('Şifre sıfırlanırken bir hata oluştu.');
+      setError("Şifre sıfırlanırken bir hata oluştu.");
     } finally {
       setLoading(false);
     }
@@ -57,35 +61,40 @@ export const ResetPasswordForm: React.FC = () => {
       <Box
         sx={{
           marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
         }}
       >
         <Paper
           elevation={3}
           sx={{
             padding: 4,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            width: '100%',
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            width: "100%",
           }}
         >
           <Typography component="h1" variant="h5">
             Şifre Sıfırlama
           </Typography>
           {error && (
-            <Alert severity="error" sx={{ mt: 2, width: '100%' }}>
+            <Alert severity="error" sx={{ mt: 2, width: "100%" }}>
               {error}
             </Alert>
           )}
           {success && (
-            <Alert severity="success" sx={{ mt: 2, width: '100%' }}>
-              Şifreniz başarıyla sıfırlandı. Giriş sayfasına yönlendiriliyorsunuz...
+            <Alert severity="success" sx={{ mt: 2, width: "100%" }}>
+              Şifreniz başarıyla sıfırlandı. Giriş sayfasına
+              yönlendiriliyorsunuz...
             </Alert>
           )}
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{ mt: 1, width: "100%" }}
+          >
             <TextField
               margin="normal"
               required
@@ -117,9 +126,9 @@ export const ResetPasswordForm: React.FC = () => {
               sx={{ mt: 3, mb: 2 }}
               disabled={loading}
             >
-              {loading ? 'Şifre Sıfırlanıyor...' : 'Şifreyi Sıfırla'}
+              {loading ? "Şifre Sıfırlanıyor..." : "Şifreyi Sıfırla"}
             </Button>
-            <Box sx={{ textAlign: 'center' }}>
+            <Box sx={{ textAlign: "center" }}>
               <Link component={RouterLink} to="/login" variant="body2">
                 Giriş sayfasına dön
               </Link>
@@ -129,4 +138,4 @@ export const ResetPasswordForm: React.FC = () => {
       </Box>
     </Container>
   );
-}; 
+};

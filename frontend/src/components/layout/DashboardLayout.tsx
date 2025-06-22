@@ -50,8 +50,11 @@ import {
 import { authService } from "../../infrastructure/services/api";
 import { useCart } from "../../infrastructure/contexts/CartContext";
 import { useAudioPlayer } from "../../infrastructure/contexts/AudioPlayerContext";
+import { useMyBooks } from "../../infrastructure/contexts/MyBooksContext";
+import { useSidebar } from "../../infrastructure/contexts/SidebarContext";
 import YouTube from "react-youtube";
 import { categories } from "../../infrastructure/constants/categories";
+import bookflixLogo from "../../assets/bookflix_logo.png";
 
 const drawerWidth = 280;
 
@@ -60,6 +63,7 @@ interface DashboardLayoutProps {
 }
 
 const MiniPlayer = () => {
+  const theme = useTheme();
   const {
     currentTrack,
     isPlaying,
@@ -126,21 +130,30 @@ const MiniPlayer = () => {
       }}
     >
       <IconButton
-        size="small"
         onClick={closePlayer}
         sx={{
           position: "absolute",
           top: 8,
           right: 8,
           zIndex: 1,
-          color: "text.secondary",
+          width: 36,
+          height: 36,
+          background: "linear-gradient(135deg, #ff7675 0%, #d63031 100%)",
+          color: "white",
+          borderRadius: "50%",
+          boxShadow: "0 3px 10px 0 rgba(255, 118, 117, 0.4)",
+          transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
           "&:hover": {
-            color: "text.primary",
-            backgroundColor: "action.hover",
+            background: "linear-gradient(135deg, #e84393 0%, #a29bfe 100%)",
+            transform: "scale(1.15) rotate(90deg)",
+            boxShadow: "0 5px 15px 0 rgba(255, 118, 117, 0.6)",
+          },
+          "&:active": {
+            transform: "scale(0.95)",
           },
         }}
       >
-        <Close fontSize="small" />
+        <Close sx={{ fontSize: "1.1rem" }} />
       </IconButton>
       <Stack direction="column" spacing={1} alignItems="center" sx={{ mb: 2 }}>
         <Avatar
@@ -165,11 +178,23 @@ const MiniPlayer = () => {
       </Stack>
       <Box sx={{ width: "100%", mt: 1 }}>
         <Slider
-          size="small"
           value={progress}
           max={duration}
           onChange={(e, val) => playerRef.current?.seekTo(val as number, true)}
-          sx={{ p: 0 }}
+          sx={{
+            p: 0,
+            "& .MuiSlider-thumb": {
+              "&:hover": {
+                boxShadow: theme.shadows[4],
+              },
+              "&.Mui-active": {
+                boxShadow: theme.shadows[6],
+              },
+            },
+          }}
+          aria-label="Audio progress"
+          valueLabelDisplay="auto"
+          valueLabelFormat={(value) => formatTime(value)}
         />
         <Stack direction="row" justifyContent="space-between" sx={{ mt: -1 }}>
           <Typography variant="caption">{formatTime(progress)}</Typography>
@@ -180,29 +205,150 @@ const MiniPlayer = () => {
       </Box>
       <Stack
         direction="row"
-        spacing={1}
+        spacing={1.5}
         alignItems="center"
         justifyContent="center"
-        sx={{ mt: 1 }}
+        sx={{ mt: 2, mb: 1 }}
       >
-        <IconButton size="small" onClick={() => seek(-15)}>
-          <FastRewind />
+        {/* Geri Sar Butonu */}
+        <IconButton
+          onClick={() => seek(-15)}
+          sx={{
+            width: 48,
+            height: 48,
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            color: "white",
+            borderRadius: "50%",
+            boxShadow: "0 4px 15px 0 rgba(102, 126, 234, 0.4)",
+            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            "&:hover": {
+              background: "linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)",
+              transform: "scale(1.1) translateY(-2px)",
+              boxShadow: "0 8px 25px 0 rgba(255, 0, 0, 0.6)",
+            },
+            "&:active": {
+              transform: "scale(0.95)",
+            },
+          }}
+        >
+          <FastRewind sx={{ fontSize: "1.3rem" }} />
         </IconButton>
-        <IconButton onClick={togglePlayPause}>
-          {isPlaying ? <Pause /> : <PlayArrow />}
+
+        {/* Ana Oynat/Duraklat Butonu */}
+        <IconButton
+          onClick={togglePlayPause}
+          sx={{
+            width: 56,
+            height: 56,
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            color: "white",
+            borderRadius: "50%",
+            boxShadow: "0 4px 15px 0 rgba(102, 126, 234, 0.4)",
+            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            "&:hover": {
+              background: "linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)",
+              transform: "scale(1.1) translateY(-3px)",
+              boxShadow: "0 12px 30px 0 rgba(255, 0, 0, 0.6)",
+            },
+            "&:active": {
+              transform: "scale(0.95)",
+              boxShadow: "0 4px 15px 0 rgba(102, 126, 234, 0.4)",
+            },
+          }}
+        >
+          {isPlaying ? (
+            <Pause sx={{ fontSize: "1.8rem" }} />
+          ) : (
+            <PlayArrow sx={{ fontSize: "1.8rem", ml: 0.2 }} />
+          )}
         </IconButton>
-        <IconButton size="small" onClick={() => seek(15)}>
-          <FastForward />
+
+        {/* İleri Sar Butonu */}
+        <IconButton
+          onClick={() => seek(15)}
+          sx={{
+            width: 48,
+            height: 48,
+            background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+            color: "white",
+            borderRadius: "50%",
+            boxShadow: "0 4px 15px 0 rgba(102, 126, 234, 0.4)",
+            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+            "&:hover": {
+              background: "linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)",
+              transform: "scale(1.1) translateY(-2px)",
+              boxShadow: "0 8px 25px 0 rgba(255, 0, 0, 0.6)",
+            },
+            "&:active": {
+              transform: "scale(0.95)",
+            },
+          }}
+        >
+          <FastForward sx={{ fontSize: "1.3rem" }} />
         </IconButton>
       </Stack>
-      <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 1 }}>
-        <VolumeDown />
+      <Stack
+        direction="row"
+        spacing={2}
+        alignItems="center"
+        sx={{ mt: 1, px: 1 }}
+      >
+        <IconButton
+          sx={{
+            width: 36,
+            height: 36,
+            background: "linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%)",
+            color: "#8b4513",
+            borderRadius: "50%",
+            boxShadow: "0 3px 10px 0 rgba(255, 234, 167, 0.4)",
+            transition: "all 0.2s ease-in-out",
+            "&:hover": {
+              background: "linear-gradient(135deg, #fab1a0 0%, #e17055 100%)",
+              color: "white",
+              transform: "scale(1.15)",
+              boxShadow: "0 5px 15px 0 rgba(255, 234, 167, 0.6)",
+            },
+          }}
+        >
+          <VolumeDown sx={{ fontSize: "1.1rem" }} />
+        </IconButton>
         <Slider
+          size="small"
           aria-label="Volume"
           value={volume * 100}
           onChange={handleVolumeChange}
+          valueLabelDisplay="auto"
+          valueLabelFormat={(value) => `${Math.round(value)}%`}
+          sx={{
+            "& .MuiSlider-thumb": {
+              "&:hover": {
+                boxShadow: theme.shadows[3],
+              },
+              "&.Mui-active": {
+                boxShadow: theme.shadows[4],
+              },
+            },
+          }}
         />
-        <VolumeUp />
+        <IconButton
+          sx={{
+            width: 36,
+            height: 36,
+            background: "linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%)",
+            color: "#8b4513",
+            borderRadius: "50%",
+            boxShadow: "0 3px 10px 0 rgba(255, 234, 167, 0.4)",
+            transition: "all 0.2s ease-in-out",
+            "&:hover": {
+              background: "linear-gradient(135deg, #fab1a0 0%, #e17055 100%)",
+              color: "white",
+              transform: "scale(1.15)",
+              boxShadow: "0 5px 15px 0 rgba(255, 234, 167, 0.6)",
+            },
+          }}
+        >
+          <VolumeUp sx={{ fontSize: "1.1rem" }} />
+        </IconButton>
       </Stack>
     </Box>
   );
@@ -213,6 +359,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const { sidebarOpen, toggleSidebar } = useSidebar();
   const theme = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -220,6 +367,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const { cartItems } = useCart();
   const { currentTrack, playerRef, setIsPlaying, setIsReady, playTrack } =
     useAudioPlayer();
+  const { resetMyBooks, resetUser } = useMyBooks();
 
   const currentCategoryId = params.categoryId
     ? parseInt(params.categoryId)
@@ -229,9 +377,15 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     setMobileOpen(!mobileOpen);
   };
 
+  const handleDesktopDrawerToggle = () => {
+    toggleSidebar();
+  };
+
   const handleLogout = () => {
+    console.log("🔐 Kullanıcı çıkış yapıyor, tüm state temizleniyor...");
     authService.logout();
     localStorage.removeItem("userId");
+    resetUser(); // Tam temizlik için resetUser kullan
     navigate("/login");
   };
 
@@ -247,24 +401,29 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
 
   const drawer = (
     <div>
-      <Toolbar sx={{ px: 3, py: 2 }}>
-        <Typography
-          variant="h4"
-          noWrap
-          component="div"
-          fontWeight={700}
-          color="primary"
+      <Toolbar sx={{ px: 3, py: 2, justifyContent: "center" }}>
+        <Box
           sx={{
             cursor: "pointer",
-            fontFamily: "Graphique, sans-serif",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            width: "100%",
             "&:hover": {
               opacity: 0.8,
             },
           }}
           onClick={() => navigate("/")}
         >
-          BOOKFLIX
-        </Typography>
+          <img
+            src={bookflixLogo}
+            alt="BOOKFLIX"
+            style={{
+              width: 140,
+              height: "auto",
+            }}
+          />
+        </Box>
       </Toolbar>
       <Divider sx={{ mx: 2 }} />
       <List sx={{ px: 2, py: 1 }}>
@@ -418,37 +577,50 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         position="fixed"
         elevation={0}
         sx={{
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` },
+          width: { sm: sidebarOpen ? `calc(100% - ${drawerWidth}px)` : "100%" },
+          ml: { sm: sidebarOpen ? `${drawerWidth}px` : 0 },
+          transition: "width 0.3s ease, margin-left 0.3s ease",
         }}
       >
         <Toolbar sx={{ justifyContent: "space-between" }}>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: "none" } }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography
-            variant="h5"
-            noWrap
-            component="div"
-            fontWeight={600}
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <IconButton
+              color="inherit"
+              aria-label="open drawer"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: 2, display: { sm: "none" } }}
+            >
+              <MenuIcon />
+            </IconButton>
+            <IconButton
+              color="inherit"
+              aria-label="toggle sidebar"
+              edge="start"
+              onClick={handleDesktopDrawerToggle}
+              sx={{ mr: 2, display: { xs: "none", sm: "block" } }}
+            >
+              <MenuIcon />
+            </IconButton>
+          </Box>
+          <Box
             sx={{
               cursor: "pointer",
-              fontFamily: "Graphique, sans-serif",
               "&:hover": {
                 opacity: 0.8,
               },
             }}
             onClick={() => navigate("/")}
           >
-            {menuItems.find((item) => item.path === location.pathname)?.text ||
-              "BOOKFLIX"}
-          </Typography>
+            <img
+              src={bookflixLogo}
+              alt="BOOKFLIX"
+              style={{
+                height: 40,
+                width: "auto",
+              }}
+            />
+          </Box>
           <Box>
             <IconButton color="inherit" onClick={() => navigate("/cart")}>
               <Badge badgeContent={cartItems.length} color="secondary">
@@ -482,7 +654,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
           {drawer}
         </Drawer>
         <Drawer
-          variant="permanent"
+          variant="persistent"
           sx={{
             display: { xs: "none", sm: "block" },
             "& .MuiDrawer-paper": {
@@ -490,9 +662,10 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
               width: drawerWidth,
               borderRight: "none",
               bgcolor: "background.paper",
+              transition: "transform 0.3s ease",
             },
           }}
-          open
+          open={sidebarOpen}
         >
           {drawer}
         </Drawer>
@@ -502,9 +675,10 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
         sx={{
           flexGrow: 1,
           p: 3,
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          width: { sm: sidebarOpen ? `calc(100% - ${drawerWidth}px)` : "100%" },
           minHeight: "100vh",
           bgcolor: "background.default",
+          transition: "width 0.3s ease",
         }}
       >
         <Toolbar />
@@ -513,7 +687,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
       {currentTrack && currentTrack.audio_url && (
         <YouTube
           videoId={getYouTubeVideoId(currentTrack.audio_url)}
-          opts={{ height: "0", width: "0", playerVars: { autoplay: 1 } }}
+          opts={{ height: "0", width: "0", playerVars: { autoplay: 0 } }}
           onReady={(event: any) => {
             playerRef.current = event.target;
             setIsReady(true);

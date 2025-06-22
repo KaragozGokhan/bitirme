@@ -19,6 +19,7 @@ import CreditCardIcon from "@mui/icons-material/CreditCard";
 import CloseIcon from "@mui/icons-material/Close";
 import PaymentIcon from "@mui/icons-material/Payment";
 import { userService } from "../../infrastructure/services/api";
+import { toast } from "react-toastify";
 
 // Banka ve kart tiplerini tespit et
 const bankData: { [key: string]: { name: string; logo: string } } = {
@@ -215,6 +216,8 @@ export const PremiumPaymentForm: React.FC<PremiumPaymentFormProps> = ({
         if (onSuccess) {
           onSuccess();
         }
+
+        toast.success("Premium üyelik aktif edildi! Sayfa yenileniyor...");
       } else if (type === "purchase") {
         // Satın alma için kitapları işle
         setSuccess(true);
@@ -222,6 +225,8 @@ export const PremiumPaymentForm: React.FC<PremiumPaymentFormProps> = ({
         if (onPurchaseSuccess && cartItems.length > 0) {
           onPurchaseSuccess(cartItems);
         }
+
+        toast.success("Satın alma başarılı!");
       }
 
       setTimeout(() => {
@@ -247,7 +252,7 @@ export const PremiumPaymentForm: React.FC<PremiumPaymentFormProps> = ({
           mt: 6,
           boxShadow: 12,
           borderRadius: 5,
-          background: "linear-gradient(135deg, #f8fafc 60%, #e0e7ff 100%)",
+          bgcolor: "background.paper",
           position: "relative",
           overflow: "visible",
         }}
@@ -255,14 +260,14 @@ export const PremiumPaymentForm: React.FC<PremiumPaymentFormProps> = ({
         <CardHeader
           avatar={<PaymentIcon color="primary" sx={{ fontSize: 36 }} />}
           title={
-            <Typography variant="h5" fontWeight={700} color="primary.main">
+            <Typography variant="h5" fontWeight={700} color="text.primary">
               {type === "premium"
                 ? "Premium Üyelik Ödemesi"
                 : "Kitap Satın Alma"}
             </Typography>
           }
           action={
-            <IconButton onClick={onClose} aria-label="Kapat">
+            <IconButton onClick={onClose} aria-label="Kapat" color="inherit">
               <CloseIcon />
             </IconButton>
           }
@@ -431,11 +436,33 @@ export const PremiumPaymentForm: React.FC<PremiumPaymentFormProps> = ({
                 required
                 variant="outlined"
                 sx={{
-                  background: "#fff",
                   borderRadius: 2,
                   fontWeight: 600,
                   fontSize: 18,
                   letterSpacing: 2,
+                  "& .MuiOutlinedInput-root": {
+                    bgcolor: "background.paper",
+                    color: "text.primary",
+                    "&:hover": {
+                      bgcolor: "background.paper",
+                    },
+                    "&.Mui-focused": {
+                      bgcolor: "background.paper",
+                    },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "text.secondary",
+                    "&.Mui-focused": {
+                      color: "primary.main",
+                    },
+                  },
+                  "& .MuiOutlinedInput-input": {
+                    color: "text.primary",
+                    "&::placeholder": {
+                      color: "text.secondary",
+                      opacity: 0.7,
+                    },
+                  },
                 }}
               />
               <Stack direction="row" spacing={2}>
@@ -453,8 +480,30 @@ export const PremiumPaymentForm: React.FC<PremiumPaymentFormProps> = ({
                   required
                   variant="outlined"
                   sx={{
-                    background: "#fff",
                     borderRadius: 2,
+                    "& .MuiOutlinedInput-root": {
+                      bgcolor: "background.paper",
+                      color: "text.primary",
+                      "&:hover": {
+                        bgcolor: "background.paper",
+                      },
+                      "&.Mui-focused": {
+                        bgcolor: "background.paper",
+                      },
+                    },
+                    "& .MuiInputLabel-root": {
+                      color: "text.secondary",
+                      "&.Mui-focused": {
+                        color: "primary.main",
+                      },
+                    },
+                    "& .MuiOutlinedInput-input": {
+                      color: "text.primary",
+                      "&::placeholder": {
+                        color: "text.secondary",
+                        opacity: 0.7,
+                      },
+                    },
                   }}
                 />
                 <TextField
@@ -468,8 +517,30 @@ export const PremiumPaymentForm: React.FC<PremiumPaymentFormProps> = ({
                   required
                   variant="outlined"
                   sx={{
-                    background: "#fff",
                     borderRadius: 2,
+                    "& .MuiOutlinedInput-root": {
+                      bgcolor: "background.paper",
+                      color: "text.primary",
+                      "&:hover": {
+                        bgcolor: "background.paper",
+                      },
+                      "&.Mui-focused": {
+                        bgcolor: "background.paper",
+                      },
+                    },
+                    "& .MuiInputLabel-root": {
+                      color: "text.secondary",
+                      "&.Mui-focused": {
+                        color: "primary.main",
+                      },
+                    },
+                    "& .MuiOutlinedInput-input": {
+                      color: "text.primary",
+                      "&::placeholder": {
+                        color: "text.secondary",
+                        opacity: 0.7,
+                      },
+                    },
                   }}
                 />
               </Stack>
@@ -482,8 +553,30 @@ export const PremiumPaymentForm: React.FC<PremiumPaymentFormProps> = ({
                 required
                 variant="outlined"
                 sx={{
-                  background: "#fff",
                   borderRadius: 2,
+                  "& .MuiOutlinedInput-root": {
+                    bgcolor: "background.paper",
+                    color: "text.primary",
+                    "&:hover": {
+                      bgcolor: "background.paper",
+                    },
+                    "&.Mui-focused": {
+                      bgcolor: "background.paper",
+                    },
+                  },
+                  "& .MuiInputLabel-root": {
+                    color: "text.secondary",
+                    "&.Mui-focused": {
+                      color: "primary.main",
+                    },
+                  },
+                  "& .MuiOutlinedInput-input": {
+                    color: "text.primary",
+                    "&::placeholder": {
+                      color: "text.secondary",
+                      opacity: 0.7,
+                    },
+                  },
                 }}
               />
               {error && (

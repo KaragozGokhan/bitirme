@@ -1,5 +1,15 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { createTheme, Theme, ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
+import {
+  createTheme,
+  Theme,
+  ThemeProvider as MuiThemeProvider,
+} from "@mui/material/styles";
 
 interface ThemeContextType {
   isDarkMode: boolean;
@@ -12,7 +22,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) {
-    throw new Error('useTheme must be used within a ThemeProvider');
+    throw new Error("useTheme must be used within a ThemeProvider");
   }
   return context;
 };
@@ -23,12 +33,12 @@ interface ThemeProviderProps {
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const [isDarkMode, setIsDarkMode] = useState(() => {
-    const saved = localStorage.getItem('darkMode');
+    const saved = localStorage.getItem("darkMode");
     return saved ? JSON.parse(saved) : false;
   });
 
   useEffect(() => {
-    localStorage.setItem('darkMode', JSON.stringify(isDarkMode));
+    localStorage.setItem("darkMode", JSON.stringify(isDarkMode));
   }, [isDarkMode]);
 
   const toggleTheme = () => {
@@ -37,100 +47,106 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 
   const theme = createTheme({
     palette: {
-      mode: isDarkMode ? 'dark' : 'light',
+      mode: isDarkMode ? "dark" : "light",
       primary: {
-        main: '#2563eb',
-        light: '#60a5fa',
-        dark: '#1d4ed8',
-        contrastText: '#ffffff',
+        main: "#2563eb",
+        light: "#60a5fa",
+        dark: "#1d4ed8",
+        contrastText: "#ffffff",
       },
       secondary: {
-        main: '#7c3aed',
-        light: '#a78bfa',
-        dark: '#5b21b6',
-        contrastText: '#ffffff',
+        main: "#7c3aed",
+        light: "#a78bfa",
+        dark: "#5b21b6",
+        contrastText: "#ffffff",
       },
       background: {
-        default: isDarkMode ? '#0f172a' : '#f8fafc',
-        paper: isDarkMode ? '#1e293b' : '#ffffff',
+        default: isDarkMode ? "#0f172a" : "#f8fafc",
+        paper: isDarkMode ? "#1e293b" : "#ffffff",
       },
       error: {
-        main: '#ef4444',
-        light: '#fca5a5',
-        dark: '#b91c1c',
+        main: "#ef4444",
+        light: "#fca5a5",
+        dark: "#b91c1c",
       },
       warning: {
-        main: '#f59e0b',
-        light: '#fcd34d',
-        dark: '#b45309',
+        main: "#f59e0b",
+        light: "#fcd34d",
+        dark: "#b45309",
       },
       info: {
-        main: '#3b82f6',
-        light: '#93c5fd',
-        dark: '#1d4ed8',
+        main: "#3b82f6",
+        light: "#93c5fd",
+        dark: "#1d4ed8",
       },
       success: {
-        main: '#10b981',
-        light: '#6ee7b7',
-        dark: '#047857',
+        main: "#10b981",
+        light: "#6ee7b7",
+        dark: "#047857",
       },
       text: {
-        primary: isDarkMode ? '#f1f5f9' : '#1e293b',
-        secondary: isDarkMode ? '#94a3b8' : '#64748b',
+        primary: isDarkMode ? "#f1f5f9" : "#1e293b",
+        secondary: isDarkMode ? "#94a3b8" : "#64748b",
+      },
+      divider: isDarkMode ? "#475569" : "#e2e8f0",
+      action: {
+        hover: isDarkMode ? "#334155" : "#f8fafc",
+        selected: isDarkMode ? "#475569" : "#eff6ff",
+        focus: isDarkMode ? "#475569" : "#dbeafe",
       },
     },
     typography: {
       fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
       h1: {
-        fontSize: '2.5rem',
+        fontSize: "2.5rem",
         fontWeight: 700,
         lineHeight: 1.2,
       },
       h2: {
-        fontSize: '2rem',
+        fontSize: "2rem",
         fontWeight: 700,
         lineHeight: 1.2,
       },
       h3: {
-        fontSize: '1.75rem',
+        fontSize: "1.75rem",
         fontWeight: 600,
         lineHeight: 1.2,
       },
       h4: {
-        fontSize: '1.5rem',
+        fontSize: "1.5rem",
         fontWeight: 600,
         lineHeight: 1.2,
       },
       h5: {
-        fontSize: '1.25rem',
+        fontSize: "1.25rem",
         fontWeight: 600,
         lineHeight: 1.2,
       },
       h6: {
-        fontSize: '1rem',
+        fontSize: "1rem",
         fontWeight: 600,
         lineHeight: 1.2,
       },
       subtitle1: {
-        fontSize: '1rem',
+        fontSize: "1rem",
         fontWeight: 500,
         lineHeight: 1.5,
       },
       subtitle2: {
-        fontSize: '0.875rem',
+        fontSize: "0.875rem",
         fontWeight: 500,
         lineHeight: 1.57,
       },
       body1: {
-        fontSize: '1rem',
+        fontSize: "1rem",
         lineHeight: 1.5,
       },
       body2: {
-        fontSize: '0.875rem',
+        fontSize: "0.875rem",
         lineHeight: 1.57,
       },
       button: {
-        textTransform: 'none',
+        textTransform: "none",
         fontWeight: 600,
       },
     },
@@ -142,19 +158,19 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
         styleOverrides: {
           root: {
             borderRadius: 8,
-            textTransform: 'none',
-            fontSize: '0.875rem',
+            textTransform: "none",
+            fontSize: "0.875rem",
             fontWeight: 600,
-            boxShadow: 'none',
-            '&:hover': {
-              boxShadow: 'none',
+            boxShadow: "none",
+            "&:hover": {
+              boxShadow: "none",
             },
           },
           contained: {
-            padding: '8px 16px',
+            padding: "8px 16px",
           },
           outlined: {
-            padding: '8px 16px',
+            padding: "8px 16px",
           },
         },
       },
@@ -162,13 +178,13 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
         styleOverrides: {
           root: {
             borderRadius: 12,
-            boxShadow: isDarkMode 
-              ? '0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3)'
-              : '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
-            '&:hover': {
+            boxShadow: isDarkMode
+              ? "0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3)"
+              : "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
+            "&:hover": {
               boxShadow: isDarkMode
-                ? '0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3)'
-                : '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+                ? "0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3)"
+                : "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)",
             },
           },
         },
@@ -178,27 +194,27 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
           root: {
             borderRadius: 12,
             boxShadow: isDarkMode
-              ? '0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3)'
-              : '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+              ? "0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3)"
+              : "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
           },
         },
       },
       MuiAppBar: {
         styleOverrides: {
           root: {
-            backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
-            color: isDarkMode ? '#f1f5f9' : '#1e293b',
+            backgroundColor: isDarkMode ? "#1e293b" : "#ffffff",
+            color: isDarkMode ? "#f1f5f9" : "#1e293b",
             boxShadow: isDarkMode
-              ? '0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3)'
-              : '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
+              ? "0 1px 3px 0 rgb(0 0 0 / 0.3), 0 1px 2px -1px rgb(0 0 0 / 0.3)"
+              : "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)",
           },
         },
       },
       MuiDrawer: {
         styleOverrides: {
           paper: {
-            backgroundColor: isDarkMode ? '#1e293b' : '#ffffff',
-            borderRight: isDarkMode ? '1px solid #334155' : '1px solid #e2e8f0',
+            backgroundColor: isDarkMode ? "#1e293b" : "#ffffff",
+            borderRight: isDarkMode ? "1px solid #334155" : "1px solid #e2e8f0",
           },
         },
       },
@@ -206,15 +222,15 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
         styleOverrides: {
           root: {
             borderRadius: 8,
-            margin: '4px 8px',
-            '&.Mui-selected': {
-              backgroundColor: isDarkMode ? '#334155' : '#eff6ff',
-              '&:hover': {
-                backgroundColor: isDarkMode ? '#475569' : '#dbeafe',
+            margin: "4px 8px",
+            "&.Mui-selected": {
+              backgroundColor: isDarkMode ? "#334155" : "#eff6ff",
+              "&:hover": {
+                backgroundColor: isDarkMode ? "#475569" : "#dbeafe",
               },
             },
-            '&:hover': {
-              backgroundColor: isDarkMode ? '#334155' : '#f8fafc',
+            "&:hover": {
+              backgroundColor: isDarkMode ? "#334155" : "#f8fafc",
             },
           },
         },
@@ -225,7 +241,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
             borderRadius: 6,
           },
           outlined: {
-            borderColor: isDarkMode ? '#475569' : '#e2e8f0',
+            borderColor: isDarkMode ? "#475569" : "#e2e8f0",
           },
         },
       },
@@ -239,8 +255,101 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       MuiTextField: {
         styleOverrides: {
           root: {
-            '& .MuiOutlinedInput-root': {
+            "& .MuiOutlinedInput-root": {
               borderRadius: 8,
+            },
+          },
+        },
+      },
+      MuiSlider: {
+        styleOverrides: {
+          root: {
+            // Progress bar için özel stilleme
+            "&.MuiSlider-root": {
+              height: 8,
+              padding: "12px 0",
+              transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+              "&:hover": {
+                height: 10,
+                "& .MuiSlider-rail": {
+                  opacity: isDarkMode ? 0.4 : 0.3,
+                  boxShadow: isDarkMode
+                    ? "0 2px 4px 0 rgb(0 0 0 / 0.2)"
+                    : "0 1px 3px 0 rgb(0 0 0 / 0.1)",
+                },
+                "& .MuiSlider-thumb": {
+                  width: 28,
+                  height: 28,
+                  boxShadow: isDarkMode
+                    ? "0 4px 8px 0 rgb(0 0 0 / 0.4), 0 0 0 1px rgb(255 255 255 / 0.1)"
+                    : "0 4px 8px 0 rgb(0 0 0 / 0.15), 0 0 0 1px rgb(0 0 0 / 0.05)",
+                },
+              },
+              "&.Mui-focusVisible": {
+                "& .MuiSlider-thumb": {
+                  boxShadow: isDarkMode
+                    ? "0 0 0 3px rgb(37 99 235 / 0.3), 0 4px 8px 0 rgb(0 0 0 / 0.4)"
+                    : "0 0 0 3px rgb(37 99 235 / 0.2), 0 4px 8px 0 rgb(0 0 0 / 0.15)",
+                },
+              },
+            },
+            // Volume slider için küçük boyut
+            "&.MuiSlider-sizeSmall": {
+              height: 6,
+              "&:hover": {
+                height: 8,
+                "& .MuiSlider-thumb": {
+                  width: 24,
+                  height: 24,
+                },
+              },
+            },
+          },
+          rail: {
+            borderRadius: 4,
+            opacity: isDarkMode ? 0.2 : 0.1,
+            backgroundColor: isDarkMode ? "#94a3b8" : "#64748b",
+            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+          },
+          track: {
+            borderRadius: 4,
+            border: "none",
+            transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+          },
+          thumb: {
+            width: 24,
+            height: 24,
+            backgroundColor: "#fff",
+            border: `3px solid ${isDarkMode ? "#2563eb" : "#2563eb"}`,
+            boxShadow: isDarkMode
+              ? "0 2px 4px 0 rgb(0 0 0 / 0.3), 0 0 0 1px rgb(255 255 255 / 0.05)"
+              : "0 2px 4px 0 rgb(0 0 0 / 0.1), 0 0 0 1px rgb(0 0 0 / 0.05)",
+            transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+            "&:hover": {
+              boxShadow: isDarkMode
+                ? "0 4px 8px 0 rgb(0 0 0 / 0.4), 0 0 0 1px rgb(255 255 255 / 0.1)"
+                : "0 4px 8px 0 rgb(0 0 0 / 0.15), 0 0 0 1px rgb(0 0 0 / 0.05)",
+            },
+            "&.Mui-active": {
+              width: 28,
+              height: 28,
+              boxShadow: isDarkMode
+                ? "0 6px 12px 0 rgb(0 0 0 / 0.5), 0 0 0 1px rgb(255 255 255 / 0.1)"
+                : "0 6px 12px 0 rgb(0 0 0 / 0.2), 0 0 0 1px rgb(0 0 0 / 0.05)",
+            },
+            "&::before": {
+              boxShadow: "none",
+            },
+          },
+          valueLabel: {
+            borderRadius: 6,
+            backgroundColor: isDarkMode ? "#1e293b" : "#334155",
+            color: "#fff",
+            fontSize: "0.75rem",
+            fontWeight: 600,
+            padding: "4px 8px",
+            "&::before": {
+              borderColor: isDarkMode ? "#1e293b" : "#334155",
             },
           },
         },
@@ -250,9 +359,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
 
   return (
     <ThemeContext.Provider value={{ isDarkMode, toggleTheme, theme }}>
-      <MuiThemeProvider theme={theme}>
-        {children}
-      </MuiThemeProvider>
+      <MuiThemeProvider theme={theme}>{children}</MuiThemeProvider>
     </ThemeContext.Provider>
   );
-}; 
+};

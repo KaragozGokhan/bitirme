@@ -15,10 +15,10 @@ import {
   CircularProgress,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import FilterListIcon from "@mui/icons-material/FilterList";
 import { BookCard } from "./BookCard";
 import { Book } from "../infrastructure/types";
 import { bookService } from "../infrastructure/services/api";
+import { useSidebar } from "../infrastructure/contexts/SidebarContext";
 
 interface BookListProps {
   selectedCategory?: number | null;
@@ -33,6 +33,7 @@ export const BookList: React.FC<BookListProps> = ({ selectedCategory }) => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const booksPerPage = 20;
+  const { sidebarOpen } = useSidebar();
 
   const filterAndPaginateBooks = (
     allBooks: Book[],
@@ -156,16 +157,6 @@ export const BookList: React.FC<BookListProps> = ({ selectedCategory }) => {
                 ),
               }}
             />
-            <Tooltip title="Filtrele">
-              <IconButton
-                sx={{
-                  bgcolor: "action.selected",
-                  "&:hover": { bgcolor: "action.focus" },
-                }}
-              >
-                <FilterListIcon />
-              </IconButton>
-            </Tooltip>
           </Box>
         </Stack>
       </Paper>
@@ -190,9 +181,19 @@ export const BookList: React.FC<BookListProps> = ({ selectedCategory }) => {
                   xs: "repeat(1, 1fr)",
                   sm: "repeat(2, 1fr)",
                   md: "repeat(3, 1fr)",
-                  lg: "repeat(4, 1fr)",
+                  lg: sidebarOpen ? "repeat(4, 1fr)" : "repeat(5, 1fr)",
                 },
                 gap: 3,
+                transition: "all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                "& > *": {
+                  transition: "all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                  transform: "scale(1)",
+                  opacity: 1,
+                  "&:hover": {
+                    transform: "scale(1.02) translateY(-4px)",
+                    transition: "all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                  },
+                },
               }}
             >
               {books.map((book) => (

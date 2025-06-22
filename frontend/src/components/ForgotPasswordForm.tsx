@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
-import { authService } from '../infrastructure/services/api';
+import React, { useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
+import { authService } from "../infrastructure/services/api";
 import {
   Container,
   Box,
@@ -10,17 +10,17 @@ import {
   Link,
   Paper,
   Alert,
-} from '@mui/material';
+} from "@mui/material";
 
 export const ForgotPasswordForm: React.FC = () => {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setSuccess(false);
     setLoading(true);
 
@@ -28,7 +28,7 @@ export const ForgotPasswordForm: React.FC = () => {
       await authService.forgotPassword({ email });
       setSuccess(true);
     } catch (err) {
-      setError('Şifre sıfırlama bağlantısı gönderilirken bir hata oluştu.');
+      setError("Şifre sıfırlama bağlantısı gönderilirken bir hata oluştu.");
     } finally {
       setLoading(false);
     }
@@ -39,35 +39,39 @@ export const ForgotPasswordForm: React.FC = () => {
       <Box
         sx={{
           marginTop: 8,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
         }}
       >
         <Paper
           elevation={3}
           sx={{
             padding: 4,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            width: '100%',
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            width: "100%",
           }}
         >
           <Typography component="h1" variant="h5">
             Şifremi Unuttum
           </Typography>
           {error && (
-            <Alert severity="error" sx={{ mt: 2, width: '100%' }}>
+            <Alert severity="error" sx={{ mt: 2, width: "100%" }}>
               {error}
             </Alert>
           )}
           {success && (
-            <Alert severity="success" sx={{ mt: 2, width: '100%' }}>
+            <Alert severity="success" sx={{ mt: 2, width: "100%" }}>
               Şifre sıfırlama bağlantısı e-posta adresinize gönderildi.
             </Alert>
           )}
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{ mt: 1, width: "100%" }}
+          >
             <TextField
               margin="normal"
               required
@@ -87,9 +91,11 @@ export const ForgotPasswordForm: React.FC = () => {
               sx={{ mt: 3, mb: 2 }}
               disabled={loading}
             >
-              {loading ? 'Gönderiliyor...' : 'Şifre Sıfırlama Bağlantısı Gönder'}
+              {loading
+                ? "Gönderiliyor..."
+                : "Şifre Sıfırlama Bağlantısı Gönder"}
             </Button>
-            <Box sx={{ textAlign: 'center' }}>
+            <Box sx={{ textAlign: "center" }}>
               <Link component={RouterLink} to="/login" variant="body2">
                 Giriş sayfasına dön
               </Link>
@@ -99,4 +105,4 @@ export const ForgotPasswordForm: React.FC = () => {
       </Box>
     </Container>
   );
-}; 
+};

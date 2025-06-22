@@ -19,6 +19,7 @@ export interface Book {
     price: number;
     created_at?: string;
     categories?: Category[];
+    acquisition_method?: 'purchase' | 'premium';
 }
 
 export interface Category {

@@ -146,6 +146,28 @@ export const userService = {
         });
         return response.data;
     },
+    cancelPremiumSubscription: async (userId: number): Promise<User & {removed_premium_books_count?: number}> => {
+        const response = await api.delete<User & {removed_premium_books_count?: number}>(`/users/${userId}/subscription/cancel`);
+        return response.data;
+    },
+    // Kullanıcının kitaplarını getir
+    getUserBooks: async (userId: number): Promise<Book[]> => {
+        const response = await api.get<Book[]>(`/users/${userId}/books`);
+        return response.data;
+    },
+    // Kullanıcının kütüphanesine kitap ekle
+    addBooksToUser: async (userId: number, bookIds: number[], acquisitionMethod: string = 'purchase'): Promise<{message: string, books: Book[]}> => {
+        const response = await api.post<{message: string, books: Book[]}>(`/users/${userId}/books`, {
+            book_ids: bookIds,
+            acquisition_method: acquisitionMethod
+        });
+        return response.data;
+    },
+    // Kullanıcının kütüphanesinden kitap sil
+    removeBookFromUser: async (userId: number, bookId: number): Promise<{message: string}> => {
+        const response = await api.delete<{message: string}>(`/users/${userId}/books/${bookId}`);
+        return response.data;
+    },
 };
 
 export const commentService = {

@@ -16,6 +16,8 @@ import { authService } from "../infrastructure/services/api";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import bookflixLogo from "../assets/bookflix_logo.png";
+import bookflixBackground from "../assets/bookflix_background.png";
 
 export const LoginForm: React.FC = () => {
   const navigate = useNavigate();
@@ -59,7 +61,10 @@ export const LoginForm: React.FC = () => {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        bgcolor: "background.default",
+        backgroundImage: `url(${bookflixBackground})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
         py: 12,
         px: 2,
       }}
@@ -74,23 +79,25 @@ export const LoginForm: React.FC = () => {
           flexDirection: "column",
           alignItems: "center",
           borderRadius: 3,
+          backgroundColor: "rgba(255, 255, 255, 0.95)",
+          backdropFilter: "blur(5px)",
         }}
       >
         <Box
+          component="img"
+          src={bookflixLogo}
+          alt="BOOKFLIX"
           sx={{
-            width: 40,
-            height: 40,
-            borderRadius: "50%",
-            bgcolor: "primary.main",
-            color: "primary.contrastText",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            width: 120,
+            height: "auto",
             mb: 2,
+            cursor: "pointer",
+            "&:hover": {
+              opacity: 0.8,
+            },
           }}
-        >
-          <LockOutlinedIcon />
-        </Box>
+          onClick={() => navigate("/")}
+        />
 
         <Typography component="h1" variant="h5" fontWeight={700} gutterBottom>
           Giriş Yap
@@ -102,7 +109,7 @@ export const LoginForm: React.FC = () => {
           align="center"
           sx={{ mb: 3 }}
         >
-          BOOKFLIX sistemine hoş geldiniz
+          Sistemimize hoş geldiniz
         </Typography>
 
         {error && (

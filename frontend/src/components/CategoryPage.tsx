@@ -18,7 +18,6 @@ import {
   Link,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import FilterListIcon from "@mui/icons-material/FilterList";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import HomeIcon from "@mui/icons-material/Home";
 import { BookCard } from "./BookCard";
@@ -28,6 +27,7 @@ import {
   categories,
   getCategoryById,
 } from "../infrastructure/constants/categories";
+import { useSidebar } from "../infrastructure/contexts/SidebarContext";
 
 export const CategoryPage: React.FC = () => {
   const { categoryId } = useParams<{ categoryId: string }>();
@@ -42,6 +42,7 @@ export const CategoryPage: React.FC = () => {
     id: number;
     name: string;
   } | null>(null);
+  const { sidebarOpen } = useSidebar();
 
   const currentCategory = getCategoryById(parseInt(categoryId || "0"));
 
@@ -198,16 +199,6 @@ export const CategoryPage: React.FC = () => {
                 ),
               }}
             />
-            <Tooltip title="Filtrele">
-              <IconButton
-                sx={{
-                  bgcolor: "action.selected",
-                  "&:hover": { bgcolor: "action.focus" },
-                }}
-              >
-                <FilterListIcon />
-              </IconButton>
-            </Tooltip>
           </Box>
         </Stack>
       </Paper>
@@ -232,9 +223,19 @@ export const CategoryPage: React.FC = () => {
                   xs: "repeat(1, 1fr)",
                   sm: "repeat(2, 1fr)",
                   md: "repeat(3, 1fr)",
-                  lg: "repeat(4, 1fr)",
+                  lg: sidebarOpen ? "repeat(4, 1fr)" : "repeat(5, 1fr)",
                 },
                 gap: 3,
+                transition: "all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                "& > *": {
+                  transition: "all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                  transform: "scale(1)",
+                  opacity: 1,
+                  "&:hover": {
+                    transform: "scale(1.02) translateY(-4px)",
+                    transition: "all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                  },
+                },
               }}
             >
               {booksToShow.map((book) => (

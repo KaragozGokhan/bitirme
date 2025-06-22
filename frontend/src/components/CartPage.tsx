@@ -18,6 +18,7 @@ import { Delete, CreditCard } from "@mui/icons-material";
 import { useCart } from "../infrastructure/contexts/CartContext";
 import { useNavigate } from "react-router-dom";
 import { useMyBooks } from "../infrastructure/contexts/MyBooksContext";
+import { toast } from "react-toastify";
 import PremiumPaymentForm from "./shared/PremiumPaymentForm";
 
 export const CartPage: React.FC = () => {
@@ -28,17 +29,39 @@ export const CartPage: React.FC = () => {
 
   const handleRemoveFromCart = (bookId: number) => {
     removeFromCart(bookId);
+    toast.info("Kitap sepetten çıkarıldı");
   };
 
-  const handlePurchaseSuccess = (items: any[]) => {
-    // Kitapları kütüphaneye ekle
-    addBooksToLibrary(items);
+  const handlePurchaseSuccess = async (items: any[]) => {
+    try {
+      // Kitapları backend'e ekle
+      const booksWithAcquisition = items.map((book) => ({
+        ...book,
+        acquisition_method: "purchase" as const,
+      }));
 
-    // Sepeti temizle
-    clearCart();
+      await addBooksToLibrary(booksWithAcquisition);
 
-    // Kitaplarım sayfasına yönlendir
-    navigate("/my-books");
+      // Başarı mesajı göster
+      toast.success(
+        `${items.length} kitap başarıyla satın alındı ve kütüphanenize eklendi!`,
+        {
+          position: "top-center",
+          autoClose: 3000,
+        }
+      );
+
+      // Sepeti temizle
+      clearCart();
+
+      // 2 saniye sonra kitaplarım sayfasına yönlendir
+      setTimeout(() => {
+        navigate("/my-books");
+      }, 2000);
+    } catch (error) {
+      console.error("Satın alma işlemi sırasında hata:", error);
+      toast.error("Kitaplar kütüphanenize eklenirken bir hata oluştu.");
+    }
   };
 
   const totalPrice = cartItems.reduce(
