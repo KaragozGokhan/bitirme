@@ -5,6 +5,7 @@ import React, {
   ReactNode,
   useRef,
   useCallback,
+  useEffect,
 } from "react";
 import { Book } from "../types";
 
@@ -17,6 +18,7 @@ interface AudioPlayerContextType {
   isPlaying: boolean;
   isReady: boolean; // Oynatıcının hazır olup olmadığını belirtir
   volume: number;
+  isMuted: boolean; // Ses kapalı mı açık mı
   progress: number;
   duration: number;
   playerRef: React.MutableRefObject<YouTubePlayer | null>;
@@ -24,6 +26,7 @@ interface AudioPlayerContextType {
   playTrack: (track: Book) => void;
   togglePlayPause: () => void;
   changeVolume: (volume: number) => void;
+  toggleMute: () => void; // Ses açma/kapama
   seek: (amount: number) => void; // ileri/geri sarma
   closePlayer: () => void; // Oynatıcıyı kapat
   setProgress: (progress: number) => void;
@@ -53,6 +56,7 @@ export const AudioPlayerProvider: React.FC<{ children: ReactNode }> = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [isReady, setIsReady] = useState(false);
   const [volume, setVolume] = useState(1);
+  const [isMuted, setIsMuted] = useState(false);
   const [progress, setProgress] = useState(0);
   const [duration, setDuration] = useState(0);
   const playerRef = useRef<YouTubePlayer | null>(null);
@@ -63,6 +67,19 @@ export const AudioPlayerProvider: React.FC<{ children: ReactNode }> = ({
     setProgress(0); // İlerleme sıfırlanır
     setDuration(0); // Süre sıfırlanır
   }, []);
+
+  // Player hazır olduğunda otomatik oynatmayı başlat
+  useEffect(() => {
+    if (isReady && currentTrack && playerRef.current) {
+      // Kısa bir gecikme ile oynatmayı başlat
+      setTimeout(() => {
+        if (playerRef.current) {
+          playerRef.current.playVideo();
+          setIsPlaying(true);
+        }
+      }, 500);
+    }
+  }, [isReady, currentTrack]);
 
   const togglePlayPause = useCallback(() => {
     if (!playerRef.current || !isReady) return;
@@ -80,6 +97,20 @@ export const AudioPlayerProvider: React.FC<{ children: ReactNode }> = ({
     playerRef.current.setVolume(clampedVolume);
     setVolume(clampedVolume / 100);
   }, []);
+
+  const toggleMute = useCallback(() => {
+    if (!playerRef.current) return;
+    
+    if (isMuted) {
+      // Ses aç
+      playerRef.current.unMute();
+      setIsMuted(false);
+    } else {
+      // Ses kapat
+      playerRef.current.mute();
+      setIsMuted(true);
+    }
+  }, [isMuted]);
 
   const seek = useCallback((amount: number) => {
     if (!playerRef.current) return;
@@ -103,12 +134,14 @@ export const AudioPlayerProvider: React.FC<{ children: ReactNode }> = ({
     isPlaying,
     isReady,
     volume,
+    isMuted,
     progress,
     duration,
     playerRef,
     playTrack,
     togglePlayPause,
     changeVolume,
+    toggleMute,
     seek,
     closePlayer,
     setProgress,

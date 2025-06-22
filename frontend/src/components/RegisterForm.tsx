@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { authService } from "../infrastructure/services/api";
+import { useMyBooks } from "../infrastructure/contexts/MyBooksContext";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
@@ -21,6 +22,7 @@ import bookflixBackground from "../assets/bookflix_background.png";
 
 export const RegisterForm: React.FC = () => {
   const navigate = useNavigate();
+  const { updateUser } = useMyBooks();
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -58,6 +60,7 @@ export const RegisterForm: React.FC = () => {
         password: formData.password,
       });
       console.log("Kayıt başarılı:", user);
+      updateUser(user);
       navigate("/");
     } catch (error) {
       setError(
@@ -142,7 +145,36 @@ export const RegisterForm: React.FC = () => {
             onChange={handleInputChange}
             required
             autoFocus
-            sx={{ mb: 2 }}
+            sx={{ 
+              mb: 2,
+              "& .MuiOutlinedInput-root": {
+                backgroundColor: "rgba(255, 255, 255, 0.8)",
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 0.9)",
+                },
+                "&.Mui-focused": {
+                  backgroundColor: "rgba(255, 255, 255, 0.95)",
+                },
+                "& fieldset": {
+                  borderColor: "rgba(0, 0, 0, 0.23)",
+                },
+                "&:hover fieldset": {
+                  borderColor: "rgba(0, 0, 0, 0.87)",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "#1976d2",
+                },
+              },
+              "& .MuiInputLabel-root": {
+                color: "rgba(0, 0, 0, 0.6)",
+                "&.Mui-focused": {
+                  color: "#1976d2",
+                },
+              },
+              "& .MuiInputBase-input": {
+                color: "rgba(0, 0, 0, 0.87)",
+              },
+            }}
           />
 
           <TextField
@@ -154,7 +186,36 @@ export const RegisterForm: React.FC = () => {
             onChange={handleInputChange}
             required
             autoComplete="email"
-            sx={{ mb: 2 }}
+            sx={{ 
+              mb: 2,
+              "& .MuiOutlinedInput-root": {
+                backgroundColor: "rgba(255, 255, 255, 0.8)",
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 0.9)",
+                },
+                "&.Mui-focused": {
+                  backgroundColor: "rgba(255, 255, 255, 0.95)",
+                },
+                "& fieldset": {
+                  borderColor: "rgba(0, 0, 0, 0.23)",
+                },
+                "&:hover fieldset": {
+                  borderColor: "rgba(0, 0, 0, 0.87)",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "#1976d2",
+                },
+              },
+              "& .MuiInputLabel-root": {
+                color: "rgba(0, 0, 0, 0.6)",
+                "&.Mui-focused": {
+                  color: "#1976d2",
+                },
+              },
+              "& .MuiInputBase-input": {
+                color: "rgba(0, 0, 0, 0.87)",
+              },
+            }}
           />
 
           <TextField
@@ -165,7 +226,36 @@ export const RegisterForm: React.FC = () => {
             value={formData.password}
             onChange={handleInputChange}
             required
-            sx={{ mb: 2 }}
+            sx={{ 
+              mb: 2,
+              "& .MuiOutlinedInput-root": {
+                backgroundColor: "rgba(255, 255, 255, 0.8)",
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 0.9)",
+                },
+                "&.Mui-focused": {
+                  backgroundColor: "rgba(255, 255, 255, 0.95)",
+                },
+                "& fieldset": {
+                  borderColor: "rgba(0, 0, 0, 0.23)",
+                },
+                "&:hover fieldset": {
+                  borderColor: "rgba(0, 0, 0, 0.87)",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "#1976d2",
+                },
+              },
+              "& .MuiInputLabel-root": {
+                color: "rgba(0, 0, 0, 0.6)",
+                "&.Mui-focused": {
+                  color: "#1976d2",
+                },
+              },
+              "& .MuiInputBase-input": {
+                color: "rgba(0, 0, 0, 0.87)",
+              },
+            }}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -188,7 +278,36 @@ export const RegisterForm: React.FC = () => {
             value={formData.confirmPassword}
             onChange={handleInputChange}
             required
-            sx={{ mb: 3 }}
+            sx={{ 
+              mb: 3,
+              "& .MuiOutlinedInput-root": {
+                backgroundColor: "rgba(255, 255, 255, 0.8)",
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 0.9)",
+                },
+                "&.Mui-focused": {
+                  backgroundColor: "rgba(255, 255, 255, 0.95)",
+                },
+                "& fieldset": {
+                  borderColor: "rgba(0, 0, 0, 0.23)",
+                },
+                "&:hover fieldset": {
+                  borderColor: "rgba(0, 0, 0, 0.87)",
+                },
+                "&.Mui-focused fieldset": {
+                  borderColor: "#1976d2",
+                },
+              },
+              "& .MuiInputLabel-root": {
+                color: "rgba(0, 0, 0, 0.6)",
+                "&.Mui-focused": {
+                  color: "#1976d2",
+                },
+              },
+              "& .MuiInputBase-input": {
+                color: "rgba(0, 0, 0, 0.87)",
+              },
+            }}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">

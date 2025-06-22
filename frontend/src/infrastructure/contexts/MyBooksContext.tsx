@@ -96,7 +96,21 @@ export const MyBooksProvider: React.FC<MyBooksProviderProps> = ({
   useEffect(() => {
     const initializeData = async () => {
       setLoading(true);
-      await refreshUserData();
+      try {
+        // Token varsa kullanıcı bilgilerini yükle
+        const token = localStorage.getItem('token');
+        if (token) {
+          console.log("🔑 Token bulundu, kullanıcı bilgileri yükleniyor...");
+          await refreshUserData();
+        } else {
+          console.log("❌ Token bulunamadı, kullanıcı giriş yapmamış");
+          setUser(null);
+        }
+      } finally {
+        // Kullanıcı bilgileri yüklendikten sonra loading'i false yap
+        // Kitaplar ayrı bir useEffect'te yüklenecek
+        setLoading(false);
+      }
     };
 
     initializeData();
@@ -125,9 +139,11 @@ export const MyBooksProvider: React.FC<MyBooksProviderProps> = ({
 
     // Kullanıcı varsa kitapları yükle
     if (currentUserId) {
+      console.log(`📚 Kullanıcı ${currentUserId} için kitaplar yükleniyor...`);
       refreshUserBooks();
     } else {
       // Kullanıcı yoksa kitapları temizle
+      console.log(`❌ Kullanıcı yok, kitaplar temizleniyor...`);
       setMyBooks([]);
       setLoading(false);
     }

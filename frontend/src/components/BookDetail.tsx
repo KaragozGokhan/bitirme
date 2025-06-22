@@ -52,6 +52,9 @@ export const BookDetail: React.FC = () => {
   const isBookInLibrary = book && myBooks.some((b) => b.id === book.id);
   const isBookInCart = book && cartItems.some((item) => item.id === book.id);
 
+  // Kullanıcı değişikliği durumunda loading state'ini kontrol et
+  const shouldShowLoading = booksLoading || !user;
+
   // Premium durumu değiştiğinde component'ı yeniden render et
   useEffect(() => {
     // Bu effect, isPremiumUser değiştiğinde çalışacak
@@ -331,7 +334,7 @@ export const BookDetail: React.FC = () => {
             )}
 
             <Stack spacing={2}>
-              {booksLoading || !user ? (
+              {shouldShowLoading ? (
                 <Button variant="outlined" disabled size="large" fullWidth>
                   Yükleniyor...
                 </Button>

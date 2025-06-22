@@ -274,8 +274,13 @@ export const ProfilePage: React.FC = () => {
         <Divider />
 
         <Box sx={{ p: 3 }}>
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
-            <Box sx={{ flex: "1 1 300px", minWidth: 0 }}>
+          <Box sx={{ 
+            display: "flex", 
+            flexWrap: "wrap", 
+            gap: 3,
+            width: "70%"
+          }}>
+            <Box sx={{ flex: "1 1 0", minWidth: 0 }}>
               <TextField
                 fullWidth
                 label="Kullanıcı Adı"
@@ -286,7 +291,7 @@ export const ProfilePage: React.FC = () => {
                 variant="outlined"
               />
             </Box>
-            <Box sx={{ flex: "1 1 300px", minWidth: 0 }}>
+            <Box sx={{ flex: "1 1 0", minWidth: 0 }}>
               <TextField
                 fullWidth
                 label="E-posta"
@@ -316,11 +321,17 @@ export const ProfilePage: React.FC = () => {
             Üyelik Bilgileri
           </Typography>
 
-          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
-            <Box sx={{ flex: "2 1 400px", minWidth: 0 }}>
+          <Box sx={{ 
+            display: "flex", 
+            flexWrap: "wrap", 
+            gap: 3,
+            width: "70%"
+          }}>
+            <Box sx={{ flex: "1 1 0", minWidth: 0 }}>
               <Card
                 sx={{
                   p: 2,
+                  height: "100%",
                   bgcolor: isSubscriptionActive()
                     ? "primary.main"
                     : "background.default",
@@ -333,7 +344,7 @@ export const ProfilePage: React.FC = () => {
                     : "text.primary",
                 }}
               >
-                <CardContent sx={{ p: 0 }}>
+                <CardContent sx={{ p: 0, height: "100%", display: "flex", flexDirection: "column", justifyContent: "center" }}>
                   <Stack direction="row" alignItems="center" spacing={2}>
                     <StarIcon
                       sx={{
@@ -377,33 +388,36 @@ export const ProfilePage: React.FC = () => {
               </Card>
             </Box>
 
-            <Box sx={{ flex: "1 1 300px", minWidth: 0 }}>
+            <Box sx={{ flex: "1 1 0", minWidth: 0 }}>
               {!isSubscriptionActive() && (
                 <Card
                   sx={{
                     p: 2,
+                    height: "100%",
                     bgcolor: "warning.main",
                     border: 1,
                     borderColor: "warning.main",
                     color: "warning.contrastText",
                   }}
                 >
-                  <CardContent sx={{ p: 0 }}>
-                    <Typography
-                      variant="h6"
-                      color="warning.contrastText"
-                      gutterBottom
-                    >
-                      Premium'a Geç
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="warning.contrastText"
-                      gutterBottom
-                      sx={{ opacity: 0.8 }}
-                    >
-                      Kitap dinleme özelliği için Premium üyelik gerekli
-                    </Typography>
+                  <CardContent sx={{ p: 0, height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                    <Box>
+                      <Typography
+                        variant="h6"
+                        color="warning.contrastText"
+                        gutterBottom
+                      >
+                        Premium'a Geç
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        color="warning.contrastText"
+                        gutterBottom
+                        sx={{ opacity: 0.8 }}
+                      >
+                        Sınırsız kitap erişimi için Premium'a yükselt.
+                      </Typography>
+                    </Box>
                     <Button
                       variant="contained"
                       fullWidth
@@ -427,28 +441,31 @@ export const ProfilePage: React.FC = () => {
                 <Card
                   sx={{
                     p: 2,
+                    height: "100%",
                     bgcolor: "success.main",
                     border: 1,
                     borderColor: "success.main",
                     color: "success.contrastText",
                   }}
                 >
-                  <CardContent sx={{ p: 0 }}>
-                    <Typography
-                      variant="h6"
-                      color="success.contrastText"
-                      gutterBottom
-                    >
-                      Premium Aktif
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="success.contrastText"
-                      sx={{ mb: 2, opacity: 0.9 }}
-                    >
-                      ✓ Kitap dinleme özelliği <br />
-                      ✓ Sınırsız kitap kiralama <br />✓ Özel içerikler
-                    </Typography>
+                  <CardContent sx={{ p: 0, height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                    <Box>
+                      <Typography
+                        variant="h6"
+                        color="success.contrastText"
+                        gutterBottom
+                      >
+                        Premium Aktif
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        color="success.contrastText"
+                        sx={{ mb: 2, opacity: 0.9 }}
+                      >
+                        ✓ Kitap dinleme özelliği <br />
+                        ✓ Sınırsız kitap kiralama <br />✓ Özel içerikler
+                      </Typography>
+                    </Box>
                     <Button
                       variant="outlined"
                       color="error"
@@ -493,44 +510,31 @@ export const ProfilePage: React.FC = () => {
             Tema Ayarları
           </Typography>
 
-          <Card
+          <Button
+            variant="outlined"
+            onClick={toggleTheme}
             sx={{
-              p: 2,
-              bgcolor: "background.paper",
-              border: 1,
-              borderColor: "divider",
+              p: 1.4,
+              border: 2,
+              borderColor: isDarkMode ? "primary.main" : "warning.main",
+              color: isDarkMode ? "primary.main" : "warning.main",
+              "&:hover": {
+                borderColor: isDarkMode ? "primary.dark" : "warning.dark",
+                bgcolor: isDarkMode ? "primary.lighter" : "warning.lighter",
+              },
+              fontSize: "0.77rem",
+              fontWeight: 600,
             }}
           >
-            <CardContent sx={{ p: 0 }}>
-              <Stack direction="row" alignItems="center" spacing={2}>
-                {isDarkMode ? (
-                  <DarkModeIcon sx={{ fontSize: 32, color: "primary.main" }} />
-                ) : (
-                  <LightModeIcon sx={{ fontSize: 32, color: "warning.main" }} />
-                )}
-                <Box sx={{ flex: 1 }}>
-                  <Typography variant="h6" fontWeight={600}>
-                    Karanlık Mod
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {isDarkMode
-                      ? "Karanlık tema aktif. Gözlerinizi yormayan koyu renkli arayüz."
-                      : "Aydınlık tema aktif. Geleneksel açık renkli arayüz."}
-                  </Typography>
-                </Box>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={isDarkMode}
-                      onChange={toggleTheme}
-                      color="primary"
-                    />
-                  }
-                  label=""
-                />
-              </Stack>
-            </CardContent>
-          </Card>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <span style={{ fontSize: "1.05rem" }}>
+                {isDarkMode ? "☀️" : "🌙"}
+              </span>
+              <span>
+                {isDarkMode ? "Aydınlık Mod" : "Karanlık Mod"}
+              </span>
+            </Box>
+          </Button>
         </Box>
       </Paper>
 

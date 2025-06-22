@@ -10,6 +10,7 @@ interface CartContextType {
   addToCart: (book: Book) => void;
   removeFromCart: (bookId: number) => void;
   clearCart: () => void;
+  clearCartOnLogout: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -64,8 +65,18 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     setCartItems([]);
   };
 
+  const clearCartOnLogout = () => {
+    console.log("🛒 Çıkış yapılıyor, sepet temizleniyor...");
+    setCartItems([]);
+    try {
+      localStorage.removeItem('cartItems');
+    } catch (error) {
+      console.error("Sepet localStorage temizlenirken hata oluştu:", error);
+    }
+  };
+
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, clearCart }}>
+    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, clearCart, clearCartOnLogout }}>
       {children}
     </CartContext.Provider>
   );

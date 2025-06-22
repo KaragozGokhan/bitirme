@@ -40,6 +40,9 @@ export const BookCard: React.FC<BookCardProps> = ({ book }) => {
     // Bu effect, isPremiumUser değiştiğinde çalışacak
   }, [isPremiumUser, user?.subscription_type]);
 
+  // Kullanıcı değişikliği durumunda loading state'ini kontrol et
+  const shouldShowLoading = loading || !user;
+
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
 
@@ -139,7 +142,7 @@ export const BookCard: React.FC<BookCardProps> = ({ book }) => {
               ₺{Number(book.price).toFixed(2)}
             </Typography>
           )}
-          {loading || !user ? (
+          {shouldShowLoading ? (
             <Button variant="outlined" disabled fullWidth>
               Yükleniyor...
             </Button>

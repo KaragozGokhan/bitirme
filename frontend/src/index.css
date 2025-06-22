@@ -14,6 +14,40 @@ body {
   color: #1e293b;
 }
 
+/* Browser autocomplete override'ları */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px rgba(255, 255, 255, 0.8) inset !important;
+  -webkit-text-fill-color: rgba(0, 0, 0, 0.87) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Dark mode'da autocomplete override'ları */
+[data-mui-color-scheme="dark"] input:-webkit-autofill,
+[data-mui-color-scheme="dark"] input:-webkit-autofill:hover,
+[data-mui-color-scheme="dark"] input:-webkit-autofill:focus,
+[data-mui-color-scheme="dark"] input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px rgba(255, 255, 255, 0.8) inset !important;
+  -webkit-text-fill-color: rgba(0, 0, 0, 0.87) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Firefox için autocomplete override'ları */
+input:-moz-autofill,
+input:-moz-autofill:focus {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  color: rgba(0, 0, 0, 0.87) !important;
+}
+
+/* Dark mode'da Firefox autocomplete override'ları */
+[data-mui-color-scheme="dark"] input:-moz-autofill,
+[data-mui-color-scheme="dark"] input:-moz-autofill:focus {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  color: rgba(0, 0, 0, 0.87) !important;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;

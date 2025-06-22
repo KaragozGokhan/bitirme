@@ -83,6 +83,35 @@ export const ForgotPasswordForm: React.FC = () => {
               autoFocus
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  backgroundColor: "rgba(255, 255, 255, 0.8)",
+                  "&:hover": {
+                    backgroundColor: "rgba(255, 255, 255, 0.9)",
+                  },
+                  "&.Mui-focused": {
+                    backgroundColor: "rgba(255, 255, 255, 0.95)",
+                  },
+                  "& fieldset": {
+                    borderColor: "rgba(0, 0, 0, 0.23)",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "rgba(0, 0, 0, 0.87)",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#1976d2",
+                  },
+                },
+                "& .MuiInputLabel-root": {
+                  color: "rgba(0, 0, 0, 0.6)",
+                  "&.Mui-focused": {
+                    color: "#1976d2",
+                  },
+                },
+                "& .MuiInputBase-input": {
+                  color: "rgba(0, 0, 0, 0.87)",
+                },
+              }}
             />
             <Button
               type="submit"

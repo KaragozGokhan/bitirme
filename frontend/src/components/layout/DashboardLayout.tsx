@@ -46,6 +46,7 @@ import {
   AccountCircle,
   Settings as SettingsIcon,
   ExitToApp,
+  VolumeOff,
 } from "@mui/icons-material";
 import { authService } from "../../infrastructure/services/api";
 import { useCart } from "../../infrastructure/contexts/CartContext";
@@ -68,9 +69,11 @@ const MiniPlayer = () => {
     currentTrack,
     isPlaying,
     volume,
+    isMuted,
     playerRef,
     togglePlayPause,
     changeVolume,
+    toggleMute,
     seek,
     progress,
     duration,
@@ -81,7 +84,14 @@ const MiniPlayer = () => {
   } = useAudioPlayer();
 
   const handleVolumeChange = (event: Event, newValue: number | number[]) => {
-    changeVolume(newValue as number);
+    const newVolume = newValue as number;
+    
+    // Eğer ses kapalıysa ve slider'a tıklandıysa sesi aç
+    if (isMuted && newVolume > 0) {
+      toggleMute();
+    }
+    
+    changeVolume(newVolume);
   };
 
   const formatTime = (time: number) => {
@@ -294,6 +304,7 @@ const MiniPlayer = () => {
         sx={{ mt: 1, px: 1 }}
       >
         <IconButton
+          onClick={toggleMute}
           sx={{
             width: 36,
             height: 36,
@@ -310,12 +321,18 @@ const MiniPlayer = () => {
             },
           }}
         >
-          <VolumeDown sx={{ fontSize: "1.1rem" }} />
+          {isMuted ? (
+            <VolumeOff sx={{ fontSize: "1.1rem" }} />
+          ) : volume < 0.5 ? (
+            <VolumeDown sx={{ fontSize: "1.1rem" }} />
+          ) : (
+            <VolumeUp sx={{ fontSize: "1.1rem" }} />
+          )}
         </IconButton>
         <Slider
           size="small"
           aria-label="Volume"
-          value={volume * 100}
+          value={isMuted ? 0 : volume * 100}
           onChange={handleVolumeChange}
           valueLabelDisplay="auto"
           valueLabelFormat={(value) => `${Math.round(value)}%`}
@@ -331,6 +348,7 @@ const MiniPlayer = () => {
           }}
         />
         <IconButton
+          onClick={toggleMute}
           sx={{
             width: 36,
             height: 36,
@@ -347,7 +365,13 @@ const MiniPlayer = () => {
             },
           }}
         >
-          <VolumeUp sx={{ fontSize: "1.1rem" }} />
+          {isMuted ? (
+            <VolumeOff sx={{ fontSize: "1.1rem" }} />
+          ) : volume < 0.5 ? (
+            <VolumeDown sx={{ fontSize: "1.1rem" }} />
+          ) : (
+            <VolumeUp sx={{ fontSize: "1.1rem" }} />
+          )}
         </IconButton>
       </Stack>
     </Box>
@@ -364,7 +388,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   const navigate = useNavigate();
   const location = useLocation();
   const params = useParams();
-  const { cartItems } = useCart();
+  const { cartItems, clearCartOnLogout } = useCart();
   const { currentTrack, playerRef, setIsPlaying, setIsReady, playTrack } =
     useAudioPlayer();
   const { resetMyBooks, resetUser } = useMyBooks();
@@ -386,6 +410,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     authService.logout();
     localStorage.removeItem("userId");
     resetUser(); // Tam temizlik için resetUser kullan
+    clearCartOnLogout(); // Sepeti de temizle
     navigate("/login");
   };
 
@@ -708,3 +733,4 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     </Box>
   );
 };
+

@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { authService } from "../infrastructure/services/api";
+import { useMyBooks } from "../infrastructure/contexts/MyBooksContext";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
@@ -21,6 +22,7 @@ import bookflixBackground from "../assets/bookflix_background.png";
 
 export const LoginForm: React.FC = () => {
   const navigate = useNavigate();
+  const { updateUser } = useMyBooks();
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -45,6 +47,7 @@ export const LoginForm: React.FC = () => {
     try {
       const user = await authService.login(formData.email, formData.password);
       console.log("Giriş başarılı:", user);
+      updateUser(user);
       navigate("/");
     } catch (error) {
       setError("Giriş yapılamadı. Lütfen bilgilerinizi kontrol edin.");
@@ -130,6 +133,35 @@ export const LoginForm: React.FC = () => {
               required
               autoComplete="email"
               autoFocus
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  backgroundColor: "rgba(255, 255, 255, 0.8)",
+                  "&:hover": {
+                    backgroundColor: "rgba(255, 255, 255, 0.9)",
+                  },
+                  "&.Mui-focused": {
+                    backgroundColor: "rgba(255, 255, 255, 0.95)",
+                  },
+                  "& fieldset": {
+                    borderColor: "rgba(0, 0, 0, 0.23)",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "rgba(0, 0, 0, 0.87)",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#1976d2",
+                  },
+                },
+                "& .MuiInputLabel-root": {
+                  color: "rgba(0, 0, 0, 0.6)",
+                  "&.Mui-focused": {
+                    color: "#1976d2",
+                  },
+                },
+                "& .MuiInputBase-input": {
+                  color: "rgba(0, 0, 0, 0.87)",
+                },
+              }}
             />
 
             <TextField
@@ -141,6 +173,35 @@ export const LoginForm: React.FC = () => {
               onChange={handleInputChange}
               required
               autoComplete="current-password"
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  backgroundColor: "rgba(255, 255, 255, 0.8)",
+                  "&:hover": {
+                    backgroundColor: "rgba(255, 255, 255, 0.9)",
+                  },
+                  "&.Mui-focused": {
+                    backgroundColor: "rgba(255, 255, 255, 0.95)",
+                  },
+                  "& fieldset": {
+                    borderColor: "rgba(0, 0, 0, 0.23)",
+                  },
+                  "&:hover fieldset": {
+                    borderColor: "rgba(0, 0, 0, 0.87)",
+                  },
+                  "&.Mui-focused fieldset": {
+                    borderColor: "#1976d2",
+                  },
+                },
+                "& .MuiInputLabel-root": {
+                  color: "rgba(0, 0, 0, 0.6)",
+                  "&.Mui-focused": {
+                    color: "#1976d2",
+                  },
+                },
+                "& .MuiInputBase-input": {
+                  color: "rgba(0, 0, 0, 0.87)",
+                },
+              }}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
