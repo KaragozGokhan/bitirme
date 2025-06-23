@@ -139,7 +139,7 @@ export const BookCard: React.FC<BookCardProps> = ({ book }) => {
               color="primary"
               sx={{ fontWeight: "bold" }}
             >
-              ₺{Number(book.price).toFixed(2)}
+              {Number(book.price).toFixed(2)}₺
             </Typography>
           )}
           {shouldShowLoading ? (

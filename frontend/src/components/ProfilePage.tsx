@@ -274,12 +274,14 @@ export const ProfilePage: React.FC = () => {
         <Divider />
 
         <Box sx={{ p: 3 }}>
-          <Box sx={{ 
-            display: "flex", 
-            flexWrap: "wrap", 
-            gap: 3,
-            width: "70%"
-          }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 3,
+              width: "70%",
+            }}
+          >
             <Box sx={{ flex: "1 1 0", minWidth: 0 }}>
               <TextField
                 fullWidth
@@ -321,12 +323,14 @@ export const ProfilePage: React.FC = () => {
             Üyelik Bilgileri
           </Typography>
 
-          <Box sx={{ 
-            display: "flex", 
-            flexWrap: "wrap", 
-            gap: 3,
-            width: "70%"
-          }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: 3,
+              width: "70%",
+            }}
+          >
             <Box sx={{ flex: "1 1 0", minWidth: 0 }}>
               <Card
                 sx={{
@@ -344,7 +348,15 @@ export const ProfilePage: React.FC = () => {
                     : "text.primary",
                 }}
               >
-                <CardContent sx={{ p: 0, height: "100%", display: "flex", flexDirection: "column", justifyContent: "center" }}>
+                <CardContent
+                  sx={{
+                    p: 0,
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "center",
+                  }}
+                >
                   <Stack direction="row" alignItems="center" spacing={2}>
                     <StarIcon
                       sx={{
@@ -400,7 +412,15 @@ export const ProfilePage: React.FC = () => {
                     color: "warning.contrastText",
                   }}
                 >
-                  <CardContent sx={{ p: 0, height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                  <CardContent
+                    sx={{
+                      p: 0,
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                    }}
+                  >
                     <Box>
                       <Typography
                         variant="h6"
@@ -431,7 +451,7 @@ export const ProfilePage: React.FC = () => {
                         },
                       }}
                     >
-                      Premium Al (₺29.99/ay)
+                      Premium Al (29.99₺/ay)
                     </Button>
                   </CardContent>
                 </Card>
@@ -448,7 +468,15 @@ export const ProfilePage: React.FC = () => {
                     color: "success.contrastText",
                   }}
                 >
-                  <CardContent sx={{ p: 0, height: "100%", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                  <CardContent
+                    sx={{
+                      p: 0,
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                    }}
+                  >
                     <Box>
                       <Typography
                         variant="h6"
@@ -530,9 +558,7 @@ export const ProfilePage: React.FC = () => {
               <span style={{ fontSize: "1.05rem" }}>
                 {isDarkMode ? "☀️" : "🌙"}
               </span>
-              <span>
-                {isDarkMode ? "Aydınlık Mod" : "Karanlık Mod"}
-              </span>
+              <span>{isDarkMode ? "Aydınlık Mod" : "Karanlık Mod"}</span>
             </Box>
           </Button>
         </Box>

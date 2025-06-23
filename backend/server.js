@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsDoc = require('swagger-jsdoc');
 const { pool } = require('./config/database');
@@ -96,6 +97,10 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
+
+// Static dosyalar için middleware - PDF ve görsel dosyaları serve et
+app.use('/pdfurl', express.static(path.join(__dirname, '../frontend/pdfurl')));
+app.use('/kitaplar', express.static(path.join(__dirname, '../frontend/kitaplar')));
 
 // Route'ları tanımlıyoruz
 app.use('/api/auth', authRoutes);

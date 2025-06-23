@@ -13,8 +13,13 @@ import {
   Paper,
   IconButton,
   Modal,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from "@mui/material";
-import { Delete, CreditCard } from "@mui/icons-material";
+import { Delete, CreditCard, DeleteSweep } from "@mui/icons-material";
 import { useCart } from "../infrastructure/contexts/CartContext";
 import { useNavigate } from "react-router-dom";
 import { useMyBooks } from "../infrastructure/contexts/MyBooksContext";
@@ -26,10 +31,44 @@ export const CartPage: React.FC = () => {
   const { addBooksToLibrary } = useMyBooks();
   const navigate = useNavigate();
   const [showPayment, setShowPayment] = useState(false);
+  const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
+  const [bookToRemove, setBookToRemove] = useState<{
+    id: number;
+    title: string;
+  } | null>(null);
+  const [clearCartConfirmOpen, setClearCartConfirmOpen] = useState(false);
 
-  const handleRemoveFromCart = (bookId: number) => {
-    removeFromCart(bookId);
-    toast.info("Kitap sepetten çıkarıldı");
+  const handleRemoveClick = (bookId: number, bookTitle: string) => {
+    setBookToRemove({ id: bookId, title: bookTitle });
+    setRemoveConfirmOpen(true);
+  };
+
+  const handleRemoveConfirm = () => {
+    if (bookToRemove) {
+      removeFromCart(bookToRemove.id);
+      toast.info("Kitap sepetten çıkarıldı");
+    }
+    setRemoveConfirmOpen(false);
+    setBookToRemove(null);
+  };
+
+  const handleRemoveCancel = () => {
+    setRemoveConfirmOpen(false);
+    setBookToRemove(null);
+  };
+
+  const handleClearCartClick = () => {
+    setClearCartConfirmOpen(true);
+  };
+
+  const handleClearCartConfirm = () => {
+    clearCart();
+    toast.info("Sepet temizlendi");
+    setClearCartConfirmOpen(false);
+  };
+
+  const handleClearCartCancel = () => {
+    setClearCartConfirmOpen(false);
   };
 
   const handlePurchaseSuccess = async (items: any[]) => {
@@ -71,9 +110,29 @@ export const CartPage: React.FC = () => {
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
-      <Typography variant="h4" gutterBottom fontWeight="bold">
-        Sepetim
-      </Typography>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 2,
+        }}
+      >
+        <Typography variant="h4" fontWeight="bold">
+          Sepetim
+        </Typography>
+        {cartItems.length > 0 && (
+          <Button
+            variant="outlined"
+            color="error"
+            startIcon={<DeleteSweep />}
+            onClick={handleClearCartClick}
+            size="small"
+          >
+            Sepeti Temizle
+          </Button>
+        )}
+      </Box>
       {cartItems.length === 0 ? (
         <Paper sx={{ p: 4, textAlign: "center" }}>
           <Typography variant="h6">Sepetinizde ürün bulunmuyor.</Typography>
@@ -95,7 +154,7 @@ export const CartPage: React.FC = () => {
                     <IconButton
                       edge="end"
                       aria-label="delete"
-                      onClick={() => handleRemoveFromCart(item.id)}
+                      onClick={() => handleRemoveClick(item.id, item.title)}
                     >
                       <Delete />
                     </IconButton>
@@ -127,7 +186,7 @@ export const CartPage: React.FC = () => {
                           {item.author}
                         </Typography>
                         <br />
-                        Fiyat: ₺{Number(item.price).toFixed(2)}
+                        Fiyat: {Number(item.price).toFixed(2)}₺
                       </>
                     }
                   />
@@ -146,7 +205,7 @@ export const CartPage: React.FC = () => {
             }}
           >
             <Typography variant="h5" fontWeight="bold">
-              Toplam Tutar: ₺{totalPrice.toFixed(2)}
+              Toplam Tutar: {totalPrice.toFixed(2)}₺
             </Typography>
             <Button
               variant="contained"
@@ -184,6 +243,66 @@ export const CartPage: React.FC = () => {
           </Box>
         </Modal>
       )}
+
+      {/* Sepetten çıkarma onay modalı */}
+      <Dialog
+        open={removeConfirmOpen}
+        onClose={handleRemoveCancel}
+        aria-labelledby="remove-confirm-dialog-title"
+        aria-describedby="remove-confirm-dialog-description"
+      >
+        <DialogTitle id="remove-confirm-dialog-title">
+          Kitabı Sepetten Çıkar
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="remove-confirm-dialog-description">
+            "{bookToRemove?.title}" kitabını sepetinizden çıkarmak istediğinize
+            emin misiniz?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleRemoveCancel} color="primary">
+            İptal
+          </Button>
+          <Button
+            onClick={handleRemoveConfirm}
+            color="error"
+            variant="contained"
+          >
+            Çıkar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Sepeti temizleme onay modalı */}
+      <Dialog
+        open={clearCartConfirmOpen}
+        onClose={handleClearCartCancel}
+        aria-labelledby="clear-cart-confirm-dialog-title"
+        aria-describedby="clear-cart-confirm-dialog-description"
+      >
+        <DialogTitle id="clear-cart-confirm-dialog-title">
+          Sepeti Temizle
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="clear-cart-confirm-dialog-description">
+            Sepetinizdeki tüm ürünleri ({cartItems.length} adet) çıkarmak
+            istediğinize emin misiniz? Bu işlem geri alınamaz.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClearCartCancel} color="primary">
+            İptal
+          </Button>
+          <Button
+            onClick={handleClearCartConfirm}
+            color="error"
+            variant="contained"
+          >
+            Sepeti Temizle
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };

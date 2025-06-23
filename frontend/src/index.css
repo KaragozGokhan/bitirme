@@ -64,4 +64,20 @@ input:-moz-autofill:focus {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
+}
+
+/* Boş MUI Chip'leri gizle */
+.css-1pl8fbw-MuiStack-root .MuiChip-root:empty,
+.css-1pl8fbw-MuiStack-root .MuiChip-root[aria-label=""],
+.css-1pl8fbw-MuiStack-root .MuiChip-label:empty {
+  display: none !important;
+}
+
+/* Boş kategori chip'leri gizle */
+.MuiChip-root .MuiChip-label:empty {
+  display: none !important;
+}
+
+.MuiChip-root:has(.MuiChip-label:empty) {
+  display: none !important;
 } 

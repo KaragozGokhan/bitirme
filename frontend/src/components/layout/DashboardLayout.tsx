@@ -85,12 +85,12 @@ const MiniPlayer = () => {
 
   const handleVolumeChange = (event: Event, newValue: number | number[]) => {
     const newVolume = newValue as number;
-    
+
     // Eğer ses kapalıysa ve slider'a tıklandıysa sesi aç
     if (isMuted && newVolume > 0) {
       toggleMute();
     }
-    
+
     changeVolume(newVolume);
   };
 
@@ -733,4 +733,3 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     </Box>
   );
 };
-

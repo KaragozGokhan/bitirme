@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Dialog,
   DialogTitle,
@@ -15,15 +15,10 @@ import {
   CardContent,
   Stack,
   Divider,
-} from '@mui/material';
-import {
-  CreditCard,
-  Lock,
-  Security,
-  Star,
-} from '@mui/icons-material';
-import { toast } from 'react-toastify';
-import { userService } from '../infrastructure/services/api';
+} from "@mui/material";
+import { CreditCard, Lock, Security, Star } from "@mui/icons-material";
+import { toast } from "react-toastify";
+import { userService } from "../infrastructure/services/api";
 
 interface PaymentModalProps {
   open: boolean;
@@ -43,9 +38,9 @@ interface PaymentForm {
 
 // Kart numarasını maskeleme fonksiyonu
 const maskCardNumber = (cardNumber: string): string => {
-  const cleaned = cardNumber.replace(/\s/g, '');
-  const masked = cleaned.replace(/\d(?=\d{4})/g, '*');
-  return masked.replace(/(.{4})/g, '$1 ').trim();
+  const cleaned = cardNumber.replace(/\s/g, "");
+  const masked = cleaned.replace(/\d(?=\d{4})/g, "*");
+  return masked.replace(/(.{4})/g, "$1 ").trim();
 };
 
 export const PaymentModal: React.FC<PaymentModalProps> = ({
@@ -56,42 +51,48 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   planName,
 }) => {
   const [formData, setFormData] = useState<PaymentForm>({
-    cardNumber: '',
-    cardHolder: '',
-    expiryMonth: '',
-    expiryYear: '',
-    cvv: '',
+    cardNumber: "",
+    cardHolder: "",
+    expiryMonth: "",
+    expiryYear: "",
+    cvv: "",
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Partial<PaymentForm>>({});
 
   // Kart tipini belirle
-  const cardType = formData.cardNumber.startsWith('4') ? 'visa' : 
-                   formData.cardNumber.startsWith('5') ? 'mastercard' : 'default';
+  const cardType = formData.cardNumber.startsWith("4")
+    ? "visa"
+    : formData.cardNumber.startsWith("5")
+    ? "mastercard"
+    : "default";
 
   const maskedCardNumber = maskCardNumber(formData.cardNumber);
-  const displayCardNumber = formData.cardNumber ? maskedCardNumber : '**** **** **** ****';
-  const displayCardHolder = formData.cardHolder || 'KART SAHİBİ';
-  const displayExpiry = formData.expiryMonth && formData.expiryYear 
-    ? `${formData.expiryMonth}/${formData.expiryYear}` 
-    : 'MM/YY';
+  const displayCardNumber = formData.cardNumber
+    ? maskedCardNumber
+    : "**** **** **** ****";
+  const displayCardHolder = formData.cardHolder || "KART SAHİBİ";
+  const displayExpiry =
+    formData.expiryMonth && formData.expiryYear
+      ? `${formData.expiryMonth}/${formData.expiryYear}`
+      : "MM/YY";
 
   const validateForm = (): boolean => {
     const newErrors: Partial<PaymentForm> = {};
 
     // Kart numarası kontrolü (16 haneli)
     if (!formData.cardNumber || formData.cardNumber.length !== 16) {
-      newErrors.cardNumber = 'Geçerli bir kart numarası giriniz (16 haneli)';
+      newErrors.cardNumber = "Geçerli bir kart numarası giriniz (16 haneli)";
     }
 
     // Kart sahibi kontrolü
     if (!formData.cardHolder || formData.cardHolder.length < 3) {
-      newErrors.cardHolder = 'Kart sahibi adını giriniz';
+      newErrors.cardHolder = "Kart sahibi adını giriniz";
     }
 
     // Son kullanma tarihi kontrolü
     if (!formData.expiryMonth || !formData.expiryYear) {
-      newErrors.expiryMonth = 'Son kullanma tarihini giriniz';
+      newErrors.expiryMonth = "Son kullanma tarihini giriniz";
     } else {
       const month = parseInt(formData.expiryMonth);
       const year = parseInt(formData.expiryYear);
@@ -100,15 +101,18 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       const currentMonth = currentDate.getMonth() + 1;
 
       if (month < 1 || month > 12) {
-        newErrors.expiryMonth = 'Geçerli bir ay giriniz (01-12)';
-      } else if (year < currentYear || (year === currentYear && month < currentMonth)) {
-        newErrors.expiryMonth = 'Kartın son kullanma tarihi geçmiş';
+        newErrors.expiryMonth = "Geçerli bir ay giriniz (01-12)";
+      } else if (
+        year < currentYear ||
+        (year === currentYear && month < currentMonth)
+      ) {
+        newErrors.expiryMonth = "Kartın son kullanma tarihi geçmiş";
       }
     }
 
     // CVV kontrolü (3-4 haneli)
     if (!formData.cvv || formData.cvv.length < 3 || formData.cvv.length > 4) {
-      newErrors.cvv = 'Geçerli bir CVV giriniz (3-4 haneli)';
+      newErrors.cvv = "Geçerli bir CVV giriniz (3-4 haneli)";
     }
 
     setErrors(newErrors);
@@ -119,36 +123,36 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     let formattedValue = value;
 
     // Kart numarası için sadece rakam
-    if (field === 'cardNumber') {
-      formattedValue = value.replace(/\D/g, '').slice(0, 16);
+    if (field === "cardNumber") {
+      formattedValue = value.replace(/\D/g, "").slice(0, 16);
     }
 
     // CVV için sadece rakam
-    if (field === 'cvv') {
-      formattedValue = value.replace(/\D/g, '').slice(0, 4);
+    if (field === "cvv") {
+      formattedValue = value.replace(/\D/g, "").slice(0, 4);
     }
 
     // Ay için sadece rakam ve 01-12 arası
-    if (field === 'expiryMonth') {
-      formattedValue = value.replace(/\D/g, '').slice(0, 2);
+    if (field === "expiryMonth") {
+      formattedValue = value.replace(/\D/g, "").slice(0, 2);
       if (formattedValue && parseInt(formattedValue) > 12) {
-        formattedValue = '12';
+        formattedValue = "12";
       }
     }
 
     // Yıl için sadece rakam
-    if (field === 'expiryYear') {
-      formattedValue = value.replace(/\D/g, '').slice(0, 2);
+    if (field === "expiryYear") {
+      formattedValue = value.replace(/\D/g, "").slice(0, 2);
     }
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [field]: formattedValue,
     }));
 
     // Hata mesajını temizle
     if (errors[field]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
         [field]: undefined,
       }));
@@ -164,9 +168,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
     try {
       // Kullanıcı ID'sini localStorage'dan al
-      const userId = localStorage.getItem('userId');
+      const userId = localStorage.getItem("userId");
       if (!userId) {
-        toast.error('Kullanıcı bilgisi bulunamadı. Lütfen tekrar giriş yapın.');
+        toast.error("Kullanıcı bilgisi bulunamadı. Lütfen tekrar giriş yapın.");
         return;
       }
 
@@ -180,18 +184,23 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         amount: price,
       };
 
-      const result = await userService.processPayment(parseInt(userId, 10), paymentData);
-      
+      const result = await userService.processPayment(
+        parseInt(userId, 10),
+        paymentData
+      );
+
       if (result.success) {
-        toast.success('Ödeme başarılı!');
+        toast.success("Ödeme başarılı!");
         onPaymentSuccess();
         onClose();
       } else {
-        toast.error('Ödeme işlemi başarısız oldu.');
+        toast.error("Ödeme işlemi başarısız oldu.");
       }
     } catch (error: any) {
-      console.error('Ödeme hatası:', error);
-      const errorMessage = error.response?.data?.error || 'Ödeme işlemi başarısız oldu. Lütfen tekrar deneyiniz.';
+      console.error("Ödeme hatası:", error);
+      const errorMessage =
+        error.response?.data?.error ||
+        "Ödeme işlemi başarısız oldu. Lütfen tekrar deneyiniz.";
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -199,7 +208,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   };
 
   const formatCardNumber = (value: string): string => {
-    return value.replace(/(\d{4})/g, '$1 ').trim();
+    return value.replace(/(\d{4})/g, "$1 ").trim();
   };
 
   // Kart görüntüsü component'i
@@ -208,86 +217,87 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       sx={{
         width: 320,
         height: 180,
-        maxWidth: '100%',
-        background: cardType === 'visa' 
-          ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-          : cardType === 'mastercard'
-          ? 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
-          : 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+        maxWidth: "100%",
+        background:
+          cardType === "visa"
+            ? "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
+            : cardType === "mastercard"
+            ? "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)"
+            : "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
         borderRadius: 3,
-        position: 'relative',
-        overflow: 'hidden',
+        position: "relative",
+        overflow: "hidden",
         mb: 3,
         boxShadow: 3,
-        transition: 'all 0.3s ease-in-out',
-        '&:hover': {
-          transform: 'translateY(-2px)',
+        transition: "all 0.3s ease-in-out",
+        "&:hover": {
+          transform: "translateY(-2px)",
           boxShadow: 6,
         },
-        '&::before': {
+        "&::before": {
           content: '""',
-          position: 'absolute',
+          position: "absolute",
           top: -50,
           right: -50,
           width: 100,
           height: 100,
-          borderRadius: '50%',
-          background: 'rgba(255,255,255,0.1)',
+          borderRadius: "50%",
+          background: "rgba(255,255,255,0.1)",
         },
-        '&::after': {
+        "&::after": {
           content: '""',
-          position: 'absolute',
+          position: "absolute",
           bottom: -30,
           left: -30,
           width: 60,
           height: 60,
-          borderRadius: '50%',
-          background: 'rgba(255,255,255,0.05)',
+          borderRadius: "50%",
+          background: "rgba(255,255,255,0.05)",
         },
       }}
     >
       {/* Kart chip */}
       <Box
         sx={{
-          position: 'absolute',
+          position: "absolute",
           top: 20,
           left: 20,
           width: 45,
           height: 35,
-          bgcolor: 'rgba(255,255,255,0.15)',
+          bgcolor: "rgba(255,255,255,0.15)",
           borderRadius: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          border: '1px solid rgba(255,255,255,0.3)',
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          border: "1px solid rgba(255,255,255,0.3)",
         }}
       >
         <Box
           sx={{
             width: 35,
             height: 25,
-            bgcolor: 'rgba(255,255,255,0.2)',
+            bgcolor: "rgba(255,255,255,0.2)",
             borderRadius: 0.5,
-            position: 'relative',
-            '&::before': {
+            position: "relative",
+            "&::before": {
               content: '""',
-              position: 'absolute',
+              position: "absolute",
               top: 2,
               left: 2,
               width: 8,
               height: 8,
-              bgcolor: 'rgba(255,255,255,0.4)',
-              borderRadius: '50%',
+              bgcolor: "rgba(255,255,255,0.4)",
+              borderRadius: "50%",
             },
-            '&::after': {
+            "&::after": {
               content: '""',
-              position: 'absolute',
+              position: "absolute",
               top: 2,
               right: 2,
               width: 6,
               height: 6,
-              bgcolor: 'rgba(255,255,255,0.3)',
-              borderRadius: '50%',
+              bgcolor: "rgba(255,255,255,0.3)",
+              borderRadius: "50%",
             },
           }}
         />
@@ -296,85 +306,85 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       {/* Kart tipi logosu */}
       <Box
         sx={{
-          position: 'absolute',
+          position: "absolute",
           top: 20,
           right: 20,
-          display: 'flex',
-          alignItems: 'center',
+          display: "flex",
+          alignItems: "center",
           gap: 1,
         }}
       >
-        {cardType === 'visa' && (
+        {cardType === "visa" && (
           <Box
             sx={{
               width: 60,
               height: 20,
-              bgcolor: 'white',
+              bgcolor: "white",
               borderRadius: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
             }}
           >
             <Typography
               variant="caption"
               sx={{
-                color: '#1a1f71',
-                fontWeight: 'bold',
-                fontFamily: 'monospace',
-                fontSize: '0.7rem',
+                color: "#1a1f71",
+                fontWeight: "bold",
+                fontFamily: "monospace",
+                fontSize: "0.7rem",
               }}
             >
               VISA
             </Typography>
           </Box>
         )}
-        {cardType === 'mastercard' && (
+        {cardType === "mastercard" && (
           <Box
             sx={{
               width: 60,
               height: 20,
-              bgcolor: 'white',
+              bgcolor: "white",
               borderRadius: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
             }}
           >
             <Typography
               variant="caption"
               sx={{
-                color: '#eb001b',
-                fontWeight: 'bold',
-                fontFamily: 'monospace',
-                fontSize: '0.6rem',
+                color: "#eb001b",
+                fontWeight: "bold",
+                fontFamily: "monospace",
+                fontSize: "0.6rem",
               }}
             >
               MASTERCARD
             </Typography>
           </Box>
         )}
-        {cardType === 'default' && (
+        {cardType === "default" && (
           <Box
             sx={{
               width: 60,
               height: 20,
-              bgcolor: 'rgba(255,255,255,0.2)',
+              bgcolor: "rgba(255,255,255,0.2)",
               borderRadius: 1,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
             <Typography
               variant="caption"
               sx={{
-                color: 'white',
-                fontWeight: 'bold',
-                fontFamily: 'monospace',
-                fontSize: '0.7rem',
+                color: "white",
+                fontWeight: "bold",
+                fontFamily: "monospace",
+                fontSize: "0.7rem",
               }}
             >
               CARD
@@ -386,7 +396,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       {/* Kart numarası */}
       <Box
         sx={{
-          position: 'absolute',
+          position: "absolute",
           bottom: 80,
           left: 20,
           right: 20,
@@ -395,11 +405,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         <Typography
           variant="h5"
           sx={{
-            color: 'white',
-            fontFamily: 'monospace',
+            color: "white",
+            fontFamily: "monospace",
             letterSpacing: 2,
-            textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
-            fontWeight: 'bold',
+            textShadow: "1px 1px 2px rgba(0,0,0,0.3)",
+            fontWeight: "bold",
           }}
         >
           {displayCardNumber}
@@ -409,7 +419,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       {/* Kart sahibi */}
       <Box
         sx={{
-          position: 'absolute',
+          position: "absolute",
           bottom: 45,
           left: 20,
         }}
@@ -418,11 +428,11 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           <Typography
             variant="body1"
             sx={{
-              color: 'white',
-              fontWeight: 'bold',
-              textTransform: 'uppercase',
+              color: "white",
+              fontWeight: "bold",
+              textTransform: "uppercase",
               letterSpacing: 1,
-              textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
+              textShadow: "1px 1px 2px rgba(0,0,0,0.3)",
             }}
           >
             {formData.cardHolder}
@@ -433,7 +443,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       {/* Son kullanma tarihi */}
       <Box
         sx={{
-          position: 'absolute',
+          position: "absolute",
           bottom: 45,
           right: 20,
         }}
@@ -441,10 +451,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         <Typography
           variant="body2"
           sx={{
-            color: 'white',
+            color: "white",
             opacity: 0.8,
-            fontSize: '0.75rem',
-            textTransform: 'uppercase',
+            fontSize: "0.75rem",
+            textTransform: "uppercase",
             letterSpacing: 1,
           }}
         >
@@ -453,10 +463,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         <Typography
           variant="body1"
           sx={{
-            color: 'white',
-            fontWeight: 'bold',
+            color: "white",
+            fontWeight: "bold",
             letterSpacing: 1,
-            textShadow: '1px 1px 2px rgba(0,0,0,0.3)',
+            textShadow: "1px 1px 2px rgba(0,0,0,0.3)",
           }}
         >
           {displayExpiry}
@@ -466,22 +476,22 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       {/* Dekoratif çizgiler */}
       <Box
         sx={{
-          position: 'absolute',
+          position: "absolute",
           top: 0,
           left: 0,
           right: 0,
           height: 2,
-          background: 'rgba(255,255,255,0.3)',
+          background: "rgba(255,255,255,0.3)",
         }}
       />
       <Box
         sx={{
-          position: 'absolute',
+          position: "absolute",
           top: 4,
           left: 0,
           right: 0,
           height: 1,
-          background: 'rgba(255,255,255,0.2)',
+          background: "rgba(255,255,255,0.2)",
         }}
       />
     </Card>
@@ -501,7 +511,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     >
       <DialogTitle sx={{ pb: 1 }}>
         <Stack direction="row" alignItems="center" spacing={1}>
-          <Star sx={{ color: 'primary.main' }} />
+          <Star sx={{ color: "primary.main" }} />
           <Typography variant="h6" fontWeight={600}>
             Premium Üyelik Satın Al
           </Typography>
@@ -511,13 +521,13 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       <DialogContent>
         <Stack spacing={3}>
           {/* Plan Bilgileri */}
-          <Card sx={{ bgcolor: 'primary.lighter' }}>
+          <Card sx={{ bgcolor: "primary.lighter" }}>
             <CardContent>
               <Typography variant="h6" fontWeight={600} gutterBottom>
                 {planName}
               </Typography>
               <Typography variant="h4" color="primary" fontWeight={700}>
-                ₺{price.toFixed(2)}
+                {price.toFixed(2)}₺
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Aylık ücret
@@ -531,16 +541,28 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
               Premium Özellikleri:
             </Typography>
             <Stack spacing={1}>
-              <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
+              <Typography
+                variant="body2"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
                 ✓ Kitap dinleme özelliği
               </Typography>
-              <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
+              <Typography
+                variant="body2"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
                 ✓ Sınırsız kitap kiralama
               </Typography>
-              <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
+              <Typography
+                variant="body2"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
                 ✓ Özel içerikler
               </Typography>
-              <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
+              <Typography
+                variant="body2"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
                 ✓ Reklamsız deneyim
               </Typography>
             </Stack>
@@ -558,17 +580,19 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             <CreditCardDisplay />
 
             {/* Kart Tipi Bilgisi */}
-            {cardType !== 'default' && (
+            {cardType !== "default" && (
               <Box sx={{ mb: 2 }}>
-                <Alert 
-                  severity="info" 
-                  sx={{ 
+                <Alert
+                  severity="info"
+                  sx={{
                     py: 0.5,
-                    '& .MuiAlert-icon': { alignItems: 'center' },
+                    "& .MuiAlert-icon": { alignItems: "center" },
                   }}
                 >
                   <Typography variant="body2">
-                    {cardType === 'visa' ? 'Visa kartı tespit edildi' : 'Mastercard tespit edildi'}
+                    {cardType === "visa"
+                      ? "Visa kartı tespit edildi"
+                      : "Mastercard tespit edildi"}
                   </Typography>
                 </Alert>
               </Box>
@@ -579,19 +603,27 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 fullWidth
                 label="Kart Numarası"
                 value={formatCardNumber(formData.cardNumber)}
-                onChange={(e) => handleInputChange('cardNumber', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("cardNumber", e.target.value)
+                }
                 error={!!errors.cardNumber}
                 helperText={errors.cardNumber}
                 placeholder="1234 5678 9012 3456"
                 InputProps={{
-                  startAdornment: <CreditCard sx={{ mr: 1, color: 'text.secondary' }} />,
+                  startAdornment: (
+                    <CreditCard sx={{ mr: 1, color: "text.secondary" }} />
+                  ),
                 }}
                 sx={{
-                  '& .MuiOutlinedInput-root': {
-                    '&.Mui-focused': {
-                      '& .MuiOutlinedInput-notchedOutline': {
-                        borderColor: cardType === 'visa' ? '#1a1f71' : 
-                                    cardType === 'mastercard' ? '#eb001b' : 'primary.main',
+                  "& .MuiOutlinedInput-root": {
+                    "&.Mui-focused": {
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        borderColor:
+                          cardType === "visa"
+                            ? "#1a1f71"
+                            : cardType === "mastercard"
+                            ? "#eb001b"
+                            : "primary.main",
                       },
                     },
                   },
@@ -602,7 +634,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 fullWidth
                 label="Kart Sahibi"
                 value={formData.cardHolder}
-                onChange={(e) => handleInputChange('cardHolder', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("cardHolder", e.target.value)
+                }
                 error={!!errors.cardHolder}
                 helperText={errors.cardHolder}
                 placeholder="Ad Soyad"
@@ -613,7 +647,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                   fullWidth
                   label="Ay"
                   value={formData.expiryMonth}
-                  onChange={(e) => handleInputChange('expiryMonth', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("expiryMonth", e.target.value)
+                  }
                   error={!!errors.expiryMonth}
                   helperText={errors.expiryMonth}
                   placeholder="MM"
@@ -623,7 +659,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                   fullWidth
                   label="Yıl"
                   value={formData.expiryYear}
-                  onChange={(e) => handleInputChange('expiryYear', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("expiryYear", e.target.value)
+                  }
                   error={!!errors.expiryYear}
                   helperText={errors.expiryYear}
                   placeholder="YY"
@@ -634,12 +672,14 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
                 fullWidth
                 label="CVV"
                 value={formData.cvv}
-                onChange={(e) => handleInputChange('cvv', e.target.value)}
+                onChange={(e) => handleInputChange("cvv", e.target.value)}
                 error={!!errors.cvv}
                 helperText={errors.cvv}
                 placeholder="123"
                 InputProps={{
-                  startAdornment: <Security sx={{ mr: 1, color: 'text.secondary' }} />,
+                  startAdornment: (
+                    <Security sx={{ mr: 1, color: "text.secondary" }} />
+                  ),
                 }}
               />
             </Stack>
@@ -648,7 +688,8 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           {/* Güvenlik Uyarısı */}
           <Alert severity="info" icon={<Lock />}>
             <Typography variant="body2">
-              Kredi kartı bilgileriniz güvenli bir şekilde şifrelenerek işlenmektedir.
+              Kredi kartı bilgileriniz güvenli bir şekilde şifrelenerek
+              işlenmektedir.
             </Typography>
           </Alert>
         </Stack>
@@ -670,9 +711,9 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
           sx={{ minWidth: 120 }}
           startIcon={loading ? <CircularProgress size={20} /> : undefined}
         >
-          {loading ? 'İşleniyor...' : 'Ödeme Yap'}
+          {loading ? "İşleniyor..." : "Ödeme Yap"}
         </Button>
       </DialogActions>
     </Dialog>
   );
-}; 
+};

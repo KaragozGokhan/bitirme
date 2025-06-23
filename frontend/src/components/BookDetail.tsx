@@ -22,6 +22,7 @@ import {
   VolumeUp,
   LibraryBooks,
   AddShoppingCart,
+  MenuBook,
 } from "@mui/icons-material";
 import { Book, User } from "../infrastructure/types";
 import { bookService, userService } from "../infrastructure/services/api";
@@ -189,9 +190,66 @@ export const BookDetail: React.FC = () => {
   };
 
   const handlePlayAudio = () => {
-    if (book) {
-      playTrack(book);
+    if (!book?.audio_url) {
+      toast.error("Bu kitap için ses versiyonu mevcut değil");
+      return;
     }
+
+    if (!hasBookAccess()) {
+      if (!isPremiumUser) {
+        toast.error(
+          "Bu kitabı dinlemek için premium üye olmanız veya kitabı satın almanız gerekiyor"
+        );
+      } else {
+        toast.error("Bu kitabı dinlemek için önce kütüphanenize ekleyin");
+      }
+      return;
+    }
+
+    // Erişim izni varsa kitabı çal
+    playTrack(book);
+  };
+
+  const handleReadPdf = () => {
+    if (!book?.pdf_url) {
+      toast.error("Bu kitap için PDF versiyonu mevcut değil");
+      return;
+    }
+
+    if (!hasBookAccess()) {
+      if (!isPremiumUser) {
+        toast.error(
+          "Bu kitabı okumak için premium üye olmanız veya kitabı satın almanız gerekiyor"
+        );
+      } else {
+        toast.error("Bu kitabı okumak için önce kütüphanenize ekleyin");
+      }
+      return;
+    }
+
+    // PDF URL'i işle - pdfurl/ ile başlıyorsa lokal dosya
+    const pdfUrl = book.pdf_url.startsWith("pdfurl/")
+      ? `/${book.pdf_url}`
+      : book.pdf_url;
+
+    // Yeni sekmede PDF'i aç
+    window.open(pdfUrl, "_blank");
+    toast.success("PDF yeni sekmede açılıyor...");
+  };
+
+  // Kullanıcının kitaba erişim yetkisi kontrolü (hem okuma hem dinleme için)
+  const hasBookAccess = () => {
+    // Premium üye ise tüm kitaplara erişimi var
+    if (isPremiumUser) {
+      return true;
+    }
+
+    // Free üye ise sadece satın aldığı kitaplara erişimi var
+    if (isBookInLibrary) {
+      return true;
+    }
+
+    return false;
   };
 
   const hasActiveSubscription = () => {
@@ -303,14 +361,19 @@ export const BookDetail: React.FC = () => {
 
             {book.categories && book.categories.length > 0 && (
               <Stack direction="row" spacing={1} sx={{ mb: 3 }}>
-                {book.categories.map((category) => (
-                  <Chip
-                    key={category.id}
-                    label={category.name}
-                    variant="outlined"
-                    size="small"
-                  />
-                ))}
+                {book.categories
+                  .filter(
+                    (category) =>
+                      category && category.name && category.name.trim()
+                  )
+                  .map((category) => (
+                    <Chip
+                      key={category.id}
+                      label={category.name.trim()}
+                      variant="outlined"
+                      size="small"
+                    />
+                  ))}
               </Stack>
             )}
 
@@ -328,7 +391,7 @@ export const BookDetail: React.FC = () => {
             {!isPremiumUser && (
               <Box sx={{ mb: 3 }}>
                 <Typography variant="h6" gutterBottom>
-                  Fiyat: ₺{book.price}
+                  Fiyat: {book.price}₺
                 </Typography>
               </Box>
             )}
@@ -382,46 +445,90 @@ export const BookDetail: React.FC = () => {
                 </Typography>
               </Box>
 
-              {/* Audio book butonu - şimdilik her zaman göster */}
-              {book.audio_url && (
-                <Button
-                  variant="outlined"
-                  startIcon={<PlayArrow />}
-                  onClick={handlePlayAudio}
-                  size="large"
-                  fullWidth
-                  sx={{
-                    borderColor: "primary.main",
-                    color: "primary.main",
-                    "&:hover": {
-                      backgroundColor: "primary.light",
-                      borderColor: "primary.main",
-                    },
-                  }}
-                >
-                  <VolumeUp sx={{ mr: 1 }} />
-                  Kitabı Dinle
-                  {!hasActiveSubscription() && (
-                    <Chip
-                      label="Test"
-                      size="small"
-                      color="secondary"
-                      sx={{ ml: 1 }}
-                    />
-                  )}
-                </Button>
-              )}
+              {/* Dinle ve Oku butonları yan yana */}
+              <Grid container spacing={2}>
+                {book.audio_url && (
+                  <Grid item xs={6}>
+                    <Button
+                      variant="outlined"
+                      startIcon={<PlayArrow />}
+                      onClick={handlePlayAudio}
+                      disabled={!hasBookAccess()}
+                      size="large"
+                      fullWidth
+                      sx={{
+                        borderColor: "primary.main",
+                        color: "primary.main",
+                        "&:hover": {
+                          backgroundColor: "primary.light",
+                          borderColor: "primary.main",
+                        },
+                        "&:disabled": {
+                          borderColor: "grey.300",
+                          color: "grey.500",
+                        },
+                      }}
+                    >
+                      <VolumeUp sx={{ mr: 1 }} />
+                      Dinle
+                      {!hasBookAccess() && (
+                        <Chip
+                          label="Kilitli"
+                          size="small"
+                          color="error"
+                          sx={{ ml: 1 }}
+                        />
+                      )}
+                    </Button>
+                  </Grid>
+                )}
+
+                <Grid item xs={book.audio_url ? 6 : 12}>
+                  <Button
+                    variant="outlined"
+                    startIcon={<MenuBook />}
+                    onClick={handleReadPdf}
+                    disabled={!hasBookAccess()}
+                    size="large"
+                    fullWidth
+                    sx={{
+                      borderColor: "secondary.main",
+                      color: "secondary.main",
+                      "&:hover": {
+                        backgroundColor: "secondary.light",
+                        borderColor: "secondary.main",
+                      },
+                      "&:disabled": {
+                        borderColor: "grey.300",
+                        color: "grey.500",
+                      },
+                    }}
+                  >
+                    Oku
+                    {!hasBookAccess() && (
+                      <Chip
+                        label="Kilitli"
+                        size="small"
+                        color="error"
+                        sx={{ ml: 1 }}
+                      />
+                    )}
+                  </Button>
+                </Grid>
+              </Grid>
 
               {/* Uyarı mesajı */}
-              {!hasActiveSubscription() && (
-                <Alert severity="info">
-                  Kitap dinleme özelliği için premium üyelik gereklidir.
+              {!hasBookAccess() && (
+                <Alert severity="warning">
+                  {!isPremiumUser
+                    ? "Bu kitabı okumak/dinlemek için premium üye olmanız veya kitabı satın almanız gerekiyor."
+                    : "Bu kitabı okumak/dinlemek için önce kütüphanenize eklemeniz gerekiyor."}
                   <Button
                     size="small"
                     onClick={() => navigate("/profile")}
                     sx={{ ml: 1 }}
                   >
-                    Üyelik Al
+                    {!isPremiumUser ? "Premium Ol" : "Kütüphaneye Git"}
                   </Button>
                 </Alert>
               )}
