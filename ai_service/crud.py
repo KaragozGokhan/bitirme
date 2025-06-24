@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, or_
-from typing import List, Optional
+from typing import List, Optional, Dict
 import models
 import schemas
 from passlib.context import CryptContext
@@ -245,4 +245,449 @@ class CommentCRUD:
             db.delete(db_comment)
             db.commit()
             return True
-        return False 
+        return False
+
+# Recommendation CRUD işlemleri - Kitap Önerisi Sistemi
+class RecommendationCRUD:
+    @staticmethod
+    def get_user_favorite_categories(db: Session, user_id: int, limit: int = 5) -> List[int]:
+        """
+        Kullanıcının en çok puan verdiği kategorileri döndürür
+        """
+        from sqlalchemy import func
+        
+        # Kullanıcının yüksek puan verdiği kitapların kategorilerini bul
+        result = (
+            db.query(models.Book.categories)
+            .join(models.Comment, models.Comment.book_id == models.Book.id)
+            .filter(
+                models.Comment.user_id == user_id,
+                models.Comment.rate >= 7  # 7 ve üzeri puanlar
+            )
+            .all()
+        )
+        
+        # Kategorileri topla ve sayılarını hesapla
+        category_counts = {}
+        for row in result:
+            if row.categories:
+                for category_id in row.categories:
+                    category_counts[category_id] = category_counts.get(category_id, 0) + 1
+        
+        # En çok tercih edilen kategorileri döndür
+        sorted_categories = sorted(category_counts.items(), key=lambda x: x[1], reverse=True)
+        return [cat_id for cat_id, count in sorted_categories[:limit]]
+    
+    @staticmethod
+    def get_popular_books_by_category(db: Session, category_ids: List[int], limit: int = 10) -> List[models.Book]:
+        """
+        Belirli kategorilerdeki en popüler kitapları döndürür
+        """
+        from sqlalchemy import func
+        
+        if not category_ids:
+            return []
+        
+        # Kategorilerdeki kitapların ortalama puanlarını hesapla
+        result = (
+            db.query(
+                models.Book,
+                func.avg(models.Comment.rate).label('avg_rate'),
+                func.count(models.Comment.id).label('comment_count')
+            )
+            .outerjoin(models.Comment, models.Comment.book_id == models.Book.id)
+            .filter(models.Book.categories.overlap(category_ids))
+            .group_by(models.Book.id)
+            .having(func.count(models.Comment.id) >= 1)  # En az 1 yorumu olan kitaplar
+            .order_by(func.avg(models.Comment.rate).desc(), func.count(models.Comment.id).desc())
+            .limit(limit)
+            .all()
+        )
+        
+        return [row.Book for row in result]
+    
+    @staticmethod
+    def get_user_unread_books(db: Session, user_id: int, book_ids: List[int]) -> List[models.Book]:
+        """
+        Kullanıcının henüz okumadığı kitapları filtreler
+        """
+        if not book_ids:
+            return []
+        
+        # Kullanıcının sahip olduğu veya kiraladığı kitapları bul
+        user_books = (
+            db.query(models.UserBook.book_id)
+            .filter(models.UserBook.user_id == user_id)
+            .all()
+        )
+        user_book_ids = [ub.book_id for ub in user_books]
+        
+        # Kullanıcının kiraladığı kitapları da ekle
+        user_rentals = (
+            db.query(models.Rental.book_id)
+            .filter(models.Rental.user_id == user_id)
+            .all()
+        )
+        user_rental_ids = [ur.book_id for ur in user_rentals]
+        
+        # Tüm okunmuş kitap ID'lerini birleştir
+        read_book_ids = set(user_book_ids + user_rental_ids)
+        
+        # Okunmamış kitapları döndür
+        return (
+            db.query(models.Book)
+            .filter(models.Book.id.in_(book_ids))
+            .filter(~models.Book.id.in_(read_book_ids))
+            .all()
+        )
+    
+    @staticmethod
+    def recommend_books_for_user(db: Session, user_id: int, limit: int = 5) -> List[models.Book]:
+        """
+        Kullanıcı için kitap önerileri oluşturur
+        """
+        # 1. Kullanıcının favori kategorilerini bul
+        favorite_categories = RecommendationCRUD.get_user_favorite_categories(db, user_id)
+        
+        # 2. Bu kategorilerdeki popüler kitapları bul
+        popular_books = RecommendationCRUD.get_popular_books_by_category(db, favorite_categories, limit * 2)
+        
+        # 3. Kullanıcının okumadığı kitapları filtrele
+        unread_books = RecommendationCRUD.get_user_unread_books(
+            db, user_id, [book.id for book in popular_books]
+        )
+        
+        # 4. Eğer yeterli öneri yoksa, genel popüler kitapları ekle
+        if len(unread_books) < limit:
+            from sqlalchemy import func
+            
+            # Genel popüler kitaplar
+            general_popular = (
+                db.query(models.Book)
+                .outerjoin(models.Comment, models.Comment.book_id == models.Book.id)
+                .group_by(models.Book.id)
+                .order_by(func.avg(models.Comment.rate).desc().nullslast())
+                .limit(limit * 2)
+                .all()
+            )
+            
+            # Henüz önerilmemiş kitapları ekle
+            recommended_ids = {book.id for book in unread_books}
+            additional_books = [
+                book for book in general_popular 
+                if book.id not in recommended_ids
+            ]
+            
+            unread_books.extend(additional_books[:limit - len(unread_books)])
+        
+        return unread_books[:limit]
+    
+    @staticmethod
+    def get_similar_books(db: Session, book_id: int, limit: int = 5) -> List[models.Book]:
+        """
+        Belirli bir kitaba benzer kitapları önerir
+        """
+        # Kitabın kategorilerini al
+        book = db.query(models.Book).filter(models.Book.id == book_id).first()
+        if not book or not book.categories:
+            return []
+        
+        # Aynı kategorilerdeki diğer kitapları bul
+        similar_books = (
+            db.query(models.Book)
+            .filter(models.Book.categories.overlap(book.categories))
+            .filter(models.Book.id != book_id)
+            .limit(limit)
+            .all()
+        )
+        
+        return similar_books
+    
+    @staticmethod
+    def get_trending_books(db: Session, limit: int = 10) -> List[models.Book]:
+        """
+        Son zamanlarda en çok yorum alan ve yüksek puanlı kitapları döndürür
+        """
+        from sqlalchemy import func
+        from datetime import datetime, timedelta
+        
+        # Son 30 gün içindeki yorumları al
+        thirty_days_ago = datetime.now() - timedelta(days=30)
+        
+        result = (
+            db.query(
+                models.Book,
+                func.avg(models.Comment.rate).label('avg_rate'),
+                func.count(models.Comment.id).label('recent_comments')
+            )
+            .join(models.Comment, models.Comment.book_id == models.Book.id)
+            .filter(models.Comment.created_at >= thirty_days_ago)
+            .group_by(models.Book.id)
+            .having(func.count(models.Comment.id) >= 2)  # En az 2 yorum
+            .order_by(func.avg(models.Comment.rate).desc(), func.count(models.Comment.id).desc())
+            .limit(limit)
+            .all()
+        )
+        
+        return [row.Book for row in result]
+
+# AI Recommendation CRUD işlemleri - Collaborative Filtering Tabanlı Öneri Sistemi
+class AIRecommendationCRUD:
+    @staticmethod
+    def train_ai_model(db: Session) -> bool:
+        """
+        Collaborative filtering modelini eğitir
+        """
+        from ml_recommendation import collaborative_recommender
+        
+        print("🤖 Collaborative filtering modeli eğitiliyor...")
+        success = collaborative_recommender.train(db)
+        
+        if success:
+            print("✅ Collaborative filtering modeli başarıyla eğitildi!")
+        else:
+            print("❌ Collaborative filtering modeli eğitimi başarısız!")
+        
+        return success
+    
+    @staticmethod
+    def load_ai_model() -> bool:
+        """
+        Kaydedilmiş collaborative filtering modelini yükler
+        """
+        from ml_recommendation import collaborative_recommender
+        
+        print("📥 Collaborative filtering modeli yükleniyor...")
+        success = collaborative_recommender.load_models()
+        
+        if success:
+            print("✅ Collaborative filtering modeli başarıyla yüklendi!")
+        else:
+            print("❌ Collaborative filtering modeli yüklenemedi!")
+        
+        return success
+    
+    @staticmethod
+    def get_ai_recommendations(db: Session, user_id: int, limit: int = 5) -> List[Dict]:
+        """
+        Collaborative filtering ile kitap önerileri
+        """
+        from ml_recommendation import collaborative_recommender
+        
+        if not collaborative_recommender.is_trained:
+            # Model yüklenmemişse yüklemeyi dene
+            if not AIRecommendationCRUD.load_ai_model():
+                return []
+        
+        return collaborative_recommender.get_collaborative_recommendations(user_id, limit)
+    
+    @staticmethod
+    def get_user_based_recommendations(db: Session, user_id: int, limit: int = 5) -> List[Dict]:
+        """
+        Kullanıcı tabanlı collaborative filtering önerileri
+        """
+        from ml_recommendation import collaborative_recommender
+        
+        if not collaborative_recommender.is_trained:
+            if not AIRecommendationCRUD.load_ai_model():
+                return []
+        
+        return collaborative_recommender.get_user_based_recommendations(user_id, limit)
+    
+    @staticmethod
+    def get_ai_similar_books(book_id: int, limit: int = 5) -> List[Dict]:
+        """
+        Collaborative filtering ile benzer kitap önerileri
+        """
+        from ml_recommendation import collaborative_recommender
+        
+        if not collaborative_recommender.is_trained:
+            if not AIRecommendationCRUD.load_ai_model():
+                return []
+        
+        return collaborative_recommender.get_similar_books(book_id, limit)
+    
+    @staticmethod
+    def get_similar_users(user_id: int, limit: int = 5) -> List[Dict]:
+        """
+        Benzer kullanıcıları bulur
+        """
+        from ml_recommendation import collaborative_recommender
+        
+        if not collaborative_recommender.is_trained:
+            if not AIRecommendationCRUD.load_ai_model():
+                return []
+        
+        return collaborative_recommender.get_similar_users(user_id, limit)
+    
+    @staticmethod
+    def predict_rating_user_based(book_id: int, user_id: int) -> float:
+        """
+        Kullanıcı tabanlı collaborative filtering ile puan tahmini
+        """
+        from ml_recommendation import collaborative_recommender
+        
+        if not collaborative_recommender.is_trained:
+            if not AIRecommendationCRUD.load_ai_model():
+                return 5.0  # Varsayılan puan
+        
+        return collaborative_recommender.predict_rating_user_based(user_id, book_id)
+    
+    @staticmethod
+    def predict_rating_item_based(book_id: int, user_id: int) -> float:
+        """
+        Öğe tabanlı collaborative filtering ile puan tahmini
+        """
+        from ml_recommendation import collaborative_recommender
+        
+        if not collaborative_recommender.is_trained:
+            if not AIRecommendationCRUD.load_ai_model():
+                return 5.0  # Varsayılan puan
+        
+        return collaborative_recommender.predict_rating_item_based(user_id, book_id)
+    
+    @staticmethod
+    def predict_rating_hybrid(book_id: int, user_id: int) -> float:
+        """
+        Hibrit collaborative filtering ile puan tahmini
+        """
+        from ml_recommendation import collaborative_recommender
+        
+        if not collaborative_recommender.is_trained:
+            if not AIRecommendationCRUD.load_ai_model():
+                return 5.0  # Varsayılan puan
+        
+        return collaborative_recommender.predict_rating_hybrid(user_id, book_id)
+    
+    @staticmethod
+    def predict_personalized_rating(book_id: int, user_id: int) -> Dict:
+        """
+        Collaborative filtering ile kişiselleştirilmiş puan tahmini
+        """
+        from ml_recommendation import collaborative_recommender
+        
+        if not collaborative_recommender.is_trained:
+            if not AIRecommendationCRUD.load_ai_model():
+                return {"predicted_rating": 5.0, "method": "default"}
+        
+        try:
+            # Farklı yöntemlerle tahmin yap
+            user_based_rating = collaborative_recommender.predict_rating_user_based(user_id, book_id)
+            item_based_rating = collaborative_recommender.predict_rating_item_based(user_id, book_id)
+            hybrid_rating = collaborative_recommender.predict_rating_hybrid(user_id, book_id)
+            
+            # Benzer kullanıcıları bul
+            similar_users = collaborative_recommender.get_similar_users(user_id, 3)
+            
+            return {
+                "predicted_rating": round(hybrid_rating, 2),
+                "user_based_rating": round(user_based_rating, 2),
+                "item_based_rating": round(item_based_rating, 2),
+                "method": "collaborative_filtering",
+                "similar_users_count": len(similar_users),
+                "similar_users": [
+                    {
+                        "user_id": user["user_id"],
+                        "username": user["username"],
+                        "similarity_score": round(user["similarity_score"], 3)
+                    }
+                    for user in similar_users
+                ]
+            }
+                
+        except Exception as e:
+            print(f"❌ Collaborative filtering tahmin hatası: {e}")
+            return {"predicted_rating": 5.0, "method": "error"}
+    
+    @staticmethod
+    def get_user_preferences(user_id: int) -> Dict:
+        """
+        Kullanıcının benzer kullanıcılarını ve tercihlerini döndürür
+        """
+        from ml_recommendation import collaborative_recommender
+        
+        if not collaborative_recommender.is_trained:
+            if not AIRecommendationCRUD.load_ai_model():
+                return {"error": "Model not trained"}
+        
+        try:
+            # Benzer kullanıcıları bul
+            similar_users = collaborative_recommender.get_similar_users(user_id, 5)
+            
+            # Kullanıcının puanladığı kitapları bul
+            user_ratings = collaborative_recommender.user_item_matrix.loc[user_id]
+            rated_books = user_ratings[user_ratings > 0]
+            
+            # Yüksek puanlı kitapları al
+            high_rated_books = []
+            for book_id, rating in rated_books.items():
+                if rating >= 7.0:  # 7+ puanlı kitaplar
+                    book_data = collaborative_recommender.books_df[collaborative_recommender.books_df['book_id'] == book_id]
+                    if not book_data.empty:
+                        high_rated_books.append({
+                            "book_id": int(book_id),
+                            "title": book_data.iloc[0]['title'],
+                            "author": book_data.iloc[0]['author'],
+                            "rating": float(rating)
+                        })
+            
+            return {
+                "user_id": user_id,
+                "similar_users": similar_users,
+                "total_ratings": len(rated_books),
+                "high_rated_books": high_rated_books[:5],  # En yüksek 5 puanlı kitap
+                "average_rating": float(rated_books.mean()) if len(rated_books) > 0 else 0.0
+            }
+            
+        except Exception as e:
+            return {"error": f"User preferences failed: {e}"}
+    
+    @staticmethod
+    def compare_predictions(book_id: int, user_id: int) -> Dict:
+        """
+        Farklı collaborative filtering yöntemlerini karşılaştırır
+        """
+        from ml_recommendation import collaborative_recommender
+        
+        if not collaborative_recommender.is_trained:
+            if not AIRecommendationCRUD.load_ai_model():
+                return {"error": "Model not trained"}
+        
+        try:
+            # Farklı yöntemlerle tahmin yap
+            user_based_rating = collaborative_recommender.predict_rating_user_based(user_id, book_id)
+            item_based_rating = collaborative_recommender.predict_rating_item_based(user_id, book_id)
+            hybrid_rating = collaborative_recommender.predict_rating_hybrid(user_id, book_id)
+            
+            # Benzer kullanıcıları bul
+            similar_users = collaborative_recommender.get_similar_users(user_id, 3)
+            
+            return {
+                "book_id": book_id,
+                "user_id": user_id,
+                "user_based_rating": round(user_based_rating, 2),
+                "item_based_rating": round(item_based_rating, 2),
+                "hybrid_rating": round(hybrid_rating, 2),
+                "method": "collaborative_filtering",
+                "similar_users_count": len(similar_users),
+                "similar_users": [
+                    {
+                        "user_id": user["user_id"],
+                        "username": user["username"],
+                        "similarity_score": round(user["similarity_score"], 3)
+                    }
+                    for user in similar_users
+                ]
+            }
+            
+        except Exception as e:
+            return {"error": f"Prediction comparison failed: {e}"}
+    
+    @staticmethod
+    def get_ai_model_info() -> Dict:
+        """
+        Collaborative filtering model bilgilerini döndürür
+        """
+        from ml_recommendation import collaborative_recommender
+        
+        return collaborative_recommender.get_model_info() 
