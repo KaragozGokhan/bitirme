@@ -422,6 +422,7 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
     { text: "Profil", icon: <PersonIcon />, path: "/profile" },
     { text: "Kitaplarım", icon: <MyBooksIcon />, path: "/my-books" },
     { text: "Kitaplar", icon: <BookIcon />, path: "/" },
+    { text: "Kitap Önerileri", icon: <BookIcon />, path: "/recommendations" },
   ];
 
   const drawer = (

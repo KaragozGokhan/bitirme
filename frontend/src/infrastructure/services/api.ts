@@ -10,7 +10,8 @@ import {
     UpdateSubscriptionRequest,
     LoginResponse,
     BackendLoginResponse,
-    Comment
+    Comment,
+    RecommendationResponse
 } from '../types';
 
 const API_URL = 'http://localhost:5000/api';
@@ -184,5 +185,16 @@ export const commentService = {
     // Yorum sil
     deleteComment: async (commentId: number): Promise<void> => {
         await api.delete(`/comments/${commentId}`);
+    },
+};
+
+export const aiService = {
+    train: async (): Promise<any> => {
+        const response = await axios.post('http://localhost:8000/ai/train');
+        return response.data;
+    },
+    getSimilarUsersRecommendations: async (userId: number, limit: number = 5): Promise<RecommendationResponse> => {
+        const response = await axios.get<RecommendationResponse>(`http://localhost:8000/ai/similar-users-recommendations/${userId}?limit=${limit}`);
+        return response.data;
     },
 }; 

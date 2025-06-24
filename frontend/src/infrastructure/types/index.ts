@@ -133,4 +133,21 @@ export interface Comment {
     username?: string;
     created_at: string;
     rate: number;
+}
+
+export interface Recommendation {
+    book_id: number;
+    title: string;
+    author: string;
+    predicted_rating: number;
+    similar_users_count: number;
+    method: string;
+}
+
+export interface RecommendationResponse {
+    user_id: number;
+    recommendations: Recommendation[];
+    total_recommendations: number;
+    method: string;
+    description: string;
 } 

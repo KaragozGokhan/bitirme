@@ -479,7 +479,7 @@ class AIRecommendationCRUD:
             if not AIRecommendationCRUD.load_ai_model():
                 return []
         
-        return collaborative_recommender.get_collaborative_recommendations(user_id, limit)
+        return collaborative_recommender.get_collaborative_recommendations(user_id, limit, db)
     
     @staticmethod
     def get_user_based_recommendations(db: Session, user_id: int, limit: int = 5) -> List[Dict]:
@@ -492,7 +492,7 @@ class AIRecommendationCRUD:
             if not AIRecommendationCRUD.load_ai_model():
                 return []
         
-        return collaborative_recommender.get_user_based_recommendations(user_id, limit)
+        return collaborative_recommender.get_user_based_recommendations(user_id, limit, db)
     
     @staticmethod
     def get_ai_similar_books(book_id: int, limit: int = 5) -> List[Dict]:
