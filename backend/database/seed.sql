@@ -364,7 +364,6 @@ UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=AeO-jtvAUZ8' WHERE
 UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=-azfwc5TN5I' WHERE title = 'Küçük Prens' AND audio_url IS NULL;
 UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=9flYRqTcNZY' WHERE title = 'Dönüşüm' AND audio_url IS NULL;
 UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=sz41xxF1mQo' WHERE title = 'Kürk Mantolu Madonna' AND audio_url IS NULL;
-UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=ZZ5LpwO-An4' WHERE title = 'Yabancı' AND audio_url IS NULL;
 UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=uLAxbDyijco' WHERE title = 'Anna Karenina' AND audio_url IS NULL;
 UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=kVAwL1UFclY' WHERE title = 'Beyaz Diş' AND audio_url IS NULL;
 UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=Ik34eIXb8jA' WHERE title = 'Sefiller' AND audio_url IS NULL;
@@ -880,3 +879,23 @@ INSERT INTO comments (comment, book_id, user_id, created_at, rate) VALUES
 INSERT INTO admins (username, email, password_hash, role) VALUES
 ('admin1', 'admin1@example.com', '$2b$10$GGil7M1Qr3Uo4vAFbgkWo.eENQkoGn0ONMerBdHRb2CkKjhZAzLEy', 'admin'),
 ('admin2', 'admin2@example.com', '$2b$10$GGil7M1Qr3Uo4vAFbgkWo.eENQkoGn0ONMerBdHRb2CkKjhZAzLEy', 'admin');
+
+
+DO $$
+DECLARE
+    u_id INTEGER;
+    b_ids INTEGER[];
+    b_id INTEGER;
+    i INTEGER;
+BEGIN
+    FOR u_id IN 1..50 LOOP
+        -- 15 farklı rastgele kitap seç
+        b_ids := ARRAY(SELECT id FROM books ORDER BY random() LIMIT 15);
+        FOREACH b_id IN ARRAY b_ids LOOP
+            INSERT INTO user_books (user_id, book_id, acquisition_method)
+            VALUES (u_id, b_id, 'purchase')
+            ON CONFLICT DO NOTHING;
+        END LOOP;
+    END LOOP;
+END $$;
+
