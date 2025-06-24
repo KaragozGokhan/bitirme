@@ -10,8 +10,10 @@ import Typography from "@mui/material/Typography";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import { BookCard } from "./BookCard";
+import { useMyBooks } from "../infrastructure/contexts/MyBooksContext";
 
 export const RecommendationPage: React.FC = () => {
+  const { user } = useMyBooks();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
@@ -19,20 +21,29 @@ export const RecommendationPage: React.FC = () => {
 
   useEffect(() => {
     const loadRecommendations = async () => {
-      if (!user?.id) return;
+      if (!user?.id) {
+        setLoading(false);
+        setError("Önerileri görmek için giriş yapmalısınız.");
+        return;
+      }
 
       try {
         setLoading(true);
+        setError(null);
         const userId = user.id;
 
         // AI modeli eğit
-        const trainResponse = await fetch("/api/ai/train", {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        const trainResponse = await fetch("http://localhost:8000/ai/train", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         });
 
         // Benzer kullanıcı önerilerini al
         const recResponse = await fetch(
-          `/api/ai/similar-users-recommendations?user_id=${userId}`,
+          `http://localhost:8000/ai/similar-users-recommendations/${userId}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -41,18 +52,21 @@ export const RecommendationPage: React.FC = () => {
         );
 
         if (recResponse.ok) {
-          const recommendations = await recResponse.json();
-          const bookIds = recommendations.map((rec: any) => rec.book_id);
+          const data = await recResponse.json();
+          const bookIds = data.recommendations.map((rec: any) => rec.book_id);
 
           // Kitap detaylarını al
           const bookDetails = await Promise.all(
             bookIds.map((id: number) => bookService.getBookById(id))
           );
 
-          setRecommendations(bookDetails);
+          setBooks(bookDetails);
+        } else {
+          setError("Öneriler yüklenirken bir hata oluştu.");
         }
       } catch (error) {
         console.error("Öneri yükleme hatası:", error);
+        setError("Öneriler yüklenirken bir hata oluştu.");
       } finally {
         setLoading(false);
       }

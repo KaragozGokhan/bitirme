@@ -98,36 +98,27 @@ export const BookDetail: React.FC = () => {
           setUser(mockUser);
         }
 
-        // Kitap detayını yükle, hata olursa mock data kullan
+        // Kitap detayını yükle
         try {
           const bookData = await bookService.getBookById(parseInt(id));
-
-          // Eğer audio URL yoksa test URL'si ekle
-          if (!bookData.audio_url) {
-            bookData.audio_url = "https://www.youtube.com/watch?v=5Fuplg6MhPQ";
-          }
-
           setBook(bookData);
         } catch (bookError) {
-          console.error(
-            "Kitap detayı yüklenirken hata, mock data kullanılıyor:",
-            bookError
-          );
+          console.error("Kitap detayı yüklenirken hata:", bookError);
 
-          // Mock kitap verisi oluştur
+          // Temel mock kitap verisi oluştur (audio_url olmadan)
           const mockBook = {
             id: parseInt(id),
-            title: `Sesli Kitap #${id}`,
+            title: `Kitap #${id}`,
             author: "Test Yazar",
             description:
-              "Bu kitabın gerçek detayları backend'den yüklenemedi. Test amaçlı sesli kitap özelliği ile mock data gösteriliyor. Backend bağlantısını kontrol edin.",
+              "Bu kitabın gerçek detayları backend'den yüklenemedi. Backend bağlantısını kontrol edin.",
             cover_image_url: "https://picsum.photos/300/400?random=" + id,
             pdf_url: "",
-            audio_url: "https://www.youtube.com/watch?v=jfKfPfyJRdk", // Lofi müzik - test video
+            audio_url: null, // Audio URL'si olmayan kitap
             price: 29.99,
             created_at: "2024-01-01",
             categories: [
-              { id: 1, name: "Sesli Kitap" },
+              { id: 1, name: "Roman" },
               { id: 2, name: "Test" },
             ],
           };

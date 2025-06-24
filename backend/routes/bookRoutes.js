@@ -62,6 +62,12 @@ const auth = require('../middleware/auth');
  *   get:
  *     summary: Tüm kitapları listele
  *     tags: [Books]
+ *     parameters:
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Kitap adı veya yazar adı ile arama
  *     responses:
  *       200:
  *         description: Kitap listesi
@@ -74,7 +80,18 @@ const auth = require('../middleware/auth');
  */
 router.get('/', async (req, res) => {
   try {
-    const booksQuery = await pool.query('SELECT * FROM books ORDER BY title');
+    const { search } = req.query;
+    let query = 'SELECT * FROM books';
+    const params = [];
+    
+    if (search) {
+      query += ' WHERE LOWER(title) LIKE $1 OR LOWER(author) LIKE $1';
+      params.push(`%${search.toString().toLowerCase()}%`);
+    }
+    
+    query += ' ORDER BY title';
+    
+    const booksQuery = await pool.query(query, params);
     res.json(booksQuery.rows);
   } catch (error) {
     console.error('Kitapları getirme hatası:', error);

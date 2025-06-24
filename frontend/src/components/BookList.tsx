@@ -34,6 +34,7 @@ export const BookList: React.FC<BookListProps> = ({ selectedCategory }) => {
   const [totalPages, setTotalPages] = useState(1);
   const booksPerPage = 20;
   const { sidebarOpen } = useSidebar();
+  const [searchLoading, setSearchLoading] = useState(false);
 
   const filterAndPaginateBooks = (
     allBooks: Book[],
@@ -69,18 +70,25 @@ export const BookList: React.FC<BookListProps> = ({ selectedCategory }) => {
     setBooks(paginatedBooks);
   };
 
-  const fetchBooks = async () => {
+  const fetchBooks = async (searchText?: string) => {
     try {
       setLoading(true);
       setError(null);
 
-      const response = await bookService.getBooks();
+      const response = await bookService.getBooks(searchText);
 
       if (response && response.length > 0) {
-        setBooks(response);
+        setAllBooks(response); // Tüm kitapları allBooks state'ine kaydet
+        // İlk yüklemede de filtreleme işlemini çalıştır
+        filterAndPaginateBooks(response, "", page);
       } else {
+        setAllBooks([]);
         setBooks([]);
-        setError("Henüz hiç kitap eklenmemiş.");
+        setError(
+          searchText
+            ? "Arama kriterlerinize uygun kitap bulunamadı."
+            : "Henüz hiç kitap eklenmemiş."
+        );
       }
     } catch (err) {
       console.error("Kitap yükleme hatası:", err);
@@ -96,13 +104,26 @@ export const BookList: React.FC<BookListProps> = ({ selectedCategory }) => {
 
   useEffect(() => {
     if (allBooks.length > 0) {
-      filterAndPaginateBooks(allBooks, searchTerm, page);
+      filterAndPaginateBooks(allBooks, "", page);
     }
-  }, [page, searchTerm, selectedCategory, allBooks]);
+  }, [page, selectedCategory, allBooks]);
+
+  // Arama için debounce kullanarak performans iyileştirmesi
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchTerm !== "") {
+        fetchBooks(searchTerm);
+      } else {
+        fetchBooks();
+      }
+      setPage(1);
+    }, 500); // 500ms bekle
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
 
   const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
-    setPage(1);
   };
 
   const handlePageChange = (

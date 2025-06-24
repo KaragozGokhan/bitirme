@@ -69,8 +69,9 @@ export const authService = {
 
 // Book services
 export const bookService = {
-    async getBooks(): Promise<Book[]> {
-        const response = await api.get<Book[]>("/books");
+    async getBooks(searchTerm?: string): Promise<Book[]> {
+        const params = searchTerm ? { search: searchTerm } : {};
+        const response = await api.get<Book[]>("/books", { params });
         return response.data;
     },
     getBookById: async (id: number): Promise<Book> => {
@@ -109,8 +110,8 @@ export const bookService = {
     updateReadingProgress: async (bookId: number, page: number): Promise<void> => {
         await api.post(`/books/${bookId}/progress`, { page });
     },
-    async getBooksByCategory(categoryId: number): Promise<Book[]> {
-        const response = await api.get<Book[]>(`/books/categories/${categoryId}`);
+    async getBooksByCategory(categoryId: number): Promise<{category: {id: number, name: string}, books: Book[]}> {
+        const response = await api.get<{category: {id: number, name: string}, books: Book[]}>(`/books/categories/${categoryId}`);
         return response.data;
     },
 };
