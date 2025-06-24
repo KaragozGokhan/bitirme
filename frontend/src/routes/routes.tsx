@@ -12,6 +12,7 @@ import { MyBooks } from "../components/MyBooks";
 import { PrivateRoute } from "../components/auth/PrivateRoute";
 import { CartPage } from "../components/CartPage";
 import { RecommendationPage } from "../components/RecommendationPage";
+import AdminLogin from '../components/admin/AdminLogin';
 
 export const AppRoutes: React.FC = () => {
   return (
@@ -81,6 +82,13 @@ export const AppRoutes: React.FC = () => {
           <PrivateRoute>
             <RecommendationPage />
           </PrivateRoute>
+        }
+      />
+
+      <Route
+        path="/admin/login"
+        element={
+          <AdminLogin />
         }
       />
     </Routes>

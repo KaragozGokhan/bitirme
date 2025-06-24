@@ -150,4 +150,17 @@ export interface RecommendationResponse {
     total_recommendations: number;
     method: string;
     description: string;
+}
+
+export interface Admin {
+    id: number;
+    email: string;
+    username: string;
+    role: string;
+}
+
+export interface AdminLoginResponse {
+    message: string;
+    admin: Admin;
+    token: string;
 } 

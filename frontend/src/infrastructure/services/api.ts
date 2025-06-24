@@ -11,7 +11,9 @@ import {
     LoginResponse,
     BackendLoginResponse,
     Comment,
-    RecommendationResponse
+    RecommendationResponse,
+    Admin,
+    AdminLoginResponse
 } from '../types';
 
 const API_URL = 'http://localhost:5000/api';
@@ -195,6 +197,16 @@ export const aiService = {
     },
     getSimilarUsersRecommendations: async (userId: number, limit: number = 5): Promise<RecommendationResponse> => {
         const response = await axios.get<RecommendationResponse>(`http://localhost:8000/ai/similar-users-recommendations/${userId}?limit=${limit}`);
+        return response.data;
+    },
+};
+
+export const adminService = {
+    login: async (email: string, password: string): Promise<AdminLoginResponse> => {
+        const response = await api.post<AdminLoginResponse>('/admin/login', { email, password });
+        if (response.data.token) {
+            localStorage.setItem('admin_token', response.data.token);
+        }
         return response.data;
     },
 }; 

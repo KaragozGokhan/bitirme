@@ -50,6 +50,7 @@ INSERT INTO users (username, email, password_hash, subscription_type, subscripti
 ('tugce.ozturk', 'tugce@example.com', '$2a$10$randomhash49', 'premium', '2024-12-31'),
 ('utku.ak', 'utku@example.com', '$2a$10$randomhash50', 'free', NULL);
 
+
 INSERT INTO books (title, author, description, cover_image_url, pdf_url, price) VALUES
 ('Suç ve Ceza', 'Fyodor Dostoyevski', 'Klasik Rus edebiyatının başyapıtlarından', 'kitaplar/1.png', 'pdfurl/1.pdf', 45.99),
 ('1984', 'George Orwell', 'Distopik bir gelecek romanı', 'kitaplar/2.png', 'pdfurl/2.pdf', 35.50),
@@ -874,3 +875,8 @@ INSERT INTO comments (comment, book_id, user_id, created_at, rate) VALUES
 ('Sıkıcı kitap!', 70, 48, '2024-08-06 13:00:00', 3),
 ('Berbat eser!', 87, 49, '2024-08-06 14:00:00', 1),
 ('Kötü deneyim!', 4, 50, '2024-08-06 15:00:00', 2); 
+
+-- Admin kullanıcıları ekle
+INSERT INTO admins (username, email, password_hash, role) VALUES
+('admin1', 'admin1@example.com', '$2b$10$GGil7M1Qr3Uo4vAFbgkWo.eENQkoGn0ONMerBdHRb2CkKjhZAzLEy', 'admin'),
+('admin2', 'admin2@example.com', '$2b$10$GGil7M1Qr3Uo4vAFbgkWo.eENQkoGn0ONMerBdHRb2CkKjhZAzLEy', 'admin');
