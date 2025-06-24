@@ -53,14 +53,10 @@ export const CategoryPage: React.FC = () => {
         return;
       }
 
-      console.log(
-        `📚 ${currentCategory?.name} kategorisindeki kitaplar yükleniyor...`
-      );
       setLoading(true);
       setError(null);
 
       const data = await bookService.getBooksByCategory(parseInt(categoryId));
-      console.log("📚 API'den gelen kitap verisi:", data);
 
       if (data && data.category && data.books) {
         setCategoryInfo(data.category);
@@ -76,13 +72,9 @@ export const CategoryPage: React.FC = () => {
 
         setBooks(filteredBooks);
         setTotalPages(Math.ceil(filteredBooks.length / 12));
-        console.log(
-          `📚 ${data.category.name} kategorisinde ${filteredBooks.length} kitap bulundu`
-        );
       } else {
         setBooks([]);
         setTotalPages(1);
-        console.log("📚 Hiç kitap bulunamadı");
       }
     } catch (error) {
       setError("Kitaplar yüklenirken bir hata oluştu.");

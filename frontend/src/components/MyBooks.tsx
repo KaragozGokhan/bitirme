@@ -32,6 +32,7 @@ import InfoIcon from "@mui/icons-material/Info";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 import PauseIcon from "@mui/icons-material/Pause";
 import DeleteIcon from "@mui/icons-material/Delete";
+import MenuBookIcon from "@mui/icons-material/MenuBook";
 import { useNavigate } from "react-router-dom";
 import { useMyBooks } from "../infrastructure/contexts/MyBooksContext";
 import { useSidebar } from "../infrastructure/contexts/SidebarContext";
@@ -89,6 +90,22 @@ export const MyBooks: React.FC = () => {
       // Farklı bir kitap çalmaya başla
       playTrack(book);
     }
+  };
+
+  const handleReadPdf = (book: Book) => {
+    if (!book?.pdf_url) {
+      toast.error("Bu kitap için PDF versiyonu mevcut değil");
+      return;
+    }
+
+    // PDF URL'i işle - pdfurl/ ile başlıyorsa lokal dosya
+    const pdfUrl = book.pdf_url.startsWith("pdfurl/")
+      ? `/${book.pdf_url}`
+      : book.pdf_url;
+
+    // Yeni sekmede PDF'i aç
+    window.open(pdfUrl, "_blank");
+    toast.success("PDF yeni sekmede açılıyor...");
   };
 
   const isCurrentlyPlaying = (book: Book) => {
@@ -205,7 +222,6 @@ export const MyBooks: React.FC = () => {
   }
 
   if (myBooks.length === 0) {
-    console.log("myBooks", myBooks);
     return (
       <Box>
         <Paper
@@ -292,51 +308,30 @@ export const MyBooks: React.FC = () => {
       </Paper>
 
       {/* Kitap Grid'i */}
-      <Grid
-        container
-        spacing={2}
+      <Box
         sx={{
-          mb: 4,
-          "& .MuiGrid-item": {
-            display: "flex",
-            transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-            transform: "scale(1)",
-            "&:hover": {
-              transform: "scale(1.02)",
-            },
+          display: "grid",
+          gridTemplateColumns: {
+            xs: "repeat(2, 1fr)",
+            sm: "repeat(3, 1fr)",
+            md: sidebarOpen ? "repeat(3, 1fr)" : "repeat(4, 1fr)",
+            lg: sidebarOpen ? "repeat(4, 1fr)" : "repeat(5, 1fr)",
+            xl: sidebarOpen ? "repeat(5, 1fr)" : "repeat(6, 1fr)",
           },
+          gap: 2,
+          mb: 4,
         }}
       >
         {currentPageBooks.map((book) => (
-          <Grid
-            item
-            xs={6}
-            sm={4}
-            md={sidebarOpen ? 4 : 3}
-            lg={sidebarOpen ? 3 : 2.4}
-            xl={sidebarOpen ? 2.4 : 2}
+          <Box
             key={book.id}
             sx={{
-              maxWidth: {
-                md: sidebarOpen ? "33.333%" : "25%",
-                lg: sidebarOpen ? "25%" : "20%",
-                xl: sidebarOpen ? "20%" : "16.666%",
-              },
-              flexBasis: {
-                md: sidebarOpen ? "33.333%" : "25%",
-                lg: sidebarOpen ? "25%" : "20%",
-                xl: sidebarOpen ? "20%" : "16.666%",
-              },
               transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
-              // Silme animasyonu için Grid item efekti
+              // Silme animasyonu için Box efekti
               ...(deletingBooks.includes(book.id) && {
                 transform: "translateX(-100px)",
                 opacity: 0,
-                maxWidth: 0,
-                flexBasis: 0,
-                minWidth: 0,
-                padding: 0,
-                margin: 0,
+                scale: 0,
               }),
             }}
           >
@@ -495,7 +490,7 @@ export const MyBooks: React.FC = () => {
                   alignItems: "center",
                 }}
               >
-                {/* Sol taraf - Bilgi ve Oynat butonları */}
+                {/* Sol taraf - Bilgi, PDF ve Oynat butonları */}
                 <Box sx={{ display: "flex", gap: 0.5 }}>
                   <Tooltip title="Detaylar">
                     <IconButton
@@ -524,6 +519,36 @@ export const MyBooks: React.FC = () => {
                       <InfoIcon sx={{ fontSize: "1.2rem" }} />
                     </IconButton>
                   </Tooltip>
+
+                  {book.pdf_url && (
+                    <Tooltip title="Oku">
+                      <IconButton
+                        onClick={() => handleReadPdf(book)}
+                        size="small"
+                        sx={{
+                          width: 40,
+                          height: 40,
+                          background:
+                            "linear-gradient(135deg, #9c27b0 0%, #673ab7 100%)",
+                          color: "white",
+                          borderRadius: "50%",
+                          boxShadow: "0 4px 15px 0 rgba(156, 39, 176, 0.4)",
+                          transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+                          "&:hover": {
+                            background:
+                              "linear-gradient(135deg, #8e24aa 0%, #5e35b1 100%)",
+                            transform: "scale(1.1) translateY(-2px)",
+                            boxShadow: "0 8px 25px 0 rgba(156, 39, 176, 0.6)",
+                          },
+                          "&:active": {
+                            transform: "scale(0.95)",
+                          },
+                        }}
+                      >
+                        <MenuBookIcon sx={{ fontSize: "1.2rem" }} />
+                      </IconButton>
+                    </Tooltip>
+                  )}
 
                   {book.audio_url && (
                     <Tooltip
@@ -620,9 +645,9 @@ export const MyBooks: React.FC = () => {
                 )}
               </CardActions>
             </Card>
-          </Grid>
+          </Box>
         ))}
-      </Grid>
+      </Box>
 
       {/* Sayfalama */}
       {totalPages > 1 && (

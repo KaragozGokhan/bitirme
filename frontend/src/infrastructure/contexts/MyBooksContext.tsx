@@ -309,6 +309,20 @@ export const MyBooksProvider: React.FC<MyBooksProviderProps> = ({
     }
   };
 
+  const loadMyBooks = async (userId: number) => {
+    if (!userId) {
+      return;
+    }
+
+    try {
+      const books = await userService.getMyBooks();
+      setMyBooks(books);
+    } catch (error) {
+      console.error("Kitaplar yüklenemedi:", error);
+      setMyBooks([]);
+    }
+  };
+
   return (
     <MyBooksContext.Provider
       value={{

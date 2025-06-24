@@ -46,7 +46,6 @@ export const LoginForm: React.FC = () => {
 
     try {
       const user = await authService.login(formData.email, formData.password);
-      console.log("Giriş başarılı:", user);
       localStorage.setItem("userId", String(user.id));
       updateUser(user);
       navigate("/");

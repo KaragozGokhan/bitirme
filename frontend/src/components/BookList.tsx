@@ -71,27 +71,20 @@ export const BookList: React.FC<BookListProps> = ({ selectedCategory }) => {
 
   const fetchBooks = async () => {
     try {
-      console.log("📚 Kitaplar yükleniyor...");
       setLoading(true);
       setError(null);
+
       const response = await bookService.getBooks();
-      console.log("📚 API'den gelen kitap verisi:", response);
-      if (response) {
-        setAllBooks(response);
-        filterAndPaginateBooks(response, searchTerm, page);
-        console.log(`📚 Toplam ${response.length} kitap yüklendi`);
+
+      if (response && response.length > 0) {
+        setBooks(response);
       } else {
-        setAllBooks([]);
         setBooks([]);
-        setTotalPages(1);
-        console.log("📚 Hiç kitap bulunamadı");
+        setError("Henüz hiç kitap eklenmemiş.");
       }
-    } catch (error) {
+    } catch (err) {
+      console.error("Kitap yükleme hatası:", err);
       setError("Kitaplar yüklenirken bir hata oluştu.");
-      console.error("❌ Kitap yükleme hatası:", error);
-      setAllBooks([]);
-      setBooks([]);
-      setTotalPages(1);
     } finally {
       setLoading(false);
     }

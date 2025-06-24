@@ -69,10 +69,8 @@ export const authService = {
 
 // Book services
 export const bookService = {
-    getBooks: async (): Promise<Book[]> => {
-        console.log("🔄 API İsteği: GET /books");
-        const response = await api.get<Book[]>('/books');
-        console.log("✅ API Yanıtı alındı:", response.data);
+    async getBooks(): Promise<Book[]> {
+        const response = await api.get<Book[]>("/books");
         return response.data;
     },
     getBookById: async (id: number): Promise<Book> => {
@@ -111,13 +109,10 @@ export const bookService = {
     updateReadingProgress: async (bookId: number, page: number): Promise<void> => {
         await api.post(`/books/${bookId}/progress`, { page });
     },
-    getBooksByCategory: async (categoryId: number): Promise<{category: {id: number, name: string}, books: Book[]}> => {
-        console.log(`🔄 API İsteği: GET /books/categories/${categoryId}`);
-        const response = await api.get<{category: {id: number, name: string}, books: Book[]}>(`/books/categories/${categoryId}`);
-        console.log("✅ Kategoriye göre kitaplar alındı:", response.data);
+    async getBooksByCategory(categoryId: number): Promise<Book[]> {
+        const response = await api.get<Book[]>(`/books/categories/${categoryId}`);
         return response.data;
     },
-
 };
 
 // User services
@@ -207,6 +202,104 @@ export const adminService = {
         if (response.data.token) {
             localStorage.setItem('admin_token', response.data.token);
         }
+        return response.data;
+    },
+    
+    logout: () => {
+        localStorage.removeItem('admin_token');
+    },
+
+    // Admin interceptor için ayrı axios instance
+    getApiWithAdminAuth: () => {
+        const adminApi = axios.create({
+            baseURL: API_URL,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        
+        adminApi.interceptors.request.use((config) => {
+            const token = localStorage.getItem('admin_token');
+            if (token && config.headers) {
+                config.headers.Authorization = `Bearer ${token}`;
+            }
+            return config;
+        });
+        
+        return adminApi;
+    },
+
+    // Kitap yönetimi
+    getBooks: async (): Promise<Book[]> => {
+        const adminApi = adminService.getApiWithAdminAuth();
+        const response = await adminApi.get<Book[]>('/admin/books');
+        return response.data;
+    },
+
+    addBook: async (bookData: Omit<Book, 'id' | 'created_at'>): Promise<Book> => {
+        const adminApi = adminService.getApiWithAdminAuth();
+        const response = await adminApi.post<{ message: string; book: Book }>('/admin/add-book', bookData);
+        return response.data.book;
+    },
+
+    updateBook: async (id: number, bookData: Partial<Book>): Promise<Book> => {
+        const adminApi = adminService.getApiWithAdminAuth();
+        const response = await adminApi.put<Book>(`/admin/books/${id}`, bookData);
+        return response.data;
+    },
+
+    deleteBook: async (id: number): Promise<void> => {
+        const adminApi = adminService.getApiWithAdminAuth();
+        await adminApi.delete(`/admin/books/${id}`);
+    },
+
+    // User yönetimi  
+    getUsers: async (): Promise<User[]> => {
+        const adminApi = adminService.getApiWithAdminAuth();
+        const response = await adminApi.get<User[]>('/admin/users');
+        return response.data;
+    },
+
+    updateUser: async (id: number, userData: Partial<User>): Promise<User> => {
+        const adminApi = adminService.getApiWithAdminAuth();
+        const response = await adminApi.put<User>(`/admin/users/${id}`, userData);
+        return response.data;
+    },
+
+    deleteUser: async (id: number): Promise<void> => {
+        const adminApi = adminService.getApiWithAdminAuth();
+        await adminApi.delete(`/admin/users/${id}`);
+    },
+
+    // Subscription yönetimi
+    getUserSubscriptions: async (): Promise<any[]> => {
+        const adminApi = adminService.getApiWithAdminAuth();
+        const response = await adminApi.get<any[]>('/admin/subscriptions');
+        return response.data;
+    },
+
+    updateUserSubscription: async (userId: number, subscriptionData: any): Promise<User> => {
+        const adminApi = adminService.getApiWithAdminAuth();
+        const response = await adminApi.put<User>(`/admin/users/${userId}/subscription`, subscriptionData);
+        return response.data;
+    },
+
+    // Yorum yönetimi
+    getComments: async (): Promise<Comment[]> => {
+        const adminApi = adminService.getApiWithAdminAuth();
+        const response = await adminApi.get<Comment[]>('/admin/comments');
+        return response.data;
+    },
+
+    deleteComment: async (id: number): Promise<void> => {
+        const adminApi = adminService.getApiWithAdminAuth();
+        await adminApi.delete(`/admin/comments/${id}`);
+    },
+
+    // Dashboard istatistikleri
+    getDashboardStats: async (): Promise<any> => {
+        const adminApi = adminService.getApiWithAdminAuth();
+        const response = await adminApi.get<any>('/admin/stats');
         return response.data;
     },
 }; 

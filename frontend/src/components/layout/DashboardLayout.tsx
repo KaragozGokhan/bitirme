@@ -406,7 +406,6 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   };
 
   const handleLogout = () => {
-    console.log("🔐 Kullanıcı çıkış yapıyor, tüm state temizleniyor...");
     authService.logout();
     localStorage.removeItem("userId");
     resetUser(); // Tam temizlik için resetUser kullan

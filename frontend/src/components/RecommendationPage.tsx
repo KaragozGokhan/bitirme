@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { aiService, bookService } from "../infrastructure/services/api";
-import { Recommendation, RecommendationResponse, Book } from "../infrastructure/types";
+import {
+  Recommendation,
+  RecommendationResponse,
+  Book,
+} from "../infrastructure/types";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import CircularProgress from "@mui/material/CircularProgress";
@@ -14,43 +18,48 @@ export const RecommendationPage: React.FC = () => {
   const [books, setBooks] = useState<Book[]>([]);
 
   useEffect(() => {
-    const fetchRecommendations = async () => {
-      console.log("[ÖNERİ] useEffect başladı");
-      setLoading(true);
-      setError(null);
+    const loadRecommendations = async () => {
+      if (!user?.id) return;
+
       try {
-        const userId = Number(localStorage.getItem("userId"));
-        console.log("[ÖNERİ] userId:", userId);
-        if (!userId) {
-          setError("Kullanıcı bulunamadı.");
-          setLoading(false);
-          return;
-        }
-        // Önce eğitim isteği at
-        console.log("[ÖNERİ] /ai/train isteği atılıyor...");
-        await aiService.train();
-        console.log("[ÖNERİ] /ai/train cevabı alındı");
-        // Eğitim bittikten sonra öneri isteği at
-        console.log("[ÖNERİ] /ai/similar-users-recommendations isteği atılıyor...");
-        const recResponse: RecommendationResponse = await aiService.getSimilarUsersRecommendations(userId, 5);
-        console.log("[ÖNERİ] /ai/similar-users-recommendations cevabı:", recResponse);
-        setRecommendations(recResponse.recommendations);
-        // Kitap detaylarını çek
-        const bookDetails = await Promise.all(
-          recResponse.recommendations.map((rec) => bookService.getBookById(rec.book_id))
+        setLoading(true);
+        const userId = user.id;
+
+        // AI modeli eğit
+        const trainResponse = await fetch("/api/ai/train", {
+          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        });
+
+        // Benzer kullanıcı önerilerini al
+        const recResponse = await fetch(
+          `/api/ai/similar-users-recommendations?user_id=${userId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
         );
-        setBooks(bookDetails);
-        console.log("[ÖNERİ] Kitap detayları yüklendi", bookDetails);
-      } catch (err: any) {
-        setError("Öneriler alınırken bir hata oluştu.");
-        console.error("[ÖNERİ] Hata:", err);
+
+        if (recResponse.ok) {
+          const recommendations = await recResponse.json();
+          const bookIds = recommendations.map((rec: any) => rec.book_id);
+
+          // Kitap detaylarını al
+          const bookDetails = await Promise.all(
+            bookIds.map((id: number) => bookService.getBookById(id))
+          );
+
+          setRecommendations(bookDetails);
+        }
+      } catch (error) {
+        console.error("Öneri yükleme hatası:", error);
       } finally {
         setLoading(false);
-        console.log("[ÖNERİ] Yükleme bitti");
       }
     };
-    fetchRecommendations();
-  }, []);
+
+    loadRecommendations();
+  }, [user]);
 
   return (
     <Box sx={{ p: 3 }}>
@@ -85,4 +94,4 @@ export const RecommendationPage: React.FC = () => {
       )}
     </Box>
   );
-}; 
+};

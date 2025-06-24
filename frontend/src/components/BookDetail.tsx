@@ -69,8 +69,6 @@ export const BookDetail: React.FC = () => {
           return;
         }
 
-        console.log("Kitap detayı yükleniyor, ID:", id);
-
         // Mock user data - API çalışmazsa kullanılacak
         const mockUser = {
           id: 1,
@@ -84,15 +82,10 @@ export const BookDetail: React.FC = () => {
 
         // User profilini yükle
         try {
-          console.log("User profili yükleniyor...");
           const userData = await userService.getProfile();
-          console.log("User profili yüklendi:", userData);
 
           // Eğer backend'den gelen user free ise, şimdilik premium yap
           if (userData.subscription_type === "free") {
-            console.log(
-              "⚠️ Backend'den free user geldi, premium'a çeviriliyor..."
-            );
             userData.subscription_type = "premium";
           }
 
@@ -107,13 +100,10 @@ export const BookDetail: React.FC = () => {
 
         // Kitap detayını yükle, hata olursa mock data kullan
         try {
-          console.log("Kitap detayı yükleniyor...");
           const bookData = await bookService.getBookById(parseInt(id));
-          console.log("Kitap detayı yüklendi:", bookData);
 
           // Eğer audio URL yoksa test URL'si ekle
           if (!bookData.audio_url) {
-            console.log("⚠️ Kitapta audio URL yok, test URL'si ekleniyor...");
             bookData.audio_url = "https://www.youtube.com/watch?v=5Fuplg6MhPQ";
           }
 
@@ -142,7 +132,6 @@ export const BookDetail: React.FC = () => {
             ],
           };
 
-          console.log("Mock kitap verisi kullanılıyor:", mockBook);
           setBook(mockBook);
         }
       } catch (err) {
@@ -253,14 +242,7 @@ export const BookDetail: React.FC = () => {
   };
 
   const hasActiveSubscription = () => {
-    console.log("🔍 Üyelik kontrolü:", {
-      user: user,
-      subscription_type: user?.subscription_type,
-      subscription_end_date: user?.subscription_end_date,
-    });
-
     if (!user) {
-      console.log("❌ User bulunamadı");
       return false;
     }
 
@@ -268,18 +250,11 @@ export const BookDetail: React.FC = () => {
       if (user.subscription_end_date) {
         const endDate = new Date(user.subscription_end_date);
         const isActive = endDate > new Date();
-        console.log("📅 Premium üyelik süresi:", {
-          endDate: endDate,
-          now: new Date(),
-          isActive: isActive,
-        });
         return isActive;
       }
-      console.log("✅ Premium üyelik aktif (süresiz)");
       return true;
     }
 
-    console.log("❌ Üyelik tipi premium değil:", user.subscription_type);
     return false;
   };
 
@@ -435,15 +410,6 @@ export const BookDetail: React.FC = () => {
                   Sepete Ekle
                 </Button>
               )}
-
-              {/* Debug bilgileri */}
-              <Box sx={{ p: 2, bgcolor: "info.lighter", borderRadius: 1 }}>
-                <Typography variant="caption" display="block">
-                  🔍 Debug: Üyelik = {user?.subscription_type || "null"} | Audio
-                  = {book.audio_url ? "✅" : "❌"} | Premium ={" "}
-                  {hasActiveSubscription() ? "✅" : "❌"}
-                </Typography>
-              </Box>
 
               {/* Dinle ve Oku butonları yan yana */}
               <Grid container spacing={2}>

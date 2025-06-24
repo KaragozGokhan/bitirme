@@ -5,7 +5,7 @@ CREATE TABLE users (
     email VARCHAR(100) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    subscription_type VARCHAR(20) DEFAULT 'free',
+    subscription_type VARCHAR(20) DEFAULT 'basic',
     subscription_end_date TIMESTAMP
 );
 

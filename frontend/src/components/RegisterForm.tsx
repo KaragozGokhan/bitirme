@@ -59,7 +59,6 @@ export const RegisterForm: React.FC = () => {
         email: formData.email,
         password: formData.password,
       });
-      console.log("Kayıt başarılı:", user);
       updateUser(user);
       navigate("/");
     } catch (error) {
@@ -145,7 +144,7 @@ export const RegisterForm: React.FC = () => {
             onChange={handleInputChange}
             required
             autoFocus
-            sx={{ 
+            sx={{
               mb: 2,
               "& .MuiOutlinedInput-root": {
                 backgroundColor: "rgba(255, 255, 255, 0.8)",
@@ -186,7 +185,7 @@ export const RegisterForm: React.FC = () => {
             onChange={handleInputChange}
             required
             autoComplete="email"
-            sx={{ 
+            sx={{
               mb: 2,
               "& .MuiOutlinedInput-root": {
                 backgroundColor: "rgba(255, 255, 255, 0.8)",
@@ -226,7 +225,7 @@ export const RegisterForm: React.FC = () => {
             value={formData.password}
             onChange={handleInputChange}
             required
-            sx={{ 
+            sx={{
               mb: 2,
               "& .MuiOutlinedInput-root": {
                 backgroundColor: "rgba(255, 255, 255, 0.8)",
@@ -278,7 +277,7 @@ export const RegisterForm: React.FC = () => {
             value={formData.confirmPassword}
             onChange={handleInputChange}
             required
-            sx={{ 
+            sx={{
               mb: 3,
               "& .MuiOutlinedInput-root": {
                 backgroundColor: "rgba(255, 255, 255, 0.8)",

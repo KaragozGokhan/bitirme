@@ -249,12 +249,335 @@ router.delete('/books/:id', adminAuth, async (req, res) => {
  */
 router.get('/comments', adminAuth, async (req, res) => {
   try {
-    const commentsQuery = await pool.query('SELECT * FROM comments ORDER BY created_at DESC');
+    const commentsQuery = await pool.query(`
+      SELECT 
+        c.*,
+        u.username,
+        b.title as book_title,
+        b.author as book_author
+      FROM comments c 
+      JOIN users u ON c.user_id = u.id 
+      LEFT JOIN books b ON c.book_id = b.id 
+      ORDER BY c.created_at DESC
+    `);
     res.json(commentsQuery.rows);
   } catch (error) {
     res.status(500).json({ error: 'Sunucu hatası' });
   }
 });
+
+/**
+ * @swagger
+ * /api/admin/comments/{id}:
+ *   delete:
+ *     summary: Yorum sil (sadece admin)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Yorum başarıyla silindi
+ *       404:
+ *         description: Yorum bulunamadı
+ *       401:
+ *         description: Geçersiz veya eksik token
+ *       403:
+ *         description: Admin yetkisi yok
+ */
+router.delete('/comments/:id', adminAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleteQuery = await pool.query('DELETE FROM comments WHERE id = $1 RETURNING *', [id]);
+    if (deleteQuery.rows.length === 0) {
+      return res.status(404).json({ error: 'Yorum bulunamadı' });
+    }
+    res.json({ message: 'Yorum başarıyla silindi' });
+  } catch (error) {
+    res.status(500).json({ error: 'Sunucu hatası' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/admin/users:
+ *   get:
+ *     summary: Tüm kullanıcıları listele (sadece admin)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Kullanıcı listesi
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Geçersiz veya eksik token
+ *       403:
+ *         description: Admin yetkisi yok
+ */
+router.get('/users', adminAuth, async (req, res) => {
+  try {
+    const usersQuery = await pool.query('SELECT id, username, email, created_at, subscription_type, subscription_end_date FROM users ORDER BY created_at DESC');
+    res.json(usersQuery.rows);
+  } catch (error) {
+    res.status(500).json({ error: 'Sunucu hatası' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/admin/users/{id}:
+ *   put:
+ *     summary: Kullanıcı güncelle (sadece admin)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               subscription_type:
+ *                 type: string
+ *               subscription_end_date:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Kullanıcı başarıyla güncellendi
+ *       404:
+ *         description: Kullanıcı bulunamadı
+ *       401:
+ *         description: Geçersiz veya eksik token
+ *       403:
+ *         description: Admin yetkisi yok
+ */
+router.put('/users/:id', adminAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { username, email, subscription_type, subscription_end_date } = req.body;
+    const updateQuery = await pool.query(
+      'UPDATE users SET username = $1, email = $2, subscription_type = $3, subscription_end_date = $4 WHERE id = $5 RETURNING id, username, email, created_at, subscription_type, subscription_end_date',
+      [username, email, subscription_type, subscription_end_date, id]
+    );
+    if (updateQuery.rows.length === 0) {
+      return res.status(404).json({ error: 'Kullanıcı bulunamadı' });
+    }
+    res.json(updateQuery.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: 'Sunucu hatası' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/admin/users/{id}:
+ *   delete:
+ *     summary: Kullanıcı sil (sadece admin)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Kullanıcı başarıyla silindi
+ *       404:
+ *         description: Kullanıcı bulunamadı
+ *       401:
+ *         description: Geçersiz veya eksik token
+ *       403:
+ *         description: Admin yetkisi yok
+ */
+router.delete('/users/:id', adminAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deleteQuery = await pool.query('DELETE FROM users WHERE id = $1 RETURNING *', [id]);
+    if (deleteQuery.rows.length === 0) {
+      return res.status(404).json({ error: 'Kullanıcı bulunamadı' });
+    }
+    res.json({ message: 'Kullanıcı başarıyla silindi' });
+  } catch (error) {
+    res.status(500).json({ error: 'Sunucu hatası' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/admin/subscriptions:
+ *   get:
+ *     summary: Tüm abonelikleri listele (sadece admin)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Abonelik listesi
+ *       401:
+ *         description: Geçersiz veya eksik token
+ *       403:
+ *         description: Admin yetkisi yok
+ */
+router.get('/subscriptions', adminAuth, async (req, res) => {
+  try {
+    const subscriptionsQuery = await pool.query(`
+      SELECT 
+        u.id, 
+        u.username, 
+        u.email, 
+        u.subscription_type, 
+        u.subscription_end_date, 
+        u.created_at,
+        CASE 
+          WHEN u.subscription_end_date IS NULL THEN 'Aktif Değil'
+          WHEN u.subscription_end_date > NOW() THEN 'Aktif'
+          ELSE 'Süresi Dolmuş'
+        END as status
+      FROM users u 
+      ORDER BY u.created_at DESC
+    `);
+    res.json(subscriptionsQuery.rows);
+  } catch (error) {
+    res.status(500).json({ error: 'Sunucu hatası' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/admin/users/{id}/subscription:
+ *   put:
+ *     summary: Kullanıcı aboneliğini güncelle (sadece admin)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               subscription_type:
+ *                 type: string
+ *               months:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Abonelik başarıyla güncellendi
+ *       404:
+ *         description: Kullanıcı bulunamadı
+ *       401:
+ *         description: Geçersiz veya eksik token
+ *       403:
+ *         description: Admin yetkisi yok
+ */
+router.put('/users/:id/subscription', adminAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { subscription_type, months } = req.body;
+    
+    let subscription_end_date = null;
+    if (subscription_type === 'premium' && months) {
+      const endDate = new Date();
+      endDate.setMonth(endDate.getMonth() + months);
+      subscription_end_date = endDate.toISOString();
+    }
+    
+    const updateQuery = await pool.query(
+      'UPDATE users SET subscription_type = $1, subscription_end_date = $2 WHERE id = $3 RETURNING id, username, email, subscription_type, subscription_end_date',
+      [subscription_type, subscription_end_date, id]
+    );
+    
+    if (updateQuery.rows.length === 0) {
+      return res.status(404).json({ error: 'Kullanıcı bulunamadı' });
+    }
+    
+    res.json(updateQuery.rows[0]);
+  } catch (error) {
+    res.status(500).json({ error: 'Sunucu hatası' });
+  }
+});
+
+/**
+ * @swagger
+ * /api/admin/stats:
+ *   get:
+ *     summary: Dashboard istatistikleri (sadece admin)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Dashboard istatistikleri
+ *       401:
+ *         description: Geçersiz veya eksik token
+ *       403:
+ *         description: Admin yetkisi yok
+ */
+router.get('/stats', adminAuth, async (req, res) => {
+  try {
+    const [
+      totalUsersResult,
+      totalBooksResult,
+      totalCommentsResult,
+      allPremiumUsersResult,
+      activePremiumUsersResult,
+      recentUsersResult
+    ] = await Promise.all([
+      pool.query('SELECT COUNT(*) as count FROM users'),
+      pool.query('SELECT COUNT(*) as count FROM books'),
+      pool.query('SELECT COUNT(*) as count FROM comments'),
+      pool.query("SELECT COUNT(*) as count FROM users WHERE subscription_type = 'premium'"),
+      pool.query("SELECT COUNT(*) as count FROM users WHERE subscription_type = 'premium' AND (subscription_end_date IS NULL OR subscription_end_date > NOW())"),
+      pool.query('SELECT COUNT(*) as count FROM users WHERE created_at > NOW() - INTERVAL \'30 days\'')
+    ]);
+
+    const stats = {
+      totalUsers: parseInt(totalUsersResult.rows[0].count),
+      totalBooks: parseInt(totalBooksResult.rows[0].count),
+      totalComments: parseInt(totalCommentsResult.rows[0].count),
+      premiumUsers: parseInt(allPremiumUsersResult.rows[0].count),
+      activePremiumUsers: parseInt(activePremiumUsersResult.rows[0].count),
+      recentUsers: parseInt(recentUsersResult.rows[0].count)
+    };
+
+    res.json(stats);
+  } catch (error) {
+    res.status(500).json({ error: 'Sunucu hatası' });
+  }
+});
+
 
 /**
  * @swagger

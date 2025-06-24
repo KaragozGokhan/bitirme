@@ -41,15 +41,10 @@ export const ProfilePage: React.FC = () => {
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [isCancellingPremium, setIsCancellingPremium] = useState(false);
 
-  // Debug log to ensure isDarkMode is used
-  console.log("Current theme mode:", isDarkMode ? "dark" : "light");
-  console.log("User:", user);
-
   const fetchUserProfile = async () => {
     try {
       setLoading(true);
       const userData = await userService.getProfile();
-      console.log("User Data:", userData);
       setUser(userData);
       setEditedUser(userData);
     } catch (error) {

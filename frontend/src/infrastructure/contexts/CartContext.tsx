@@ -1,5 +1,11 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { Book } from '../types';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useEffect,
+} from "react";
+import { Book } from "../types";
 
 interface CartItem extends Book {
   quantity: number;
@@ -18,7 +24,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const useCart = () => {
   const context = useContext(CartContext);
   if (!context) {
-    throw new Error('useCart must be used within a CartProvider');
+    throw new Error("useCart must be used within a CartProvider");
   }
   return context;
 };
@@ -30,7 +36,7 @@ interface CartProviderProps {
 export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     try {
-      const items = localStorage.getItem('cartItems');
+      const items = localStorage.getItem("cartItems");
       return items ? JSON.parse(items) : [];
     } catch (error) {
       console.error("Sepet verisi okunurken hata oluştu:", error);
@@ -40,7 +46,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
   useEffect(() => {
     try {
-      localStorage.setItem('cartItems', JSON.stringify(cartItems));
+      localStorage.setItem("cartItems", JSON.stringify(cartItems));
     } catch (error) {
       console.error("Sepet verisi kaydedilirken hata oluştu:", error);
     }
@@ -66,18 +72,25 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   };
 
   const clearCartOnLogout = () => {
-    console.log("🛒 Çıkış yapılıyor, sepet temizleniyor...");
     setCartItems([]);
     try {
-      localStorage.removeItem('cartItems');
+      localStorage.removeItem("cartItems");
     } catch (error) {
       console.error("Sepet localStorage temizlenirken hata oluştu:", error);
     }
   };
 
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, clearCart, clearCartOnLogout }}>
+    <CartContext.Provider
+      value={{
+        cartItems,
+        addToCart,
+        removeFromCart,
+        clearCart,
+        clearCartOnLogout,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );
-}; 
+};
