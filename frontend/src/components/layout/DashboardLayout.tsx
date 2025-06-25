@@ -578,15 +578,50 @@ export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   );
 
   const getYouTubeVideoId = (url: string) => {
+    if (!url) return null;
+
     try {
-      return new URL(url).searchParams.get("v");
+      // Standart YouTube URL'si
+      const urlObj = new URL(url);
+
+      // youtube.com/watch?v=VIDEO_ID
+      if (
+        urlObj.hostname.includes("youtube.com") &&
+        urlObj.searchParams.has("v")
+      ) {
+        return urlObj.searchParams.get("v");
+      }
+
+      // youtu.be/VIDEO_ID
+      if (urlObj.hostname.includes("youtu.be")) {
+        return urlObj.pathname.slice(1);
+      }
+
+      // youtube.com/embed/VIDEO_ID
+      if (
+        urlObj.hostname.includes("youtube.com") &&
+        urlObj.pathname.includes("/embed/")
+      ) {
+        return urlObj.pathname.split("/embed/")[1];
+      }
     } catch (e) {
-      // Handle cases where the URL is not standard, e.g., youtu.be links
-      const match = url.match(
-        /(?:youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=)([^#&?]*).*/
-      );
-      return match && match[1].length === 11 ? match[1] : null;
+      console.warn("YouTube URL parse hatası:", e);
     }
+
+    // Regex ile son çare
+    const patterns = [
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^#&?]*)/,
+      /^([a-zA-Z0-9_-]{11})$/, // Sadece video ID verilmişse
+    ];
+
+    for (const pattern of patterns) {
+      const match = url.match(pattern);
+      if (match && match[1] && match[1].length === 11) {
+        return match[1];
+      }
+    }
+
+    return null;
   };
 
   return (

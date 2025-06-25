@@ -324,8 +324,10 @@ class CollaborativeFilteringRecommender:
         """
         Sadece kullanıcı tabanlı öneriler (kategori ve puan ağırlıklı benzerlik ile, sahip olunan ve aktif kiralananlar hariç)
         """
+        # Cold Start Problem: Yeni kullanıcı model matrisinde yoksa genel populer öneriler döndür
         if user_id not in self.user_item_matrix.index:
-            return []
+            print(f"⚠️ Kullanıcı {user_id} model matrisinde bulunamadı. Cold start önerileri döndürülüyor...")
+            return self.get_cold_start_recommendations(user_id, limit, db)
         similar_users = self.get_similar_users_hybrid(user_id, n_similar=5)
         if not similar_users:
             return []
@@ -383,6 +385,63 @@ class CollaborativeFilteringRecommender:
             extra_recommendations.sort(key=lambda x: x['predicted_rating'], reverse=True)
             recommendations.extend(extra_recommendations[:limit - len(recommendations)])
         return recommendations[:limit]
+    
+    def get_cold_start_recommendations(self, user_id: int, limit: int = 10, db: Session = None) -> List[Dict]:
+        """
+        Yeni kullanıcılar için cold start önerileri (popüler kitaplar)
+        """
+        print(f"🆕 Yeni kullanıcı {user_id} için cold start önerileri hazırlanıyor...")
+        
+        # Kullanıcının sahip olduğu ve kiraladığı kitapları hariç tut
+        exclude_ids = set()
+        if db is not None:
+            try:
+                user_book_ids = [ub.book_id for ub in db.query(models.UserBook).filter(models.UserBook.user_id == user_id).all()]
+                active_rental_ids = [r.book_id for r in db.query(models.Rental).filter(models.Rental.user_id == user_id, models.Rental.status == 'active').all()]
+                exclude_ids = set(user_book_ids + active_rental_ids)
+            except:
+                exclude_ids = set()
+        
+        # Tüm kitapların ortalama puanını hesapla
+        book_ratings = {}
+        for _, row in self.ratings_df.iterrows():
+            book_id = row['book_id']
+            rating = row['rate']
+            
+            if book_id not in exclude_ids:
+                if book_id not in book_ratings:
+                    book_ratings[book_id] = []
+                book_ratings[book_id].append(rating)
+        
+        # Ortalama puan ve puan sayısını hesapla
+        book_scores = []
+        for book_id, ratings in book_ratings.items():
+            if len(ratings) >= 3:  # En az 3 puan alan kitaplar
+                avg_rating = np.mean(ratings)
+                rating_count = len(ratings)
+                
+                # Popülerlik puanı: ortalama puan + puan sayısı etkisi
+                popularity_score = avg_rating + (rating_count * 0.1)  # Puan sayısı bonusu
+                
+                book_data = self.books_df[self.books_df['book_id'] == book_id]
+                if not book_data.empty:
+                    book_scores.append({
+                        'book_id': int(book_id),
+                        'title': book_data.iloc[0]['title'],
+                        'author': book_data.iloc[0]['author'],
+                        'predicted_rating': round(avg_rating, 2),
+                        'popularity_score': round(popularity_score, 2),
+                        'rating_count': rating_count,
+                        'similar_users_count': 0,
+                        'method': 'cold_start_popular'
+                    })
+        
+        # Popülerlik puanına göre sırala
+        book_scores.sort(key=lambda x: x['popularity_score'], reverse=True)
+        
+        print(f"✅ {len(book_scores)} popüler kitap bulundu, ilk {limit} tanesi döndürülüyor.")
+        
+        return book_scores[:limit]
     
     def calculate_category_profile_matrix(self) -> None:
         """

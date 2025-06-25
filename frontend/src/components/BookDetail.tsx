@@ -304,9 +304,13 @@ export const BookDetail: React.FC = () => {
               height="400"
               image={
                 book.cover_image_url
-                  ? book.cover_image_url.startsWith("kitaplar/")
+                  ? book.cover_image_url.startsWith("http")
+                    ? book.cover_image_url
+                    : book.cover_image_url.startsWith("kitaplar/")
                     ? `/${book.cover_image_url}`
-                    : book.cover_image_url
+                    : book.cover_image_url.includes("/")
+                    ? book.cover_image_url
+                    : `/kitaplar/${book.cover_image_url}`
                   : "https://via.placeholder.com/300x400"
               }
               alt={book.title}

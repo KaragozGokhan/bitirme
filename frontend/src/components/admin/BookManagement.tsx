@@ -285,9 +285,15 @@ const BookManagement: React.FC = () => {
                     <Box display="flex" alignItems="center" gap={2}>
                       <Avatar
                         src={
-                          book.cover_image_url?.startsWith("kitaplar/")
-                            ? `/${book.cover_image_url}`
-                            : book.cover_image_url
+                          book.cover_image_url && book.cover_image_url.trim()
+                            ? book.cover_image_url.startsWith("http")
+                              ? book.cover_image_url
+                              : book.cover_image_url.startsWith("kitaplar/")
+                              ? `/${book.cover_image_url}`
+                              : book.cover_image_url.includes("/")
+                              ? book.cover_image_url
+                              : `/kitaplar/${book.cover_image_url}`
+                            : ""
                         }
                         variant="rounded"
                         sx={{ width: 48, height: 64 }}
@@ -424,7 +430,7 @@ const BookManagement: React.FC = () => {
                     })
                   }
                   fullWidth
-                  helperText="Dosya yolu: kitaplar/ klasöründeki dosya adı (örn: kitaplar/91.png)"
+                  helperText="Dosya yolu: kitaplar/ klasöründeki dosya adı (örn: kitaplar/91.png) veya tam URL"
                   sx={{ mb: 2 }}
                 />
                 {formData.cover_image_url && (
@@ -434,9 +440,13 @@ const BookManagement: React.FC = () => {
                     </Typography>
                     <img
                       src={
-                        formData.cover_image_url.startsWith("kitaplar/")
+                        formData.cover_image_url.startsWith("http")
+                          ? formData.cover_image_url
+                          : formData.cover_image_url.startsWith("kitaplar/")
                           ? `/${formData.cover_image_url}`
-                          : formData.cover_image_url
+                          : formData.cover_image_url.includes("/")
+                          ? formData.cover_image_url
+                          : `/kitaplar/${formData.cover_image_url}`
                       }
                       alt="Kapak önizleme"
                       style={{
@@ -446,9 +456,36 @@ const BookManagement: React.FC = () => {
                         borderRadius: 4,
                         border: "1px solid #ddd",
                         display: "block",
+                        marginTop: 4,
                       }}
                       onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = "none";
+                        const img = e.target as HTMLImageElement;
+                        // Eğer ilk deneme başarısız olursa alternatif yolları dene
+                        if (!img.src.includes("placeholder")) {
+                          const originalSrc = formData.cover_image_url;
+
+                          // Farklı yol formatlarını dene
+                          const alternatives = [
+                            originalSrc.startsWith("http") ? originalSrc : null,
+                            originalSrc.startsWith("kitaplar/")
+                              ? `/${originalSrc}`
+                              : null,
+                            originalSrc.includes("/") ? originalSrc : null,
+                            `/kitaplar/${originalSrc}`,
+                            "https://via.placeholder.com/60x80?text=Resim+Bulunamadı",
+                          ].filter(Boolean);
+
+                          const currentIndex = alternatives.findIndex(
+                            (alt) => alt === img.src
+                          );
+                          if (currentIndex < alternatives.length - 1) {
+                            img.src = alternatives[currentIndex + 1];
+                          }
+                        }
+                      }}
+                      onLoad={(e) => {
+                        const img = e.target as HTMLImageElement;
+                        img.style.display = "block";
                       }}
                     />
                   </Box>
@@ -473,7 +510,29 @@ const BookManagement: React.FC = () => {
                   setFormData({ ...formData, audio_url: e.target.value })
                 }
                 fullWidth
-                helperText="Ses dosyası URL'si (opsiyonel)"
+                helperText="YouTube URL'si (örn: https://www.youtube.com/watch?v=VIDEO_ID) - Video ID çıkarılacak"
+                InputProps={{
+                  endAdornment: formData.audio_url && (
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      {formData.audio_url.includes("youtube.com") ||
+                      formData.audio_url.includes("youtu.be") ? (
+                        <Chip
+                          label="✓ YouTube URL"
+                          color="success"
+                          size="small"
+                          variant="outlined"
+                        />
+                      ) : (
+                        <Chip
+                          label="⚠️ YouTube URL gerekli"
+                          color="warning"
+                          size="small"
+                          variant="outlined"
+                        />
+                      )}
+                    </Box>
+                  ),
+                }}
               />
             </Box>
           </Box>
