@@ -41,7 +41,7 @@ export const BookList: React.FC<BookListProps> = ({ selectedCategory }) => {
     searchTerm: string,
     currentPage: number
   ) => {
-    // Arama terimi varsa filtrele
+    // If there is a search term, filter
     let filteredBooks = allBooks;
     if (searchTerm) {
       filteredBooks = allBooks.filter(
@@ -51,18 +51,18 @@ export const BookList: React.FC<BookListProps> = ({ selectedCategory }) => {
       );
     }
 
-    // Kategori seçili ise filtrele
+    // If a category is selected, filter
     if (selectedCategory && selectedCategory !== null) {
       filteredBooks = filteredBooks.filter((book) =>
         book.categories?.some((category) => category.id === selectedCategory)
       );
     }
 
-    // Toplam sayfa sayısını hesapla
+    // Calculate total number of pages
     const totalPagesCount = Math.ceil(filteredBooks.length / booksPerPage);
     setTotalPages(totalPagesCount);
 
-    // Sayfalama yap
+    // Paginate
     const startIndex = (currentPage - 1) * booksPerPage;
     const endIndex = startIndex + booksPerPage;
     const paginatedBooks = filteredBooks.slice(startIndex, endIndex);
@@ -78,8 +78,8 @@ export const BookList: React.FC<BookListProps> = ({ selectedCategory }) => {
       const response = await bookService.getBooks(searchText);
 
       if (response && response.length > 0) {
-        setAllBooks(response); // Tüm kitapları allBooks state'ine kaydet
-        // İlk yüklemede de filtreleme işlemini çalıştır
+        setAllBooks(response); // Save all books to allBooks state
+        // Run filtering on the first load
         filterAndPaginateBooks(response, "", page);
       } else {
         setAllBooks([]);
@@ -108,7 +108,7 @@ export const BookList: React.FC<BookListProps> = ({ selectedCategory }) => {
     }
   }, [page, selectedCategory, allBooks]);
 
-  // Arama için debounce kullanarak performans iyileştirmesi
+  // Improve performance by using debounce for search
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (searchTerm !== "") {
@@ -117,7 +117,7 @@ export const BookList: React.FC<BookListProps> = ({ selectedCategory }) => {
         fetchBooks();
       }
       setPage(1);
-    }, 500); // 500ms bekle
+    }, 500); // Wait for 500ms
 
     return () => clearTimeout(timeoutId);
   }, [searchTerm]);

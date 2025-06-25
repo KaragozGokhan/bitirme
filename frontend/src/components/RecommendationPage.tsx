@@ -32,7 +32,7 @@ export const RecommendationPage: React.FC = () => {
         setError(null);
         const userId = user.id;
 
-        // AI modeli eğit
+        // Train the AI model
         const trainResponse = await fetch("http://localhost:8000/ai/train", {
           method: "POST",
           headers: {
@@ -41,7 +41,7 @@ export const RecommendationPage: React.FC = () => {
           },
         });
 
-        // Benzer kullanıcı önerilerini al
+        // Get similar user recommendations
         const recResponse = await fetch(
           `http://localhost:8000/ai/similar-users-recommendations/${userId}`,
           {
@@ -55,7 +55,7 @@ export const RecommendationPage: React.FC = () => {
           const data = await recResponse.json();
           const bookIds = data.recommendations.map((rec: any) => rec.book_id);
 
-          // Kitap detaylarını al
+          // Get book details
           const bookDetails = await Promise.all(
             bookIds.map((id: number) => bookService.getBookById(id))
           );

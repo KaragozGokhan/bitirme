@@ -73,7 +73,7 @@ export const CartPage: React.FC = () => {
 
   const handlePurchaseSuccess = async (items: any[]) => {
     try {
-      // Kitapları backend'e ekle
+      // Add books to the backend
       const booksWithAcquisition = items.map((book) => ({
         ...book,
         acquisition_method: "purchase" as const,
@@ -81,7 +81,7 @@ export const CartPage: React.FC = () => {
 
       await addBooksToLibrary(booksWithAcquisition);
 
-      // Başarı mesajı göster
+      // Show success message
       toast.success(
         `${items.length} kitap başarıyla satın alındı ve kütüphanenize eklendi!`,
         {
@@ -90,10 +90,10 @@ export const CartPage: React.FC = () => {
         }
       );
 
-      // Sepeti temizle
+      // Clear the cart
       clearCart();
 
-      // 2 saniye sonra kitaplarım sayfasına yönlendir
+      // Redirect to my-books page after 2 seconds
       setTimeout(() => {
         navigate("/my-books");
       }, 2000);
@@ -221,7 +221,7 @@ export const CartPage: React.FC = () => {
         </Paper>
       )}
 
-      {/* Premium ödeme formu modalı */}
+      {/* Premium payment form modal */}
       {showPayment && (
         <Modal
           open={showPayment}
@@ -244,7 +244,7 @@ export const CartPage: React.FC = () => {
         </Modal>
       )}
 
-      {/* Sepetten çıkarma onay modalı */}
+      {/* Remove from cart confirmation modal */}
       <Dialog
         open={removeConfirmOpen}
         onClose={handleRemoveCancel}
@@ -274,7 +274,7 @@ export const CartPage: React.FC = () => {
         </DialogActions>
       </Dialog>
 
-      {/* Sepeti temizleme onay modalı */}
+      {/* Clear cart confirmation modal */}
       <Dialog
         open={clearCartConfirmOpen}
         onClose={handleClearCartCancel}

@@ -265,7 +265,7 @@ INSERT INTO categories (name) VALUES
 ('Dram'),
 ('Şiir');
 
--- Kitaplara kategori ekleme
+-- Add categories to books
 UPDATE books SET categories = ARRAY[3,1] WHERE title = 'Suç ve Ceza';
 UPDATE books SET categories = ARRAY[2,1] WHERE title = '1984';
 UPDATE books SET categories = ARRAY[8,1] WHERE title = 'Simyacı';
@@ -357,7 +357,7 @@ UPDATE books SET categories = ARRAY[10,3] WHERE title = 'Yüzüklerin Efendisi: 
 UPDATE books SET categories = ARRAY[10,4] WHERE title = 'Narnia Günlükleri: Aslan, Cadı ve Dolap';
 UPDATE books SET categories = ARRAY[10,13] WHERE title = 'Ejderha Mızrağı';
 
--- Bazı kitaplar için ses kitap URL'leri ekle
+-- Some audio url examples for some books
 UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=safBpRdRLY8&t=2s' WHERE title = 'Suç ve Ceza' AND audio_url IS NULL;
 UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=Bok26gZkABk' WHERE title = '1984' AND audio_url IS NULL;
 UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=AeO-jtvAUZ8' WHERE title = 'Simyacı' AND audio_url IS NULL;
@@ -370,9 +370,9 @@ UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=Ik34eIXb8jA' WHERE
 UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=Ob7AEp7QXzs' WHERE title = 'Yabancı' AND audio_url IS NULL;
 
 
--- Her kullanıcı için 15-20 adet farklı kitaba yorum
+-- Each user comments to different books
 INSERT INTO comments (comment, book_id, user_id, created_at, rate) VALUES
--- Kullanıcı 1 yorumları
+
 ('Harika bir kitap, herkese tavsiye ederim!', 1, 1, '2024-06-01 10:00:00', 9),
 ('Çok sürükleyiciydi, bir günde bitirdim.', 5, 1, '2024-06-02 12:30:00', 10),
 ('Karakterler çok iyi işlenmiş.', 12, 1, '2024-06-03 15:45:00', 8),
@@ -392,7 +392,6 @@ INSERT INTO comments (comment, book_id, user_id, created_at, rate) VALUES
 ('Fiyatına göre güzel bir kitap.', 83, 1, '2024-06-17 12:00:00', 8),
 ('Dili sade ve anlaşılır.', 88, 1, '2024-06-18 13:10:00', 9),
 
--- Kullanıcı 2 yorumları
 ('Mükemmel bir roman!', 2, 2, '2024-06-01 11:00:00', 10),
 ('Çok etkileyici bir hikaye.', 7, 2, '2024-06-02 13:30:00', 9),
 ('Karakterizasyon harika.', 13, 2, '2024-06-03 16:45:00', 8),
@@ -412,7 +411,6 @@ INSERT INTO comments (comment, book_id, user_id, created_at, rate) VALUES
 ('Arkadaşlarıma önerdim.', 84, 2, '2024-06-17 13:00:00', 10),
 ('Güzel bir deneyimdi.', 89, 2, '2024-06-18 14:10:00', 8),
 
--- Kullanıcı 3 yorumları
 ('Olağanüstü bir eser!', 3, 3, '2024-06-01 12:00:00', 10),
 ('Çok derin bir konu işlenmiş.', 8, 3, '2024-06-02 14:30:00', 9),
 ('Sayfalar geçmiyor.', 14, 3, '2024-06-03 17:45:00', 5),
@@ -432,7 +430,6 @@ INSERT INTO comments (comment, book_id, user_id, created_at, rate) VALUES
 ('Güzel bir hikaye.', 85, 3, '2024-06-17 14:00:00', 8),
 ('Fantastik bir dünya.', 90, 3, '2024-06-18 15:10:00', 9),
 
--- Kullanıcı 4 yorumları
 ('Nefes kesen bir roman.', 4, 4, '2024-06-01 13:00:00', 9),
 ('Çok güzel işlenmiş konular.', 9, 4, '2024-06-02 15:30:00', 8),
 ('Başından sonuna kadar keyifli.', 15, 4, '2024-06-03 18:45:00', 9),
@@ -451,7 +448,6 @@ INSERT INTO comments (comment, book_id, user_id, created_at, rate) VALUES
 ('Çok faydalı bir kitap.', 81, 4, '2024-06-16 10:40:00', 9),
 ('Güzel bir deneyim.', 86, 4, '2024-06-17 15:00:00', 8),
 
--- Kullanıcı 5 yorumları
 ('Çok etkileyici bir eser!', 6, 5, '2024-06-01 14:00:00', 9),
 ('Muhteşem bir hikaye.', 10, 5, '2024-06-02 16:30:00', 10),
 ('Biraz yavaş başlıyor.', 16, 5, '2024-06-03 19:45:00', 7),
@@ -470,7 +466,6 @@ INSERT INTO comments (comment, book_id, user_id, created_at, rate) VALUES
 ('Çok öğretici.', 82, 5, '2024-06-16 11:40:00', 8),
 ('Güzel bir macera.', 87, 5, '2024-06-17 16:00:00', 9),
 
--- Kullanıcı 6 yorumları (devam eden pattern ile)
 ('Başyapıt niteliğinde!', 11, 6, '2024-06-01 15:00:00', 10),
 ('Çok güzel karakterler.', 17, 6, '2024-06-02 17:30:00', 9),
 ('Biraz karışık buldum.', 1, 6, '2024-06-03 20:45:00', 6),
@@ -489,10 +484,6 @@ INSERT INTO comments (comment, book_id, user_id, created_at, rate) VALUES
 ('Faydalı bilgiler içeriyor.', 79, 6, '2024-06-16 12:40:00', 8),
 ('Güzel bir deneyim oldu.', 85, 6, '2024-06-17 17:00:00', 9),
 
--- Kullanıcı 7-50 için benzer pattern devam ediyor...
--- (Kısalık için 10 kullanıcının yorumlarını örnek olarak verdim, gerisi benzer şekilde devam edecek)
-
--- Kullanıcı 7 yorumları
 ('Şahane bir eser!', 2, 7, '2024-06-01 16:00:00', 10),
 ('Karakterler çok canlı.', 8, 7, '2024-06-02 18:30:00', 9),
 ('Başlangıç biraz yavaş.', 14, 7, '2024-06-03 21:45:00', 7),
@@ -511,7 +502,6 @@ INSERT INTO comments (comment, book_id, user_id, created_at, rate) VALUES
 ('Öğretici ve eğlenceli.', 3, 7, '2024-06-16 13:40:00', 9),
 ('Güzel bir macera.', 9, 7, '2024-06-17 18:00:00', 8),
 
--- Kullanıcı 8 yorumları
 ('Mükemmel bir roman!', 15, 8, '2024-06-01 17:00:00', 10),
 ('Çok derin bir anlatım.', 21, 8, '2024-06-02 19:30:00', 9),
 ('Biraz ağır geldi.', 27, 8, '2024-06-03 22:45:00', 6),
@@ -530,7 +520,6 @@ INSERT INTO comments (comment, book_id, user_id, created_at, rate) VALUES
 ('Çok öğretici bir kitap.', 16, 8, '2024-06-16 14:40:00', 8),
 ('Güzel bir deneyim.', 22, 8, '2024-06-17 19:00:00', 9),
 
--- Kullanıcı 9 yorumları
 ('Nefes kesen bir hikaye!', 28, 9, '2024-06-01 18:00:00', 10),
 ('Çok güzel karakterler.', 34, 9, '2024-06-02 20:30:00', 9),
 ('Başlangıç zor ama sonra güzel.', 40, 9, '2024-06-03 23:45:00', 7),
@@ -549,7 +538,6 @@ INSERT INTO comments (comment, book_id, user_id, created_at, rate) VALUES
 ('Öğretici ve güzel.', 29, 9, '2024-06-16 15:40:00', 8),
 ('Fantastik bir dünya.', 35, 9, '2024-06-17 20:00:00', 9),
 
--- Kullanıcı 10 yorumları
 ('Olağanüstü bir eser!', 41, 10, '2024-06-01 19:00:00', 10),
 ('Çok derin konular işlenmiş.', 47, 10, '2024-06-02 21:30:00', 9),
 ('Biraz ağır ilerliyor.', 53, 10, '2024-06-03 07:45:00', 6),
@@ -568,8 +556,6 @@ INSERT INTO comments (comment, book_id, user_id, created_at, rate) VALUES
 ('Çok faydalı bir kitap.', 42, 10, '2024-06-16 16:40:00', 8),
 ('Güzel bir macera.', 48, 10, '2024-06-17 21:00:00', 9),
 
--- Kullanıcı 11-50 yorumları devam ediyor
--- Kullanıcı 11 yorumları
 ('Başyapıt diyebilirim!', 54, 11, '2024-06-01 20:00:00', 10),
 ('Çok etkileyici sahneler.', 60, 11, '2024-06-02 22:30:00', 9),
 ('Biraz ağır başlıyor.', 66, 11, '2024-06-03 08:45:00', 7),
@@ -587,10 +573,6 @@ INSERT INTO comments (comment, book_id, user_id, created_at, rate) VALUES
 ('Rahat okudum.', 49, 11, '2024-06-15 16:30:00', 8),
 ('Çok beğendim.', 1, 11, '2024-06-16 17:40:00', 9),
 
--- Kullanıcı 12-50 için kısa ama çeşitli yorumlar
--- Her kullanıcı farklı kitaplara 15-18 yorum yapacak
-
--- Kullanıcı 12
 ('Muhteşem eser!', 8, 12, '2024-06-01 21:00:00', 10),
 ('Karakterler canlı.', 14, 12, '2024-06-02 23:30:00', 9),
 ('Başlangıç yavaş.', 20, 12, '2024-06-03 09:45:00', 7),
@@ -608,10 +590,6 @@ INSERT INTO comments (comment, book_id, user_id, created_at, rate) VALUES
 ('Keyifli okuma.', 2, 12, '2024-06-15 17:30:00', 8),
 ('Güzel deneyim.', 9, 12, '2024-06-16 18:40:00', 9),
 
--- Kullanıcı 13-50 için benzer pattern ile devam
--- (Kısalık için temsili örnekler veriyorum)
-
--- Kullanıcı 13
 ('Harika kitap!', 15, 13, '2024-06-01 10:00:00', 9),
 ('Etkileyici hikaye!', 21, 13, '2024-06-02 11:00:00', 8),
 ('Güzel anlatım!', 27, 13, '2024-06-03 12:00:00', 9),
@@ -629,59 +607,51 @@ INSERT INTO comments (comment, book_id, user_id, created_at, rate) VALUES
 ('Nostalji!', 10, 13, '2024-06-15 08:00:00', 9),
 ('Harika!', 16, 13, '2024-06-16 09:00:00', 8),
 
--- Kullanıcı 14-50 için benzer yorumlar (her kullanıcı 15-18 yorum)
--- Kullanıcı 14
 ('Mükemmel!', 22, 14, '2024-06-01 11:00:00', 10), ('Güzel!', 28, 14, '2024-06-02 12:00:00', 9), ('Etkileyici!', 34, 14, '2024-06-03 13:00:00', 8), ('Sürükleyici!', 40, 14, '2024-06-04 14:00:00', 9), ('Dokunaklı!', 46, 14, '2024-06-05 15:00:00', 8), ('Başarılı!', 52, 14, '2024-06-06 16:00:00', 9), ('Keyifli!', 58, 14, '2024-06-07 17:00:00', 8), ('Öğretici!', 64, 14, '2024-06-08 18:00:00', 9), ('Duygusal!', 70, 14, '2024-06-09 19:00:00', 8), ('Anlamlı!', 76, 14, '2024-06-10 20:00:00', 9), ('Etkili!', 82, 14, '2024-06-11 21:00:00', 8), ('Bilgilendirici!', 88, 14, '2024-06-12 22:00:00', 9), ('Muhteşem!', 4, 14, '2024-06-13 23:00:00', 10), ('Kısa!', 11, 14, '2024-06-14 08:00:00', 7), ('Nostalji!', 17, 14, '2024-06-15 09:00:00', 9),
 
--- Kullanıcı 15-50 (kalan 35 kullanıcı için hızlı yorumlar)
 ('Harika eser!', 23, 15, '2024-06-01 12:00:00', 9), ('Güzel hikaye!', 29, 15, '2024-06-02 13:00:00', 8), ('Etkileyici!', 35, 15, '2024-06-03 14:00:00', 9), ('Sürükleyici!', 41, 15, '2024-06-04 15:00:00', 8), ('Dokunaklı!', 47, 15, '2024-06-05 16:00:00', 9), ('Başarılı!', 53, 15, '2024-06-06 17:00:00', 8), ('Keyifli!', 59, 15, '2024-06-07 18:00:00', 9), ('Öğretici!', 65, 15, '2024-06-08 19:00:00', 8), ('Duygusal!', 71, 15, '2024-06-09 20:00:00', 9), ('Anlamlı!', 77, 15, '2024-06-10 21:00:00', 8), ('Etkili!', 83, 15, '2024-06-11 22:00:00', 9), ('Bilgilendirici!', 89, 15, '2024-06-12 23:00:00', 8), ('Muhteşem!', 5, 15, '2024-06-13 08:00:00', 10), ('Kısa!', 12, 15, '2024-06-14 09:00:00', 7), ('Nostalji!', 18, 15, '2024-06-15 10:00:00', 9),
 
--- Kullanıcı 16-50 için benzer pattern devam ediyor
--- (Her kullanıcı 15-18 farklı kitaba yorum yapıyor)
-
--- Kullanıcı 30 örneği
 ('Mükemmel kitap!', 24, 30, '2024-06-01 15:00:00', 10), ('Çok beğendim!', 30, 30, '2024-06-02 16:00:00', 9), ('Etkileyici hikaye!', 36, 30, '2024-06-03 17:00:00', 8), ('Sürükleyici anlatım!', 42, 30, '2024-06-04 18:00:00', 9), ('Güzel karakterler!', 48, 30, '2024-06-05 19:00:00', 8), ('Başarılı kurgu!', 54, 30, '2024-06-06 20:00:00', 9), ('Keyifli okuma!', 60, 30, '2024-06-07 21:00:00', 8), ('Öğretici içerik!', 66, 30, '2024-06-08 22:00:00', 9), ('Duygusal eser!', 72, 30, '2024-06-09 23:00:00', 8), ('Anlamlı hikaye!', 78, 30, '2024-06-10 08:00:00', 9), ('Etkili anlatım!', 84, 30, '2024-06-11 09:00:00', 8), ('Bilgilendirici kitap!', 90, 30, '2024-06-12 10:00:00', 9), ('Muhteşem eser!', 6, 30, '2024-06-13 11:00:00', 10), ('Kısa ve öz!', 13, 30, '2024-06-14 12:00:00', 8), ('Nostalji dolu!', 19, 30, '2024-06-15 13:00:00', 9), ('Harika son!', 25, 30, '2024-06-16 14:00:00', 9),
 
--- Son kullanıcı (50) örneği
+
 ('Mükemmel kitap!', 31, 50, '2024-06-20 15:00:00', 10), ('Çok beğendim!', 37, 50, '2024-06-20 16:00:00', 9), ('Etkileyici hikaye!', 43, 50, '2024-06-20 17:00:00', 8), ('Sürükleyici anlatım!', 49, 50, '2024-06-20 18:00:00', 9), ('Güzel karakterler!', 55, 50, '2024-06-20 19:00:00', 8), ('Başarılı kurgu!', 61, 50, '2024-06-20 20:00:00', 9), ('Keyifli okuma!', 67, 50, '2024-06-20 21:00:00', 8), ('Öğretici içerik!', 73, 50, '2024-06-20 22:00:00', 9), ('Duygusal eser!', 79, 50, '2024-06-20 23:00:00', 8), ('Anlamlı hikaye!', 85, 50, '2024-06-21 08:00:00', 9), ('Etkili anlatım!', 1, 50, '2024-06-21 09:00:00', 8), ('Bilgilendirici kitap!', 7, 50, '2024-06-21 10:00:00', 9), ('Muhteşem eser!', 14, 50, '2024-06-21 11:00:00', 10), ('Kısa ve öz!', 20, 50, '2024-06-21 12:00:00', 8), ('Nostalji dolu!', 26, 50, '2024-06-21 13:00:00', 9), ('Harika son!', 32, 50, '2024-06-21 14:00:00', 9),
 
--- Olumsuz yorumlar - Her kullanıcı için eleştirel değerlendirmeler
--- Kullanıcı 1 olumsuz yorumları
+-- Negative Comments
+
 ('Çok sıkıcıydı, yarıda bıraktım.', 15, 1, '2024-07-01 10:00:00', 2),
 ('Beklediğimden çok kötüydü.', 32, 1, '2024-07-02 11:00:00', 3),
 ('Karakterler hiç gelişmemiş.', 47, 1, '2024-07-03 12:00:00', 4),
 ('Çok uzun ve gereksiz detaylar.', 64, 1, '2024-07-04 13:00:00', 2),
 ('Paranın karşılığını alamadım.', 79, 1, '2024-07-05 14:00:00', 3),
 
--- Kullanıcı 2 olumsuz yorumları
+
 ('Tam bir hayal kırıklığı.', 16, 2, '2024-07-01 15:00:00', 2),
 ('Yazarın en kötü eseri.', 33, 2, '2024-07-02 16:00:00', 1),
 ('Hiç anlamadım, karışık.', 48, 2, '2024-07-03 17:00:00', 3),
 ('Çok yüzeysel kalmış.', 65, 2, '2024-07-04 18:00:00', 4),
 ('Zaman kaybı oldu benim için.', 80, 2, '2024-07-05 19:00:00', 2),
 
--- Kullanıcı 3 olumsuz yorumları
 ('Berbat bir hikaye.', 17, 3, '2024-07-01 20:00:00', 1),
 ('Çok klişe ve öngörülebilir.', 34, 3, '2024-07-02 21:00:00', 3),
 ('Sonu çok kötü bitti.', 49, 3, '2024-07-03 22:00:00', 2),
 ('Hiç etkilemedi beni.', 66, 3, '2024-07-04 23:00:00', 4),
 ('Çok abartılmış, gerçekçi değil.', 81, 3, '2024-07-05 08:00:00', 3),
 
--- Kullanıcı 4 olumsuz yorumları
+
 ('Yazım hatası çok fazla.', 11, 4, '2024-07-01 09:00:00', 2),
 ('Konusu çok ağır ve karanlık.', 28, 4, '2024-07-02 10:00:00', 3),
 ('Karakterlere hiç bağlanamadım.', 45, 4, '2024-07-03 11:00:00', 4),
 ('Çok yavaş ilerliyor, sıkıcı.', 62, 4, '2024-07-04 12:00:00', 2),
 ('Fiyatına göre çok kötü.', 77, 4, '2024-07-05 13:00:00', 3),
 
--- Kullanıcı 5 olumsuz yorumları
+
 ('Hiç beğenmedim, kötü.', 14, 5, '2024-07-01 14:00:00', 1),
 ('Çok basit ve çocukça.', 29, 5, '2024-07-02 15:00:00', 3),
 ('Mesajı anlamadım hiç.', 44, 5, '2024-07-03 16:00:00', 2),
 ('Çok tuhaf ve anlamsız.', 61, 5, '2024-07-04 17:00:00', 4),
 ('Tekrar okumam kesinlikle.', 76, 5, '2024-07-05 18:00:00', 2),
 
--- Kullanıcı 6-10 olumsuz yorumları
+
 ('Tam bir fiyasko.', 9, 6, '2024-07-06 10:00:00', 1),
 ('Çok kötü çeviri.', 26, 6, '2024-07-06 11:00:00', 2),
 ('Hiç mantıklı değil.', 41, 6, '2024-07-06 12:00:00', 3),
@@ -712,7 +682,6 @@ INSERT INTO comments (comment, book_id, user_id, created_at, rate) VALUES
 ('Çok sıkıcı buldum.', 67, 10, '2024-07-10 13:00:00', 4),
 ('Okumaya değmez.', 84, 10, '2024-07-10 14:00:00', 2),
 
--- Kullanıcı 11-20 olumsuz yorumları
 ('Hiç hoşuma gitmedi.', 22, 11, '2024-07-11 10:00:00', 2),
 ('Çok zor anlaşılıyor.', 39, 11, '2024-07-11 11:00:00', 3),
 ('Kötü bir deneyim.', 56, 11, '2024-07-11 12:00:00', 1),
@@ -743,7 +712,7 @@ INSERT INTO comments (comment, book_id, user_id, created_at, rate) VALUES
 ('Çok kötü.', 62, 15, '2024-07-15 13:00:00', 2),
 ('Zaman kaybı.', 79, 15, '2024-07-15 14:00:00', 4),
 
--- Kullanıcı 16-30 olumsuz yorumları (kısa)
+
 ('Kötü.', 13, 16, '2024-07-16 10:00:00', 2), ('Sıkıcı.', 30, 16, '2024-07-16 11:00:00', 3), ('Berbat.', 47, 16, '2024-07-16 12:00:00', 1), ('Uzun.', 64, 16, '2024-07-16 13:00:00', 4), ('Kötü.', 81, 16, '2024-07-16 14:00:00', 2),
 
 ('Hiç sevmedim.', 15, 17, '2024-07-17 10:00:00', 1), ('Çok kötü.', 32, 17, '2024-07-17 11:00:00', 2), ('Sıkıcı.', 49, 17, '2024-07-17 12:00:00', 3), ('Karmaşık.', 66, 17, '2024-07-17 13:00:00', 2), ('Berbat.', 83, 17, '2024-07-17 14:00:00', 4),
@@ -754,12 +723,12 @@ INSERT INTO comments (comment, book_id, user_id, created_at, rate) VALUES
 
 ('Kötü kitap.', 21, 20, '2024-07-20 10:00:00', 2), ('Sıkıcı.', 38, 20, '2024-07-20 11:00:00', 3), ('Berbat.', 55, 20, '2024-07-20 12:00:00', 1), ('Uzun.', 72, 20, '2024-07-20 13:00:00', 4), ('Kötü.', 89, 20, '2024-07-20 14:00:00', 2),
 
--- Kullanıcı 21-50 olumsuz yorumları (çok kısa)
+
 ('Kötü!', 1, 21, '2024-07-21 10:00:00', 2), ('Sıkıcı!', 18, 21, '2024-07-21 11:00:00', 3), ('Berbat!', 35, 21, '2024-07-21 12:00:00', 1), ('Uzun!', 52, 21, '2024-07-21 13:00:00', 4), ('Hiç sevmedim!', 69, 21, '2024-07-21 14:00:00', 2),
 
 ('Berbat kitap!', 3, 22, '2024-07-22 10:00:00', 1), ('Sıkıcı hikaye!', 20, 22, '2024-07-22 11:00:00', 2), ('Kötü!', 37, 22, '2024-07-22 12:00:00', 3), ('Karmaşık!', 54, 22, '2024-07-22 13:00:00', 2), ('Hiç beğenmedim!', 71, 22, '2024-07-22 14:00:00', 4),
 
--- Benzer şekilde kalan kullanıcılar için (23-50) kısa olumsuz yorumlar
+
 ('Hiç sevmedim!', 5, 23, '2024-07-23 10:00:00', 1), ('Kötü!', 22, 23, '2024-07-23 11:00:00', 2), ('Sıkıcı!', 39, 23, '2024-07-23 12:00:00', 3),
 ('Berbat!', 7, 24, '2024-07-24 10:00:00', 2), ('Kötü hikaye!', 24, 24, '2024-07-24 11:00:00', 1), ('Sıkıcı!', 41, 24, '2024-07-24 12:00:00', 3),
 ('Hiç beğenmedim!', 9, 25, '2024-07-25 10:00:00', 2), ('Berbat kitap!', 26, 25, '2024-07-25 11:00:00', 1), ('Kötü!', 43, 25, '2024-07-25 12:00:00', 4),
@@ -769,7 +738,7 @@ INSERT INTO comments (comment, book_id, user_id, created_at, rate) VALUES
 ('Sıkıcı!', 17, 29, '2024-07-29 10:00:00', 3), ('Berbat!', 34, 29, '2024-07-29 11:00:00', 2), ('Kötü kitap!', 51, 29, '2024-07-29 12:00:00', 1),
 ('Hiç sevmedim!', 19, 30, '2024-07-30 10:00:00', 2), ('Kötü!', 36, 30, '2024-07-30 11:00:00', 3), ('Sıkıcı hikaye!', 53, 30, '2024-07-30 12:00:00', 1),
 
--- Son 20 kullanıcı için (31-50) birer olumsuz yorum
+
 ('Berbat!', 21, 31, '2024-07-31 10:00:00', 1), ('Kötü!', 23, 32, '2024-07-31 11:00:00', 2), ('Sıkıcı!', 25, 33, '2024-07-31 12:00:00', 3),
 ('Hiç sevmedim!', 27, 34, '2024-07-31 13:00:00', 1), ('Berbat kitap!', 29, 35, '2024-07-31 14:00:00', 2), ('Kötü hikaye!', 31, 36, '2024-07-31 15:00:00', 3),
 ('Sıkıcı!', 33, 37, '2024-07-31 16:00:00', 2), ('Berbat!', 35, 38, '2024-07-31 17:00:00', 1), ('Kötü!', 37, 39, '2024-07-31 18:00:00', 4),
@@ -778,10 +747,7 @@ INSERT INTO comments (comment, book_id, user_id, created_at, rate) VALUES
 ('Berbat!', 51, 46, '2024-08-01 09:00:00', 2), ('Kötü hikaye!', 53, 47, '2024-08-01 10:00:00', 4), ('Hiç beğenmedim!', 55, 48, '2024-08-01 11:00:00', 3),
 ('Sıkıcı kitap!', 57, 49, '2024-08-01 12:00:00', 2), ('Berbat eser!', 59, 50, '2024-08-01 13:00:00', 1),
 
--- Ek olumsuz yorumlar - Daha gerçekçi bir dağılım için
--- Her kullanıcıdan 2-3 ek olumsuz yorum
 
--- Kullanıcı 1-10 ek olumsuz yorumları
 ('Hiç beğenmedim, tavsiye etmem.', 89, 1, '2024-08-02 10:00:00', 3),
 ('Çok pahalı, değmez.', 54, 1, '2024-08-02 11:00:00', 2),
 
@@ -812,7 +778,6 @@ INSERT INTO comments (comment, book_id, user_id, created_at, rate) VALUES
 ('Beklediğimden çok kötü.', 27, 10, '2024-08-03 12:00:00', 1),
 ('Hiç tavsiye etmem.', 74, 10, '2024-08-03 13:00:00', 3),
 
--- Kullanıcı 11-20 ek olumsuz yorumları
 ('Çok pahalıya mal oldu.', 58, 11, '2024-08-03 14:00:00', 2),
 ('Hiç hoş değil.', 81, 11, '2024-08-03 15:00:00', 4),
 
@@ -843,7 +808,7 @@ INSERT INTO comments (comment, book_id, user_id, created_at, rate) VALUES
 ('Hiç sevmedim.', 16, 20, '2024-08-04 16:00:00', 1),
 ('Çok kötü yazılmış.', 73, 20, '2024-08-04 17:00:00', 3),
 
--- Kullanıcı 21-50 için birer ek olumsuz yorum
+
 ('Berbat kitap!', 46, 21, '2024-08-04 18:00:00', 2),
 ('Hiç tavsiye etmem!', 63, 22, '2024-08-04 19:00:00', 1),
 ('Çok kötü!', 80, 23, '2024-08-04 20:00:00', 3),
@@ -875,7 +840,7 @@ INSERT INTO comments (comment, book_id, user_id, created_at, rate) VALUES
 ('Berbat eser!', 87, 49, '2024-08-06 14:00:00', 1),
 ('Kötü deneyim!', 4, 50, '2024-08-06 15:00:00', 2); 
 
--- Admin kullanıcıları ekle
+-- Add admin users
 INSERT INTO admins (username, email, password_hash, role) VALUES
 ('admin1', 'admin1@example.com', '$2b$10$GGil7M1Qr3Uo4vAFbgkWo.eENQkoGn0ONMerBdHRb2CkKjhZAzLEy', 'admin'),
 ('admin2', 'admin2@example.com', '$2b$10$GGil7M1Qr3Uo4vAFbgkWo.eENQkoGn0ONMerBdHRb2CkKjhZAzLEy', 'admin');
@@ -889,7 +854,7 @@ DECLARE
     i INTEGER;
 BEGIN
     FOR u_id IN 1..50 LOOP
-        -- 15 farklı rastgele kitap seç
+        -- Select 15 random books
         b_ids := ARRAY(SELECT id FROM books ORDER BY random() LIMIT 15);
         FOREACH b_id IN ARRAY b_ids LOOP
             INSERT INTO user_books (user_id, book_id, acquisition_method)

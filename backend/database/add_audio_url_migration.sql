@@ -1,7 +1,6 @@
--- Migration: Kitaplar tablosuna audio_url alanı ekleme
--- Tarih: 2024
+-- Migration: Add audio_url column to books table
 
--- Audio URL alanını ekle
+-- Add audio_url column to books table
 ALTER TABLE books ADD COLUMN IF NOT EXISTS audio_url VARCHAR(255);
 
 -- Bazı kitaplar için örnek ses kitap URL'leri ekle
@@ -16,5 +15,5 @@ UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=kVAwL1UFclY' WHERE
 UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=Ik34eIXb8jA' WHERE title = 'Sefiller' AND audio_url IS NULL;
 UPDATE books SET audio_url = 'https://www.youtube.com/watch?v=Ob7AEp7QXzs' WHERE title = 'Yabancı' AND audio_url IS NULL;
 
--- comments tablosuna rate sütunu ekle
+-- Add rate column to comments table
 ALTER TABLE comments ADD COLUMN rate INTEGER CHECK (rate >= 1 AND rate <= 10); 

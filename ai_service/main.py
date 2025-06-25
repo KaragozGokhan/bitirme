@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="Bookflix AI API", description="Yapay Zeka Tabanlı Kitap Önerisi API", version="1.0.0")
 
-# CORS ayarları
+# CORS settings
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -23,7 +23,7 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-# Startup event - veritabanı bağlantısını test et
+# Startup event - test the database connection
 @app.on_event("startup")
 async def startup_event():
     print("🚀 AI Uygulaması başlatılıyor...")
@@ -36,7 +36,7 @@ async def startup_event():
 async def root():
     return {"message": "Bookflix AI API'ye hoş geldiniz!", "version": "1.0.0"}
 
-# 🤖 Yapay Zeka Tabanlı Öneri Endpoints
+# 🤖 AI Recommendation Endpoints
 @app.post("/ai/train")
 def train_ai_model(db: Session = Depends(get_db)):
     """
@@ -51,14 +51,14 @@ def train_ai_model(db: Session = Depends(get_db)):
 @app.get("/ai/similar-users-recommendations/{user_id}")
 def get_similar_users_recommendations(user_id: int, limit: int = 10, db: Session = Depends(get_db)):
     """
-    Benzer kullanıcıların beğendiği kitapları önerir
+    Get recommendations for similar users
     """
-    # Kullanıcının var olup olmadığını kontrol et
+    # Check if the user exists
     user = crud.UserCRUD.get_user(db, user_id=user_id)
     if not user:
         raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
     
-    # Benzer kullanıcıların beğendiği kitapları al
+    # Get recommendations for similar users
     recommendations = crud.AIRecommendationCRUD.get_user_based_recommendations(db, user_id, limit)
     
     return {

@@ -60,21 +60,21 @@ export const MyBooks: React.FC = () => {
   const handleReturnBook = async (bookId: number) => {
     if (window.confirm("Bu kitabı iade etmek istediğinizden emin misiniz?")) {
       try {
-        // Animasyon başlat
+        // Start animation
         setDeletingBooks((prev) => [...prev, bookId]);
 
-        // Animasyon için bekle
+        // Wait for animation
         await new Promise((resolve) => setTimeout(resolve, 500));
 
-        // Kitabı sil
+        // Remove book
         await removeBookFromLibrary(bookId);
 
-        // Animasyon state'ini temizle
+        // Clear animation state
         setDeletingBooks((prev) => prev.filter((id) => id !== bookId));
 
         toast.success("Kitap kütüphanenizden kaldırıldı!");
       } catch (error) {
-        // Hata durumunda animasyon state'ini temizle
+        // Clear animation state on error
         setDeletingBooks((prev) => prev.filter((id) => id !== bookId));
         console.error("Kitap silme hatası:", error);
         toast.error("Kitap kaldırılırken bir hata oluştu.");
@@ -83,11 +83,11 @@ export const MyBooks: React.FC = () => {
   };
 
   const handlePlayAudio = (book: Book) => {
-    // Eğer bu kitap şu anda çalıyorsa duraklat/devam et
+    // If this book is currently playing, pause/resume
     if (currentTrack?.id === book.id) {
       togglePlayPause();
     } else {
-      // Farklı bir kitap çalmaya başla
+      // Start playing a different book
       playTrack(book);
     }
   };
@@ -98,12 +98,12 @@ export const MyBooks: React.FC = () => {
       return;
     }
 
-    // PDF URL'i işle - pdfurl/ ile başlıyorsa lokal dosya
+    // Process PDF URL - if it starts with pdfurl/, it's a local file
     const pdfUrl = book.pdf_url.startsWith("pdfurl/")
       ? `/${book.pdf_url}`
       : book.pdf_url;
 
-    // Yeni sekmede PDF'i aç
+    // Open PDF in a new tab
     window.open(pdfUrl, "_blank");
     toast.success("PDF yeni sekmede açılıyor...");
   };
@@ -119,7 +119,7 @@ export const MyBooks: React.FC = () => {
     setPage(newPage);
   };
 
-  // Toplu seçim fonksiyonları - sadece premium kitaplar seçilebilir
+  // Bulk selection functions - only premium books can be selected
   const handleSelectBook = (bookId: number) => {
     const book = myBooks.find((b) => b.id === bookId);
     if (book && (book.acquisition_method || "purchase") === "premium") {
@@ -136,7 +136,7 @@ export const MyBooks: React.FC = () => {
     const endIndex = startIndex + itemsPerPage;
     const currentPageBooks = myBooks.slice(startIndex, endIndex);
 
-    // Sadece premium kitapları seçilebilir yap
+    // Make only premium books selectable
     const selectableBooks = currentPageBooks.filter(
       (book) => (book.acquisition_method || "purchase") === "premium"
     );
@@ -146,30 +146,30 @@ export const MyBooks: React.FC = () => {
     );
 
     if (allSelected) {
-      // Mevcut sayfadaki premium kitapları seçimi kaldır
+      // Remove selection of premium books on the current page
       setSelectedBooks((prev) =>
         prev.filter((id) => !selectableBookIds.includes(id))
       );
     } else {
-      // Mevcut sayfadaki premium kitapları seç
+      // Select
       setSelectedBooks((prev) => [...new Set([...prev, ...selectableBookIds])]);
     }
   };
 
   const handleBulkDelete = async () => {
     try {
-      // Tüm seçili kitaplar için animasyon başlat
+      // Start animation for all selected books
       setDeletingBooks((prev) => [...prev, ...selectedBooks]);
 
-      // Animasyon için bekle
+      // Wait for animation
       await new Promise((resolve) => setTimeout(resolve, 600));
 
-      // Kitapları sil
+      // Remove books
       for (const bookId of selectedBooks) {
         await removeBookFromLibrary(bookId);
       }
 
-      // Animasyon ve seçim state'lerini temizle
+      // Clear animation and selection states
       setDeletingBooks((prev) =>
         prev.filter((id) => !selectedBooks.includes(id))
       );
@@ -180,7 +180,7 @@ export const MyBooks: React.FC = () => {
       setSelectedBooks([]);
       setBulkDeleteDialogOpen(false);
     } catch (error) {
-      // Hata durumunda animasyon state'ini temizle
+      // Clear animation state on error
       setDeletingBooks((prev) =>
         prev.filter((id) => !selectedBooks.includes(id))
       );
@@ -194,7 +194,7 @@ export const MyBooks: React.FC = () => {
   const currentPageBooks = myBooks.slice(startIndex, endIndex);
   const totalPages = Math.ceil(myBooks.length / itemsPerPage);
 
-  // Sadece premium kitaplar için seçim durumunu kontrol et
+  // Check selection status for only premium books
   const selectableCurrentPageBooks = currentPageBooks.filter(
     (book) => (book.acquisition_method || "purchase") === "premium"
   );
@@ -285,7 +285,7 @@ export const MyBooks: React.FC = () => {
           </Stack>
         </Stack>
 
-        {/* Toplu Seçim Kontrolleri */}
+        {/* Bulk selection controls */}
         {selectableCurrentPageBooks.length > 0 && (
           <Box mb={1.5} display="flex" alignItems="center">
             <Checkbox
@@ -307,7 +307,7 @@ export const MyBooks: React.FC = () => {
         )}
       </Paper>
 
-      {/* Kitap Grid'i */}
+      {/* Book Grid */}
       <Box
         sx={{
           display: "grid",
@@ -327,7 +327,7 @@ export const MyBooks: React.FC = () => {
             key={book.id}
             sx={{
               transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
-              // Silme animasyonu için Box efekti
+              // Box effect for delete animation
               ...(deletingBooks.includes(book.id) && {
                 transform: "translateX(-100px)",
                 opacity: 0,
@@ -342,7 +342,7 @@ export const MyBooks: React.FC = () => {
                 flexDirection: "column",
                 position: "relative",
                 transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
-                // Silme animasyonu
+                // Delete animation
                 ...(deletingBooks.includes(book.id) && {
                   transform: "scale(0.8) rotateY(20deg)",
                   opacity: 0,
@@ -351,7 +351,7 @@ export const MyBooks: React.FC = () => {
                   borderColor: "error.main",
                   boxShadow: "0 0 20px rgba(255, 0, 0, 0.3)",
                 }),
-                // Normal hover efekti (sadece silinmiyorsa)
+                // Normal hover effect (only if not deleting)
                 ...(!deletingBooks.includes(book.id) && {
                   "&:hover": {
                     transform: "translateY(-4px) scale(1.02)",
@@ -363,7 +363,7 @@ export const MyBooks: React.FC = () => {
                 }),
               }}
             >
-              {/* Checkbox - Sadece premium kitaplar için */}
+              {/* Checkbox - only for premium books */}
               {(book.acquisition_method || "purchase") === "premium" && (
                 <Checkbox
                   checked={selectedBooks.includes(book.id)}
@@ -382,7 +382,7 @@ export const MyBooks: React.FC = () => {
                 />
               )}
 
-              {/* Kitap Kapağı */}
+              {/* Book Cover */}
               <Box
                 sx={{
                   position: "relative",
@@ -407,7 +407,7 @@ export const MyBooks: React.FC = () => {
                   }}
                 />
 
-                {/* Durum Chip'i */}
+                {/* Status Chip */}
                 <Chip
                   label={
                     (book.acquisition_method || "purchase") === "premium"
@@ -441,7 +441,7 @@ export const MyBooks: React.FC = () => {
                 />
               </Box>
 
-              {/* Kitap Bilgileri */}
+              {/* Book Information */}
               <CardContent sx={{ flexGrow: 1, p: 2 }}>
                 <Typography
                   variant="h6"
@@ -480,7 +480,7 @@ export const MyBooks: React.FC = () => {
                 </Typography>
               </CardContent>
 
-              {/* Aksiyon Butonları */}
+              {/* Action Buttons */}
               <CardActions
                 sx={{
                   p: 2,
@@ -490,7 +490,7 @@ export const MyBooks: React.FC = () => {
                   alignItems: "center",
                 }}
               >
-                {/* Sol taraf - Bilgi, PDF ve Oynat butonları */}
+                {/* Left side - Info, PDF and Play buttons */}
                 <Box sx={{ display: "flex", gap: 0.5 }}>
                   <Tooltip title="Detaylar">
                     <IconButton
@@ -589,7 +589,7 @@ export const MyBooks: React.FC = () => {
                   )}
                 </Box>
 
-                {/* Sağ taraf - Sil butonu */}
+                  {/* Right side - Delete button */}  
                 {(book.acquisition_method || "purchase") !== "purchase" && (
                   <Tooltip title="Kütüphaneden Kaldır">
                     <IconButton
@@ -649,7 +649,7 @@ export const MyBooks: React.FC = () => {
         ))}
       </Box>
 
-      {/* Sayfalama */}
+      {/* Pagination */}
       {totalPages > 1 && (
         <Box display="flex" justifyContent="center" mt={4}>
           <Pagination
@@ -664,7 +664,7 @@ export const MyBooks: React.FC = () => {
         </Box>
       )}
 
-      {/* Toplu Silme Onay Dialogu */}
+      {/* Bulk delete confirmation dialog */}    
       <Dialog
         open={bulkDeleteDialogOpen}
         onClose={() => setBulkDeleteDialogOpen(false)}

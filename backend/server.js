@@ -6,7 +6,7 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerJsDoc = require('swagger-jsdoc');
 const { pool } = require('./config/database');
 
-// Route dosyalarını içe aktarıyoruz
+// Import route files
 const authRoutes = require('./routes/authRoutes');
 const bookRoutes = require('./routes/bookRoutes');
 const userRoutes = require('./routes/userRoutes');
@@ -18,10 +18,10 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 5000;
 
-// Database migration kontrolü
+// Database migration check
 async function checkAndCreateTables() {
   try {
-    // user_books tablosunun var olup olmadığını kontrol et
+    // Check if user_books table exists
     const tableCheck = await pool.query(`
       SELECT EXISTS (
         SELECT FROM information_schema.tables 
@@ -54,7 +54,7 @@ async function checkAndCreateTables() {
   }
 }
 
-// Swagger konfigürasyonu
+// Swagger configuration
 const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
@@ -99,11 +99,11 @@ app.use(cors({
 }));
 app.use(express.json());
 
-// Static dosyalar için middleware - PDF ve görsel dosyaları serve et
+// Middleware for static files - PDF and image files
 app.use('/pdfurl', express.static(path.join(__dirname, '../frontend/pdfurl')));
 app.use('/kitaplar', express.static(path.join(__dirname, '../frontend/kitaplar')));
 
-// Route'ları tanımlıyoruz
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/books', bookRoutes);
 app.use('/api/users', userRoutes);
@@ -115,11 +115,11 @@ app.get('/', (req, res) => {
   res.json({ message: 'Kitap Kiralama API çalışıyor!' });
 });
 
-// Sunucuyu başlat
+// Start the server
 app.listen(port, async () => {
   console.log(`Sunucu ${port} portunda çalışıyor`);
   console.log(`Swagger dokümantasyonu: http://localhost:${port}/api-docs`);
   
-  // Database migration'ını çalıştır
+  // Run database migration
   await checkAndCreateTables();
 }); 

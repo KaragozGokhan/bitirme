@@ -5,29 +5,29 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 import psycopg2
 
-# .env dosyasını yükle
+# Load the .env file
 load_dotenv()
 
-# Veritabanı bağlantı bilgileri
+# Database connection information
 DB_USER = os.getenv('DB_USER', 'postgres')
 DB_HOST = os.getenv('DB_HOST', 'localhost')
 DB_NAME = os.getenv('DB_NAME', 'Bookflix')
 DB_PASSWORD = os.getenv('DB_PASSWORD', '12345')
 DB_PORT = os.getenv('DB_PORT', '5432')
 
-# PostgreSQL bağlantı URL'si
+# PostgreSQL connection URL
 DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-# SQLAlchemy engine oluştur
+# Create SQLAlchemy engine
 engine = create_engine(DATABASE_URL, echo=True)
 
-# SessionLocal sınıfı oluştur
+# Create SessionLocal class
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Base sınıfı oluştur
+# Create Base class
 Base = declarative_base()
 
-# Veritabanı bağlantısını test etmek için fonksiyon
+# Function to test the database connection
 def test_connection():
     try:
         with psycopg2.connect(
@@ -43,7 +43,7 @@ def test_connection():
         print(f"❌ Veritabanı bağlantı hatası: {e}")
         return False
 
-# Veritabanı session'ı almak için dependency
+# Dependency to get the database session
 def get_db():
     db = SessionLocal()
     try:

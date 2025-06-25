@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3  
 # -*- coding: utf-8 -*-
 
 import pandas as pd
@@ -273,7 +273,7 @@ class CollaborativeFilteringRecommender:
         if user_id not in self.user_item_matrix.index:
             return []
 
-        # Kullanıcının sahip olduğu ve aktif kiraladığı kitapları dışla
+        # Exclude the books the user has and is renting
         exclude_ids = set()
         if db is not None:
             user_book_ids = [ub.book_id for ub in db.query(models.UserBook).filter(models.UserBook.user_id == user_id).all()]
@@ -300,9 +300,9 @@ class CollaborativeFilteringRecommender:
                 })
 
         predictions.sort(key=lambda x: x['predicted_rating'], reverse=True)
-        # Eğer öneri sayısı limitten azsa, kalanları puan sırasına göre tamamla
+        # If the number of recommendations is less than the limit, complete the remaining ones by rating
         if len(predictions) < limit and db is not None:
-            # Tüm kitaplardan exclude_ids ve zaten önerilenler hariç olanları sırala
+            # Sort the remaining ones by rating
             all_candidate_ids = [bid for bid in self.books_df['book_id'].tolist() if bid not in exclude_ids and bid not in [p['book_id'] for p in predictions]]
             extra_predictions = []
             for book_id in all_candidate_ids:
@@ -329,7 +329,7 @@ class CollaborativeFilteringRecommender:
         similar_users = self.get_similar_users_hybrid(user_id, n_similar=5)
         if not similar_users:
             return []
-        # Kullanıcının sahip olduğu ve aktif kiraladığı kitapları dışla
+        # Exclude the books the user has and is renting
         exclude_ids = set()
         if db is not None:
             user_book_ids = [ub.book_id for ub in db.query(models.UserBook).filter(models.UserBook.user_id == user_id).all()]
@@ -364,7 +364,7 @@ class CollaborativeFilteringRecommender:
                         'method': 'user_based_hybrid'
                     })
         recommendations.sort(key=lambda x: x['predicted_rating'], reverse=True)
-        # Eğer öneri sayısı limitten azsa, kalanları puan sırasına göre tamamla
+        # If the number of recommendations is less than the limit, complete the remaining ones by rating
         if len(recommendations) < limit and db is not None:
             all_candidate_ids = [bid for bid in self.books_df['book_id'].tolist() if bid not in exclude_ids and bid not in [r['book_id'] for r in recommendations]]
             extra_recommendations = []

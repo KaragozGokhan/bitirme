@@ -3,7 +3,7 @@ from typing import Optional, List
 from datetime import datetime
 from decimal import Decimal
 
-# Base şemalar
+# Base schemas
 class UserBase(BaseModel):
     username: str
     email: str
@@ -27,7 +27,7 @@ class User(UserBase):
     class Config:
         from_attributes = True
 
-# Kitap şemaları
+# Book schemas
 class BookBase(BaseModel):
     title: str
     author: str
@@ -58,7 +58,7 @@ class Book(BookBase):
     class Config:
         from_attributes = True
 
-# Kullanıcı kitapları şemaları
+# User books schemas
 class UserBookBase(BaseModel):
     user_id: int
     book_id: int
@@ -74,7 +74,7 @@ class UserBook(UserBookBase):
     class Config:
         from_attributes = True
 
-# Kiralama şemaları
+# Rental schemas
 class RentalBase(BaseModel):
     user_id: int
     book_id: int
@@ -95,7 +95,7 @@ class Rental(RentalBase):
     class Config:
         from_attributes = True
 
-# Okuma geçmişi şemaları
+# Reading history schemas
 class ReadingHistoryBase(BaseModel):
     user_id: int
     book_id: int
@@ -114,7 +114,7 @@ class ReadingHistory(ReadingHistoryBase):
     class Config:
         from_attributes = True
 
-# Kategori şemaları
+# Category schemas
 class CategoryBase(BaseModel):
     name: str
 
@@ -127,7 +127,7 @@ class Category(CategoryBase):
     class Config:
         from_attributes = True
 
-# Yorum şemaları
+# Comment schemas
 class CommentBase(BaseModel):
     comment: str
     book_id: int

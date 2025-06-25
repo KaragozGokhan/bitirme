@@ -72,9 +72,7 @@ def test_collaborative_filtering_model():
             books.append(book)
             print(f"   ✅ Kitap: {book.title} - {book.author}")
         
-        # 2. Kullanıcı puanları oluştur (Collaborative filtering için)
-        print("2. Kullanıcı puanları oluşturuluyor...")
-        
+        # 2. Kullanıcı puanları oluştur (Collaborative filtering için)         
         # Kullanıcı 1: Roman sever (yüksek puanlar)
         user1_ratings = [
             {"book_id": books[0].id, "rate": 9.0, "comment": "Harika bir roman!"},
@@ -152,7 +150,7 @@ def test_collaborative_filtering_model():
         training_time = time.time() - start_time
         print(f"   ✅ Model eğitimi tamamlandı ({training_time:.2f} saniye)")
         
-        # 4. Model bilgilerini göster
+        # 4. Model bilgilerini göster           
         print("4. Model bilgileri:")
         model_info = AIRecommendationCRUD.get_ai_model_info()
         for key, value in model_info.items():

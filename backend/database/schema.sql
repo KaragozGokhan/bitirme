@@ -43,7 +43,7 @@ CREATE TABLE rentals (
     status VARCHAR(20) DEFAULT 'active'
 );
 
--- Okuma geçmişi tablosu
+-- Reading history table
 CREATE TABLE reading_history (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
@@ -52,13 +52,13 @@ CREATE TABLE reading_history (
     last_read TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Kategoriler tablosu
+-- Categories table
 CREATE TABLE categories (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) UNIQUE NOT NULL
 );
 
--- Yorumlar tablosu
+-- Comments table
 CREATE TABLE comments (
     id SERIAL PRIMARY KEY,
     comment TEXT NOT NULL,
@@ -68,7 +68,7 @@ CREATE TABLE comments (
     rate INTEGER CHECK (rate >= 1 AND rate <= 10)
 );
 
--- Adminler tablosu
+-- Admins table
 CREATE TABLE admins (
     id SERIAL PRIMARY KEY,
     username VARCHAR(50) UNIQUE NOT NULL,

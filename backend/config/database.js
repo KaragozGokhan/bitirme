@@ -9,7 +9,7 @@ const pool = new Pool({
     port: process.env.DB_PORT || 5432,
 });
 
-// Bağlantıyı test et
+// Test the connection
 pool.connect((err, client, release) => {
     if (err) {
         console.error('Veritabanına bağlanırken hata oluştu:', err.stack);

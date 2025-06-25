@@ -53,12 +53,12 @@ export const BookDetail: React.FC = () => {
   const isBookInLibrary = book && myBooks.some((b) => b.id === book.id);
   const isBookInCart = book && cartItems.some((item) => item.id === book.id);
 
-  // Kullanıcı değişikliği durumunda loading state'ini kontrol et
+  // Check the loading state when the user changes
   const shouldShowLoading = booksLoading || !user;
 
-  // Premium durumu değiştiğinde component'ı yeniden render et
+  // When the premium status changes, re-render the component
   useEffect(() => {
-    // Bu effect, isPremiumUser değiştiğinde çalışacak
+    // This effect will run when isPremiumUser changes
   }, [isPremiumUser, user?.subscription_type]);
 
   useEffect(() => {
@@ -69,22 +69,22 @@ export const BookDetail: React.FC = () => {
           return;
         }
 
-        // Mock user data - API çalışmazsa kullanılacak
+        // Mock user data - If the API doesn't work, use this
         const mockUser = {
           id: 1,
           username: "TestUser",
           email: "test@example.com",
           password_hash: "",
           created_at: "2024-01-01",
-          subscription_type: "premium", // Test için premium veriyoruz
+          subscription_type: "premium", // For testing, we're giving premium
           subscription_end_date: undefined,
         };
 
-        // User profilini yükle
+        // Load user profile
         try {
           const userData = await userService.getProfile();
 
-          // Eğer backend'den gelen user free ise, şimdilik premium yap
+          // If the user is free from the backend, for now we're giving premium
           if (userData.subscription_type === "free") {
             userData.subscription_type = "premium";
           }
@@ -98,14 +98,14 @@ export const BookDetail: React.FC = () => {
           setUser(mockUser);
         }
 
-        // Kitap detayını yükle
+        // Load book details
         try {
           const bookData = await bookService.getBookById(parseInt(id));
           setBook(bookData);
         } catch (bookError) {
           console.error("Kitap detayı yüklenirken hata:", bookError);
 
-          // Temel mock kitap verisi oluştur (audio_url olmadan)
+          // Create basic mock book data (without audio_url)
           const mockBook = {
             id: parseInt(id),
             title: `Kitap #${id}`,
@@ -114,7 +114,7 @@ export const BookDetail: React.FC = () => {
               "Bu kitabın gerçek detayları backend'den yüklenemedi. Backend bağlantısını kontrol edin.",
             cover_image_url: "https://picsum.photos/300/400?random=" + id,
             pdf_url: "",
-            audio_url: null, // Audio URL'si olmayan kitap
+            audio_url: null, // Book without audio URL
             price: 29.99,
             created_at: "2024-01-01",
             categories: [
@@ -139,7 +139,7 @@ export const BookDetail: React.FC = () => {
   const handleAddToCart = () => {
     if (!book) return;
 
-    // Premium kullanıcılar sepet kullanamaz
+    // Premium users cannot use the cart
     if (isPremiumUser) {
       toast.info(
         "Premium üyeler tüm kitaplara ücretsiz erişime sahiptir. Direkt kütüphaneye ekleme özelliğini kullanın!"
@@ -186,7 +186,7 @@ export const BookDetail: React.FC = () => {
       return;
     }
 
-    // Erişim izni varsa kitabı çal
+    // If access is granted, play the book
     playTrack(book);
   };
 
@@ -207,24 +207,24 @@ export const BookDetail: React.FC = () => {
       return;
     }
 
-    // PDF URL'i işle - pdfurl/ ile başlıyorsa lokal dosya
+    // Process PDF URL - if it starts with pdfurl/, it's a local file
     const pdfUrl = book.pdf_url.startsWith("pdfurl/")
       ? `/${book.pdf_url}`
       : book.pdf_url;
 
-    // Yeni sekmede PDF'i aç
+    // Open PDF in a new tab
     window.open(pdfUrl, "_blank");
     toast.success("PDF yeni sekmede açılıyor...");
   };
 
-  // Kullanıcının kitaba erişim yetkisi kontrolü (hem okuma hem dinleme için)
+  // Check user's access to the book (for reading and listening)
   const hasBookAccess = () => {
-    // Premium üye ise tüm kitaplara erişimi var
+    // Premium user has access to all books
     if (isPremiumUser) {
       return true;
     }
 
-    // Free üye ise sadece satın aldığı kitaplara erişimi var
+    // Free user has access only to the books they have purchased
     if (isBookInLibrary) {
       return true;
     }
@@ -402,7 +402,7 @@ export const BookDetail: React.FC = () => {
                 </Button>
               )}
 
-              {/* Dinle ve Oku butonları yan yana */}
+              {/* Listen and Read buttons side by side */}
               <Grid container spacing={2}>
                 {book.audio_url && (
                   <Grid item xs={6}>
@@ -474,7 +474,7 @@ export const BookDetail: React.FC = () => {
                 </Grid>
               </Grid>
 
-              {/* Uyarı mesajı */}
+              {/* Warning message */}
               {!hasBookAccess() && (
                 <Alert severity="warning">
                   {!isPremiumUser
@@ -494,7 +494,7 @@ export const BookDetail: React.FC = () => {
         </Box>
       </Box>
 
-      {/* Yorum Bölümü */}
+      {/* Comment Section */}
       <CommentSection
         bookId={book.id}
         currentUserId={user?.id}

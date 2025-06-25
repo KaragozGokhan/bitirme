@@ -121,8 +121,8 @@ export const ProfilePage: React.FC = () => {
       setIsCancellingPremium(true);
       setError(null);
 
-      // MyBooksContext'teki cancelPremiumSubscription fonksiyonunu kullan
-      // Bu fonksiyon hem kullanıcı bilgilerini güncelleyecek hem de premium kitapları kaldıracak
+      // Use the cancelPremiumSubscription function from MyBooksContext
+      // This function will both update the user information and remove premium books from the library
       await cancelPremiumSubscription();
 
       // ProfilePage'in kendi state'ini de güncelle
@@ -140,13 +140,13 @@ export const ProfilePage: React.FC = () => {
   };
 
   const handlePremiumUpgradeSuccess = async () => {
-    // ProfilePage'in kendi state'ini güncelle
+    // Update the ProfilePage's own state
     await fetchUserProfile();
 
-    // MyBooksContext'i de güncelle
+    // Update MyBooksContext
     await refreshUserData();
 
-    // Sayfayı yenile ki tüm bileşenler güncellensin
+    // Refresh the page so all components are updated
     setTimeout(() => {
       window.location.reload();
     }, 1000);
@@ -303,7 +303,7 @@ export const ProfilePage: React.FC = () => {
         </Box>
       </Paper>
 
-      {/* Üyelik Bilgileri */}
+      {/* Subscription Information */}
       <Paper
         elevation={0}
         sx={{
@@ -446,7 +446,7 @@ export const ProfilePage: React.FC = () => {
                         },
                       }}
                     >
-                      Premium Al (29.99₺/ay)
+                      Premium Al (199.99₺/ay)
                     </Button>
                   </CardContent>
                 </Card>
@@ -518,7 +518,7 @@ export const ProfilePage: React.FC = () => {
         </Box>
       </Paper>
 
-      {/* Tema Ayarları */}
+      {/* Theme Settings */}
       <Paper
         elevation={0}
         sx={{
@@ -559,7 +559,7 @@ export const ProfilePage: React.FC = () => {
         </Box>
       </Paper>
 
-      {/* Premium ödeme formu modalı */}
+      {/* Premium payment form modal */}
       {showPaymentForm && (
         <Box
           sx={{

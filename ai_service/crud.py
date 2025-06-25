@@ -5,7 +5,7 @@ import models
 import schemas
 from passlib.context import CryptContext
 
-# Şifre hashleme için
+# For password hashing
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def get_password_hash(password: str) -> str:
@@ -14,7 +14,7 @@ def get_password_hash(password: str) -> str:
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
 
-# User CRUD işlemleri
+# User CRUD operations
 class UserCRUD:
     @staticmethod
     def get_user(db: Session, user_id: int) -> Optional[models.User]:
@@ -65,7 +65,7 @@ class UserCRUD:
             return True
         return False
 
-# Book CRUD işlemleri
+# Book CRUD operations
 class BookCRUD:
     @staticmethod
     def get_book(db: Session, book_id: int) -> Optional[models.Book]:
@@ -110,7 +110,7 @@ class BookCRUD:
             return True
         return False
 
-# UserBook CRUD işlemleri
+# UserBook CRUD operations
 class UserBookCRUD:
     @staticmethod
     def get_user_books(db: Session, user_id: int) -> List[models.UserBook]:
@@ -130,7 +130,7 @@ class UserBookCRUD:
             and_(models.UserBook.user_id == user_id, models.UserBook.book_id == book_id)
         ).first() is not None
 
-# Rental CRUD işlemleri
+# Rental CRUD operations
 class RentalCRUD:
     @staticmethod
     def get_user_rentals(db: Session, user_id: int) -> List[models.Rental]:
@@ -160,7 +160,7 @@ class RentalCRUD:
             db.refresh(db_rental)
         return db_rental
 
-# ReadingHistory CRUD işlemleri
+# ReadingHistory CRUD operations
 class ReadingHistoryCRUD:
     @staticmethod
     def get_reading_history(db: Session, user_id: int, book_id: int) -> Optional[models.ReadingHistory]:
@@ -192,7 +192,7 @@ class ReadingHistoryCRUD:
         db.refresh(db_reading_history)
         return db_reading_history
 
-# Category CRUD işlemleri
+# Category CRUD operations
 class CategoryCRUD:
     @staticmethod
     def get_categories(db: Session) -> List[models.Category]:
@@ -210,7 +210,7 @@ class CategoryCRUD:
         db.refresh(db_category)
         return db_category
 
-# Comment CRUD işlemleri
+# Comment CRUD operations
 class CommentCRUD:
     @staticmethod
     def get_book_comments(db: Session, book_id: int) -> List[models.Comment]:
@@ -247,7 +247,7 @@ class CommentCRUD:
             return True
         return False
 
-# Recommendation CRUD işlemleri - Kitap Önerisi Sistemi
+# Recommendation CRUD operations - Book Recommendation System
 class RecommendationCRUD:
     @staticmethod
     def get_user_favorite_categories(db: Session, user_id: int, limit: int = 5) -> List[int]:
@@ -387,12 +387,12 @@ class RecommendationCRUD:
         """
         Belirli bir kitaba benzer kitapları önerir
         """
-        # Kitabın kategorilerini al
+        # Get the book's categories
         book = db.query(models.Book).filter(models.Book.id == book_id).first()
         if not book or not book.categories:
             return []
         
-        # Aynı kategorilerdeki diğer kitapları bul
+        # Get other books in the same categories
         similar_books = (
             db.query(models.Book)
             .filter(models.Book.categories.overlap(book.categories))
@@ -411,7 +411,7 @@ class RecommendationCRUD:
         from sqlalchemy import func
         from datetime import datetime, timedelta
         
-        # Son 30 gün içindeki yorumları al
+        # Get the comments in the last 30 days
         thirty_days_ago = datetime.now() - timedelta(days=30)
         
         result = (
@@ -431,7 +431,7 @@ class RecommendationCRUD:
         
         return [row.Book for row in result]
 
-# AI Recommendation CRUD işlemleri - Collaborative Filtering Tabanlı Öneri Sistemi
+# AI Recommendation CRUD operations - Collaborative Filtering Based Recommendation System
 class AIRecommendationCRUD:
     @staticmethod
     def train_ai_model(db: Session) -> bool:
@@ -475,7 +475,7 @@ class AIRecommendationCRUD:
         from ml_recommendation import collaborative_recommender
         
         if not collaborative_recommender.is_trained:
-            # Model yüklenmemişse yüklemeyi dene
+            # If the model is not loaded, try to load it
             if not AIRecommendationCRUD.load_ai_model():
                 return []
         
@@ -529,7 +529,7 @@ class AIRecommendationCRUD:
         
         if not collaborative_recommender.is_trained:
             if not AIRecommendationCRUD.load_ai_model():
-                return 5.0  # Varsayılan puan
+                return 5.0  # Default rating
         
         return collaborative_recommender.predict_rating_user_based(user_id, book_id)
     
@@ -542,7 +542,7 @@ class AIRecommendationCRUD:
         
         if not collaborative_recommender.is_trained:
             if not AIRecommendationCRUD.load_ai_model():
-                return 5.0  # Varsayılan puan
+                return 5.0  # Default rating
         
         return collaborative_recommender.predict_rating_item_based(user_id, book_id)
     
@@ -555,7 +555,7 @@ class AIRecommendationCRUD:
         
         if not collaborative_recommender.is_trained:
             if not AIRecommendationCRUD.load_ai_model():
-                return 5.0  # Varsayılan puan
+                return 5.0  # Default rating
         
         return collaborative_recommender.predict_rating_hybrid(user_id, book_id)
     
@@ -571,12 +571,12 @@ class AIRecommendationCRUD:
                 return {"predicted_rating": 5.0, "method": "default"}
         
         try:
-            # Farklı yöntemlerle tahmin yap
+            # Make predictions using different methods
             user_based_rating = collaborative_recommender.predict_rating_user_based(user_id, book_id)
             item_based_rating = collaborative_recommender.predict_rating_item_based(user_id, book_id)
             hybrid_rating = collaborative_recommender.predict_rating_hybrid(user_id, book_id)
             
-            # Benzer kullanıcıları bul
+            # Get similar users
             similar_users = collaborative_recommender.get_similar_users(user_id, 3)
             
             return {
@@ -611,17 +611,17 @@ class AIRecommendationCRUD:
                 return {"error": "Model not trained"}
         
         try:
-            # Benzer kullanıcıları bul
+            # Get similar users
             similar_users = collaborative_recommender.get_similar_users(user_id, 5)
             
-            # Kullanıcının puanladığı kitapları bul
+            # Get the user's rated books
             user_ratings = collaborative_recommender.user_item_matrix.loc[user_id]
             rated_books = user_ratings[user_ratings > 0]
             
-            # Yüksek puanlı kitapları al
+            # Get high-rated books
             high_rated_books = []
             for book_id, rating in rated_books.items():
-                if rating >= 7.0:  # 7+ puanlı kitaplar
+                if rating >= 7.0:  # 7+ rated books
                     book_data = collaborative_recommender.books_df[collaborative_recommender.books_df['book_id'] == book_id]
                     if not book_data.empty:
                         high_rated_books.append({
@@ -635,7 +635,7 @@ class AIRecommendationCRUD:
                 "user_id": user_id,
                 "similar_users": similar_users,
                 "total_ratings": len(rated_books),
-                "high_rated_books": high_rated_books[:5],  # En yüksek 5 puanlı kitap
+                "high_rated_books": high_rated_books[:5],  # Get the top 5 rated books
                 "average_rating": float(rated_books.mean()) if len(rated_books) > 0 else 0.0
             }
             
@@ -654,12 +654,12 @@ class AIRecommendationCRUD:
                 return {"error": "Model not trained"}
         
         try:
-            # Farklı yöntemlerle tahmin yap
+            # Make predictions using different methods
             user_based_rating = collaborative_recommender.predict_rating_user_based(user_id, book_id)
             item_based_rating = collaborative_recommender.predict_rating_item_based(user_id, book_id)
             hybrid_rating = collaborative_recommender.predict_rating_hybrid(user_id, book_id)
             
-            # Benzer kullanıcıları bul
+            # Get similar users
             similar_users = collaborative_recommender.get_similar_users(user_id, 3)
             
             return {

@@ -35,18 +35,18 @@ export const BookCard: React.FC<BookCardProps> = ({ book }) => {
   const isBookInLibrary = myBooks.some((b) => b.id === book.id);
   const isBookInCart = cartItems.some((item) => item.id === book.id);
 
-  // Premium durumu değiştiğinde component'ı yeniden render et
+  // When the premium status changes, re-render the component
   useEffect(() => {
-    // Bu effect, isPremiumUser değiştiğinde çalışacak
+    // This effect will run when isPremiumUser changes
   }, [isPremiumUser, user?.subscription_type]);
 
-  // Kullanıcı değişikliği durumunda loading state'ini kontrol et
+  // Check the loading state when the user changes
   const shouldShowLoading = loading || !user;
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
 
-    // Premium kullanıcılar sepet kullanamaz
+    // Premium users cannot use the cart
     if (isPremiumUser) {
       toast.info(
         "Premium üyeler tüm kitaplara ücretsiz erişime sahiptir. Direkt kütüphaneye ekleme özelliğini kullanın!"

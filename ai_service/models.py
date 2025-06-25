@@ -5,7 +5,7 @@ from database import Base
 from datetime import datetime
 from typing import List, Optional
 
-# Kullanıcılar modeli
+# Users model
 class User(Base):
     __tablename__ = "users"
     
@@ -17,13 +17,13 @@ class User(Base):
     subscription_type = Column(String(20), default='free')
     subscription_end_date = Column(TIMESTAMP, nullable=True)
     
-    # İlişkiler
+    # Relationships
     user_books = relationship("UserBook", back_populates="user", cascade="all, delete-orphan")
     rentals = relationship("Rental", back_populates="user")
     reading_history = relationship("ReadingHistory", back_populates="user")
     comments = relationship("Comment", back_populates="user", cascade="all, delete-orphan")
 
-# Kitaplar modeli
+# Books model
 class Book(Base):
     __tablename__ = "books"
     
@@ -44,7 +44,7 @@ class Book(Base):
     reading_history = relationship("ReadingHistory", back_populates="book")
     comments = relationship("Comment", back_populates="book", cascade="all, delete-orphan")
 
-# Kullanıcı kitapları modeli
+# User books model
 class UserBook(Base):
     __tablename__ = "user_books"
     
@@ -54,7 +54,7 @@ class UserBook(Base):
     acquisition_method = Column(String(20), nullable=False, default='purchase')
     acquired_at = Column(TIMESTAMP, server_default=func.current_timestamp())
     
-    # İlişkiler
+    # Relationships
     user = relationship("User", back_populates="user_books")
     book = relationship("Book", back_populates="user_books")
     
@@ -63,7 +63,7 @@ class UserBook(Base):
         CheckConstraint("acquisition_method IN ('purchase', 'premium', 'gift')", name='check_acquisition_method'),
     )
 
-# Kiralama modeli
+# Rental model
 class Rental(Base):
     __tablename__ = "rentals"
     
@@ -74,11 +74,11 @@ class Rental(Base):
     return_date = Column(TIMESTAMP, nullable=True)
     status = Column(String(20), default='active')
     
-    # İlişkiler
+    # Relationships
     user = relationship("User", back_populates="rentals")
     book = relationship("Book", back_populates="rentals")
 
-# Okuma geçmişi modeli
+# Reading history model
 class ReadingHistory(Base):
     __tablename__ = "reading_history"
     
@@ -88,18 +88,18 @@ class ReadingHistory(Base):
     last_page = Column(Integer, default=1)
     last_read = Column(TIMESTAMP, server_default=func.current_timestamp())
     
-    # İlişkiler
+    # Relationships
     user = relationship("User", back_populates="reading_history")
     book = relationship("Book", back_populates="reading_history")
 
-# Kategoriler modeli
+# Categories model
 class Category(Base):
     __tablename__ = "categories"
     
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     name = Column(String(100), unique=True, nullable=False)
 
-# Yorumlar modeli
+    # Comments model
 class Comment(Base):
     __tablename__ = "comments"
     
@@ -110,6 +110,6 @@ class Comment(Base):
     created_at = Column(TIMESTAMP, server_default=func.current_timestamp())
     rate = Column(Integer, CheckConstraint("rate >= 1 AND rate <= 10"), nullable=True)
     
-    # İlişkiler
+    # Relationships
     user = relationship("User", back_populates="comments")
     book = relationship("Book", back_populates="comments") 

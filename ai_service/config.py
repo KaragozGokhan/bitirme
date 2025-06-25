@@ -7,19 +7,19 @@ load_dotenv()
 class Settings:
     """Uygulama ayarları"""
     
-    # Veritabanı ayarları
+    # Database settings
     DB_USER: str = os.getenv("DB_USER", "postgres")
     DB_HOST: str = os.getenv("DB_HOST", "localhost")
     DB_NAME: str = os.getenv("DB_NAME", "Bookflix")
     DB_PASSWORD: str = os.getenv("DB_PASSWORD", "12345")
     DB_PORT: str = os.getenv("DB_PORT", "5432")
     
-    # Uygulama ayarları
+    # Application settings
     API_TITLE: str = "Bookflix API"
     API_DESCRIPTION: str = "Kitap Kiralama ve Satış Platformu API"
     API_VERSION: str = "1.0.0"
     
-    # Güvenlik ayarları
+    # Security settings
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-here")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
     
@@ -38,5 +38,5 @@ class Settings:
             "port": self.DB_PORT
         }
 
-# Global settings instance
+# Global settings instance  
 settings = Settings() 

@@ -80,17 +80,17 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   const validateForm = (): boolean => {
     const newErrors: Partial<PaymentForm> = {};
 
-    // Kart numarası kontrolü (16 haneli)
+    // Card number validation (16 digits)
     if (!formData.cardNumber || formData.cardNumber.length !== 16) {
       newErrors.cardNumber = "Geçerli bir kart numarası giriniz (16 haneli)";
     }
 
-    // Kart sahibi kontrolü
+    // Card holder validation
     if (!formData.cardHolder || formData.cardHolder.length < 3) {
       newErrors.cardHolder = "Kart sahibi adını giriniz";
     }
 
-    // Son kullanma tarihi kontrolü
+    // Expiry date validation
     if (!formData.expiryMonth || !formData.expiryYear) {
       newErrors.expiryMonth = "Son kullanma tarihini giriniz";
     } else {
@@ -110,7 +110,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       }
     }
 
-    // CVV kontrolü (3-4 haneli)
+    // CVV validation (3-4 digits)
     if (!formData.cvv || formData.cvv.length < 3 || formData.cvv.length > 4) {
       newErrors.cvv = "Geçerli bir CVV giriniz (3-4 haneli)";
     }
@@ -122,17 +122,17 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
   const handleInputChange = (field: keyof PaymentForm, value: string) => {
     let formattedValue = value;
 
-    // Kart numarası için sadece rakam
+    // Only digits for card number
     if (field === "cardNumber") {
       formattedValue = value.replace(/\D/g, "").slice(0, 16);
     }
 
-    // CVV için sadece rakam
+    // Only digits for CVV
     if (field === "cvv") {
       formattedValue = value.replace(/\D/g, "").slice(0, 4);
     }
 
-    // Ay için sadece rakam ve 01-12 arası
+    // Only digits for month and 01-12
     if (field === "expiryMonth") {
       formattedValue = value.replace(/\D/g, "").slice(0, 2);
       if (formattedValue && parseInt(formattedValue) > 12) {
@@ -140,7 +140,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       }
     }
 
-    // Yıl için sadece rakam
+    // Only digits for year
     if (field === "expiryYear") {
       formattedValue = value.replace(/\D/g, "").slice(0, 2);
     }
@@ -150,7 +150,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
       [field]: formattedValue,
     }));
 
-    // Hata mesajını temizle
+    // Clear error message
     if (errors[field]) {
       setErrors((prev) => ({
         ...prev,
@@ -167,14 +167,14 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     setLoading(true);
 
     try {
-      // Kullanıcı ID'sini localStorage'dan al
+      // Get user ID from localStorage
       const userId = localStorage.getItem("userId");
       if (!userId) {
         toast.error("Kullanıcı bilgisi bulunamadı. Lütfen tekrar giriş yapın.");
         return;
       }
 
-      // API'ye ödeme isteği gönder
+      // Send payment request to API
       const paymentData = {
         cardNumber: formData.cardNumber,
         cardHolder: formData.cardHolder,
@@ -211,7 +211,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
     return value.replace(/(\d{4})/g, "$1 ").trim();
   };
 
-  // Kart görüntüsü component'i
+  // Credit card display component
   const CreditCardDisplay = () => (
     <Card
       sx={{
@@ -256,7 +256,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         },
       }}
     >
-      {/* Kart chip */}
+      {/* Card chip */}
       <Box
         sx={{
           position: "absolute",
@@ -303,7 +303,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         />
       </Box>
 
-      {/* Kart tipi logosu */}
+      {/* Card type logo */}
       <Box
         sx={{
           position: "absolute",
@@ -393,7 +393,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         )}
       </Box>
 
-      {/* Kart numarası */}
+      {/* Card number */}
       <Box
         sx={{
           position: "absolute",
@@ -440,7 +440,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         )}
       </Box>
 
-      {/* Son kullanma tarihi */}
+      {/* Expiry date */}
       <Box
         sx={{
           position: "absolute",
@@ -473,7 +473,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
         </Typography>
       </Box>
 
-      {/* Dekoratif çizgiler */}
+      {/* Decorative lines */}
       <Box
         sx={{
           position: "absolute",
@@ -520,7 +520,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
       <DialogContent>
         <Stack spacing={3}>
-          {/* Plan Bilgileri */}
+          {/* Plan Information */}
           <Card sx={{ bgcolor: "primary.lighter" }}>
             <CardContent>
               <Typography variant="h6" fontWeight={600} gutterBottom>
@@ -535,7 +535,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             </CardContent>
           </Card>
 
-          {/* Premium Özellikleri */}
+          {/* Premium Features */}
           <Box>
             <Typography variant="subtitle1" fontWeight={600} gutterBottom>
               Premium Özellikleri:
@@ -570,16 +570,16 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
 
           <Divider />
 
-          {/* Kredi Kartı Formu */}
+          {/* Credit Card Form */}
           <Box>
             <Typography variant="subtitle1" fontWeight={600} gutterBottom>
               Kredi Kartı Bilgileri
             </Typography>
 
-            {/* Kart Görüntüsü */}
+            {/* Card Image */}
             <CreditCardDisplay />
 
-            {/* Kart Tipi Bilgisi */}
+            {/* Card Type Information */}
             {cardType !== "default" && (
               <Box sx={{ mb: 2 }}>
                 <Alert
@@ -685,7 +685,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({
             </Stack>
           </Box>
 
-          {/* Güvenlik Uyarısı */}
+          {/* Security Warning */}
           <Alert severity="info" icon={<Lock />}>
             <Typography variant="body2">
               Kredi kartı bilgileriniz güvenli bir şekilde şifrelenerek
