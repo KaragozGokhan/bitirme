@@ -136,23 +136,28 @@ const BookManagement: React.FC = () => {
         await adminService.updateBook(editingBook.id, formData);
         setSnackbar({
           open: true,
-          message: "Kitap başarıyla güncellendi",
+          message: "Kitap ve tüm dosya bilgileri başarıyla güncellendi",
           severity: "success",
         });
       } else {
-        await adminService.addBook(formData);
+        const newBook = await adminService.addBook(formData);
+        console.log("Yeni kitap eklendi:", newBook);
         setSnackbar({
           open: true,
-          message: "Kitap başarıyla eklendi",
+          message: `Kitap "${formData.title}" ve tüm dosya bilgileri başarıyla eklendi`,
           severity: "success",
         });
       }
       handleCloseDialog();
       loadBooks();
     } catch (err: any) {
+      console.error("Kitap ekleme/güncelleme hatası:", err);
       setSnackbar({
         open: true,
-        message: err.response?.data?.error || "Işlem başarısız",
+        message:
+          err.response?.data?.error ||
+          err.response?.data?.details ||
+          "İşlem başarısız",
         severity: "error",
       });
     }
@@ -403,30 +408,74 @@ const BookManagement: React.FC = () => {
               fullWidth
               required
             />
-            <TextField
-              label="Kapak Resmi URL"
-              value={formData.cover_image_url}
-              onChange={(e) =>
-                setFormData({ ...formData, cover_image_url: e.target.value })
-              }
-              fullWidth
-            />
-            <TextField
-              label="PDF URL"
-              value={formData.pdf_url}
-              onChange={(e) =>
-                setFormData({ ...formData, pdf_url: e.target.value })
-              }
-              fullWidth
-            />
-            <TextField
-              label="Audio URL"
-              value={formData.audio_url}
-              onChange={(e) =>
-                setFormData({ ...formData, audio_url: e.target.value })
-              }
-              fullWidth
-            />
+            <Box>
+              <Typography variant="h6" gutterBottom sx={{ mt: 2, mb: 1 }}>
+                Dosya URL'leri
+              </Typography>
+
+              <Box display="flex" gap={2} alignItems="flex-start">
+                <TextField
+                  label="Kapak Resmi URL (örn: kitaplar/91.png)"
+                  value={formData.cover_image_url}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      cover_image_url: e.target.value,
+                    })
+                  }
+                  fullWidth
+                  helperText="Dosya yolu: kitaplar/ klasöründeki dosya adı (örn: kitaplar/91.png)"
+                  sx={{ mb: 2 }}
+                />
+                {formData.cover_image_url && (
+                  <Box sx={{ minWidth: 80, textAlign: "center" }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Önizleme:
+                    </Typography>
+                    <img
+                      src={
+                        formData.cover_image_url.startsWith("kitaplar/")
+                          ? `/${formData.cover_image_url}`
+                          : formData.cover_image_url
+                      }
+                      alt="Kapak önizleme"
+                      style={{
+                        width: 60,
+                        height: 80,
+                        objectFit: "cover",
+                        borderRadius: 4,
+                        border: "1px solid #ddd",
+                        display: "block",
+                      }}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  </Box>
+                )}
+              </Box>
+
+              <TextField
+                label="PDF URL (örn: pdfurl/91.pdf)"
+                value={formData.pdf_url}
+                onChange={(e) =>
+                  setFormData({ ...formData, pdf_url: e.target.value })
+                }
+                fullWidth
+                helperText="Dosya yolu: pdfurl/ klasöründeki dosya adı (örn: pdfurl/91.pdf)"
+                sx={{ mb: 2 }}
+              />
+
+              <TextField
+                label="Audio URL (varsa)"
+                value={formData.audio_url}
+                onChange={(e) =>
+                  setFormData({ ...formData, audio_url: e.target.value })
+                }
+                fullWidth
+                helperText="Ses dosyası URL'si (opsiyonel)"
+              />
+            </Box>
           </Box>
         </DialogContent>
         <DialogActions sx={{ p: 3 }}>
@@ -436,7 +485,12 @@ const BookManagement: React.FC = () => {
           <Button
             onClick={handleSubmit}
             variant="contained"
-            disabled={!formData.title || !formData.author}
+            disabled={
+              !formData.title ||
+              !formData.author ||
+              !formData.description ||
+              formData.price <= 0
+            }
           >
             {editingBook ? "Güncelle" : "Ekle"}
           </Button>

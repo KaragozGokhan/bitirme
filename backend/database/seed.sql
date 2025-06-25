@@ -1,7 +1,7 @@
 INSERT INTO users (username, email, password_hash, subscription_type, subscription_end_date) VALUES
 ('ahmet123', 'ahmet@example.com', '$2b$10$GGil7M1Qr3Uo4vAFbgkWo.eENQkoGn0ONMerBdHRb2CkKjhZAzLEy', 'premium', '2025-12-31'),
 ('ayse.yilmaz', 'ayse@example.com', '$2b$10$GGil7M1Qr3Uo4vAFbgkWo.eENQkoGn0ONMerBdHRb2CkKjhZAzLEy', 'basic', NULL),
-('mehmet.demir', 'mehmet@example.com', '$2a$10$randomhash3', 'premium', '2025-06-30'),
+('mehmet.demir', 'mehmet@example.com', '$2b$10$GGil7M1Qr3Uo4vAFbgkWo.eENQkoGn0ONMerBdHRb2CkKjhZAzLEy', 'premium', '2025-06-30'),
 ('zeynep.kaya', 'zeynep@example.com', '$2a$10$randomhash4', 'basic', NULL),
 ('ali.yildiz', 'ali@example.com', '$2a$10$randomhash5', 'premium', '2025-09-30'),
 ('fatma.arslan', 'fatma@example.com', '$2a$10$randomhash6', 'basic', NULL),

@@ -58,17 +58,70 @@ router.get('/dashboard', adminAuth, (req, res) => {
   res.json({ message: 'Admin dashboarduna hoş geldiniz', admin: req.admin });
 });
 
-// Admin kitap ekleme örneği
+/**
+ * @swagger
+ * /api/admin/add-book:
+ *   post:
+ *     summary: Yeni kitap ekle (sadece admin)
+ *     tags: [Admin]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - author
+ *               - description
+ *               - price
+ *             properties:
+ *               title:
+ *                 type: string
+ *               author:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               cover_image_url:
+ *                 type: string
+ *               pdf_url:
+ *                 type: string
+ *               audio_url:
+ *                 type: string
+ *               price:
+ *                 type: number
+ *     responses:
+ *       201:
+ *         description: Kitap başarıyla eklendi
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 book:
+ *                   $ref: '#/components/schemas/Book'
+ *       401:
+ *         description: Geçersiz veya eksik token
+ *       403:
+ *         description: Admin yetkisi yok
+ */
 router.post('/add-book', adminAuth, async (req, res) => {
   try {
-    const { title, author, description, price } = req.body;
+    const { title, author, description, cover_image_url, pdf_url, audio_url, price } = req.body;
+    
     const result = await pool.query(
-      'INSERT INTO books (title, author, description, price) VALUES ($1, $2, $3, $4) RETURNING *',
-      [title, author, description, price]
+      'INSERT INTO books (title, author, description, cover_image_url, pdf_url, audio_url, price) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+      [title, author, description, cover_image_url, pdf_url, audio_url, price]
     );
-    res.status(201).json({ message: 'Kitap eklendi', book: result.rows[0] });
+    
+    res.status(201).json({ message: 'Kitap başarıyla eklendi', book: result.rows[0] });
   } catch (error) {
-    res.status(500).json({ error: 'Kitap eklenemedi' });
+    console.error('Kitap ekleme hatası:', error);
+    res.status(500).json({ error: 'Kitap eklenemedi', details: error.message });
   }
 });
 
